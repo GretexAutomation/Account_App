@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CFO Dashboard — Gretex</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+  <link href="css/style.css" rel="stylesheet"/>
+  <style>
+    .section { display: none; }
+    .section.active { display: block; }
+    .modal-box.large { max-width: 900px; }
+
+    .detail-tabs { display: flex; gap: 4px; padding: 16px 20px 0; border-bottom: 1px solid var(--gray-200); background: var(--gray-50); flex-wrap: wrap; }
+    .detail-tab { padding: 8px 16px; border-radius: 8px 8px 0 0; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; color: var(--gray-600); transition: var(--transition); background: transparent; }
+    .detail-tab.active { background: var(--white); color: var(--primary); border-color: var(--gray-200); border-bottom-color: var(--white); font-weight: 600; }
+    .detail-tab-content { display: none; }
+    .detail-tab-content.active { display: block; }
+
+    /* ── Tracking Timeline Styles ── */
+    .tracking-wrapper { background: #fff; padding: 24px 20px 10px; border-radius: 12px; border: 1px solid var(--gray-200); margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .tracking-container { display: flex; justify-content: space-between; align-items: flex-start; position: relative; width: 100%; }
+    .track-step { flex: 1; text-align: center; position: relative; z-index: 1; }
+    .track-step::before { content: ""; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: #e5e7eb; z-index: -1; transition: all 0.3s ease; }
+    .track-step:first-child::before { display: none; }
+    .track-icon { width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 3px solid #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: transparent; font-size: 12px; transition: all 0.3s ease; }
+    .track-step.completed .track-icon { background: #10b981; border-color: #10b981; color: #fff; }
+    .track-step.completed::before { background: #10b981; }
+    .track-step.active .track-icon { background: #4f46e5; border-color: #4f46e5; color: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2); }
+    .track-step.active::before { background: #10b981; }
+    .track-step.rejected .track-icon { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .track-text h6 { font-size: 0.75rem; margin: 0 0 4px 0; color: var(--gray-800); font-weight: 600; }
+    .track-text p { font-size: 0.65rem; margin: 0; color: var(--gray-500); line-height: 1.2; }
+
+    /* ── Action Buttons ── */
+    .queue-action-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s; }
+    .queue-action-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-approve { background: #34a853; color: #fff; }
+    .btn-reject  { background: #ea4335; color: #fff; }
+    .queue-status-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.3px; }
+    .status-pending  { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+    .status-approved { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .status-rejected { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .status-sent     { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+
+    .filter-tabs { display: flex; gap: 6px; background: var(--gray-50); padding: 4px; border-radius: 8px; border: 1px solid var(--gray-200); }
+    .filter-tab, .filter-tab-q { padding: 6px 16px; border-radius: 6px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; color: var(--gray-600); background: transparent; transition: all 0.2s ease; }
+    .filter-tab:hover, .filter-tab-q:hover { background: rgba(0,0,0,0.04); }
+    .filter-tab.active, .filter-tab-q.active { background: var(--white); color: var(--primary); font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .data-table tbody tr { transition: background-color 0.15s ease; }
+    .data-table tbody tr:hover { background-color: #f8faff; }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main-content" id="mainContent">
+    <header class="app-header" id="appHeader"></header>
+    <div class="page-content">
+
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card total" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
+            <div class="stat-icon"><i class="fa fa-inbox"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotal">--</div>
+              <div class="stat-label">Total Invoices</div>
+            </div>
+          </div>
+          <div class="stat-card pass" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
+            <div class="stat-icon"><i class="fa fa-circle-check"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="statPass">--</div>
+              <div class="stat-label">Passed</div>
+            </div>
+          </div>
+          <div class="stat-card review" style="cursor:pointer" onclick="Dashboard.showSection('approve')">
+            <div class="stat-icon"><i class="fa fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="statReview">--</div>
+              <div class="stat-label">Under Review</div>
+            </div>
+          </div>
+          <div class="stat-card fail" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
+            <div class="stat-icon"><i class="fa fa-circle-xmark"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="statFail">--</div>
+              <div class="stat-label">Failed</div>
+            </div>
+          </div>
+          <div class="stat-card amount">
+            <div class="stat-icon"><i class="fa fa-indian-rupee-sign"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="statAmount">--</div>
+              <div class="stat-label">Total Amount</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px">
+          
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fa fa-user-tie"></i> Biller Queue</div></div>
+            <div class="card-body" style="padding:16px">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+                <div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:var(--primary)" id="billerTotal">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Total</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#f9a825" id="billerPending">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Pending</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#34a853" id="billerApproved">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Approved</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#ffebee;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#ea4335" id="billerRejected">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Rejected</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fa fa-user-check"></i> Account Queue</div></div>
+            <div class="card-body" style="padding:16px">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+                <div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:var(--primary)" id="accountTotal">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Total</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#f9a825" id="accountPending">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Pending</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#34a853" id="accountApproved">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Approved</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:#ffebee;border-radius:8px">
+                  <div style="font-size:1.6rem;font-weight:800;color:#ea4335" id="accountRejected">--</div>
+                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Rejected</div>
+                </div>
+              </div>
+              <div style="margin-top:14px;padding:12px;background:#e3f2fd;border-radius:8px;border-left:4px solid var(--primary)">
+                <div style="font-size:0.78rem;color:var(--primary);font-weight:600">
+                  💡 TIP: You can bypass Account queue when approving if needed!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-invoices">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="padding:14px 20px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-status="ALL">All</button>
+                <button class="filter-tab" data-status="Completed">✅ Completed</button>
+                <button class="filter-tab" data-status="CFO">⏳ Pending CFO</button>
+              </div>
+              <div style="flex:1;min-width:200px;position:relative">
+                <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.loadAllInvoices()">
+                <i class="fa fa-rotate-right"></i> Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa fa-file-invoice"></i> All Invoices
+              <span id="allInvoicesCount" style="font-weight:400;color:var(--gray-500);font-size:0.8rem"></span>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Invoice No</th><th>Vendor</th><th>Date</th><th>Basic Amt</th><th>TDS</th><th>Final Payable</th><th>🚩</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="allInvoicesBody">
+                <tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading invoices...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-redflags">
+        <div class="card">
+          <div class="card-header"><div class="card-title" style="color:var(--danger)">🚩 Red Flag Invoices</div></div>
+          <div class="card-body" id="redFlagBody">
+            <div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-approve">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="padding:14px 20px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div class="filter-tabs">
+                <button class="filter-tab-q active" data-status="ALL">All</button>
+                <button class="filter-tab-q" data-status="Pending">⏳ Pending</button>
+                <button class="filter-tab-q" data-status="Approved">✅ Approved</button>
+                <button class="filter-tab-q" data-status="Rejected">❌ Rejected</button>
+              </div>
+              <div style="flex:1;min-width:200px;position:relative">
+                <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
+                <input type="text" class="form-control" id="cfoQueueSearch" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.loadApprovalQueue()">
+                <i class="fa fa-rotate-right"></i> Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa fa-list-check"></i> CFO Approval Queue
+              <span id="cfoQueueCount" style="font-weight:400;color:var(--gray-500);font-size:0.8rem"></span>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Invoice No</th><th>Vendor</th><th>Basic Amt</th><th>TDS</th><th>Final Payable</th><th>🚩</th><th>Queue Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cfoQueueBody">
+                <tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-profile">
+        <div class="card" style="max-width:500px">
+          <div class="card-header"><div class="card-title"><i class="fa fa-user"></i> My Profile</div></div>
+          <div class="card-body" id="profileBody"></div>
+        </div>
+      </div>
+
+      <div class="section" id="section-password">
+        <div class="card" style="max-width:440px">
+          <div class="card-header"><div class="card-title"><i class="fa fa-lock"></i> Change Password</div></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" id="oldPassword"/></div>
+            <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" id="newPassword"/></div>
+            <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-control" id="confirmPassword"/></div>
+            <button class="btn btn-primary w-100" onclick="Dashboard.changePassword()"><i class="fa fa-key"></i> Update Password</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box large">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">
+      <h5 class="modal-title" style="color:#fff;display:flex;align-items:center;gap:8px">
+        <i class="fa fa-file-invoice"></i> Invoice —
+        <span id="modalInvoiceNo"></span><span id="modalStatus" style="margin-left:8px"></span>
+      </h5>
+      <button class="modal-close" onclick="Dashboard.closeDetailModal()">✕</button>
+    </div>
+
+    <div id="modalTrackingTimeline" style="padding: 20px 20px 0; background: var(--white);"></div>
+
+    <div class="detail-tabs">
+      <button class="detail-tab active" data-tab="tab-attachment" onclick="Dashboard.switchTab(this, 'tab-attachment')">📎 Attachment</button>
+      <button class="detail-tab" data-tab="tab-accounting" onclick="Dashboard.switchTab(this, 'tab-accounting')">📊 Accounting</button>
+      <button class="detail-tab" data-tab="tab-tds" onclick="Dashboard.switchTab(this, 'tab-tds')">💰 TDS</button>
+      <button class="detail-tab" data-tab="tab-gst" onclick="Dashboard.switchTab(this, 'tab-gst')">🧾 GST</button>
+      <button class="detail-tab" data-tab="tab-process" onclick="Dashboard.switchTab(this, 'tab-process')">⚙️ Process</button>
+      <button class="detail-tab" data-tab="tab-flags" onclick="Dashboard.switchTab(this, 'tab-flags')">🚩 Red Flags</button>
+    </div>
+
+    <div style="max-height:55vh;overflow-y:auto;background:var(--white);">
+      <div class="detail-tab-content active" id="tab-attachment"></div>
+      <div class="detail-tab-content" id="tab-accounting"></div>
+      <div class="detail-tab-content" id="tab-tds"></div>
+      <div class="detail-tab-content" id="tab-gst"></div>
+      <div class="detail-tab-content" id="tab-process"></div>
+      <div class="detail-tab-content" id="tab-flags"></div>
+    </div>
+
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+      <a id="driveLink" href="#" target="_blank" class="btn btn-outline btn-sm" style="display:none">
+        <i class="fa fa-file-pdf"></i> View Original
+      </a>
+      <button class="btn btn-sm" id="modalApproveBtn" onclick="Dashboard.openApproveFromModal()" style="display:none; background:#34a853; color:#fff; border:none; font-weight:600; padding:6px 14px; border-radius:6px;">
+        <i class="fa fa-check"></i> Approve
+      </button>
+      <button class="btn btn-sm" id="modalRejectBtn" onclick="Dashboard.openRejectFromModal()" style="display:none; background:#ea4335; color:#fff; border:none; font-weight:600; padding:6px 14px; border-radius:6px;">
+        <i class="fa fa-xmark"></i> Reject
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="Dashboard.closeDetailModal()">
+        <i class="fa fa-xmark"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="approveModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header" style="background:linear-gradient(135deg,#34a853,#1b5e20)">
+      <h5 class="modal-title" style="color:#fff;display:flex;align-items:center;gap:8px">
+        <i class="fa fa-circle-check"></i> Approve Invoice
+        <span id="approveModalInvoiceNo" style="font-size:0.85rem;opacity:0.85;margin-left:4px"></span>
+      </h5>
+      <button class="modal-close" onclick="Dashboard.closeApproveModal()">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div style="margin-bottom:16px;padding:12px;background:#e3f2fd;border-radius:8px;border-left:4px solid var(--primary)">
+        <div style="font-size:0.85rem;color:var(--primary);line-height:1.4">
+          <i class="fa fa-info-circle" style="margin-right:6px"></i>
+          This invoice will be approved and moved to Admin queue for final processing.
+        </div>
+      </div>
+      <div style="margin-bottom:16px;padding:12px;background:#fff3e0;border-radius:8px;border:1px solid #ffe0b2">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#e65100">
+          <input type="checkbox" id="bypassAccountCheckbox" style="width:18px;height:18px;cursor:pointer"/>
+          <span>
+            ⚡ Bypass Account Approval<br>
+            <span style="font-size:0.75rem;font-weight:400;color:#bf360c;margin-left:26px;display:block;margin-top:4px">Only check if Account queue is delayed</span>
+          </span>
+        </label>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label" style="font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:8px;display:block">Send To Admin <span style="color:#ea4335">*</span></label>
+        <select id="selectAdminDropdown" style="width:100%;font-size:0.85rem;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-family:'Inter',sans-serif;outline:none;cursor:pointer">
+          <option value="">-- Select Admin --</option>
+        </select>
+        <div id="adminSelectError" style="display:none;color:#ea4335;font-size:0.78rem;margin-top:6px">Please select an Admin.</div>
+      </div>
+      <label class="form-label" style="font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:6px;display:block">Approval Notes (Optional)</label>
+      <textarea id="approveNote" placeholder="e.g., TDS verified, GST correct..." style="width:100%;resize:vertical;font-size:0.85rem;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-family:'Inter',sans-serif;outline:none;min-height:80px"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="confirmApproveBtn" onclick="Dashboard.confirmApprove()">
+        <i class="fa fa-circle-check"></i> Confirm Approval
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="Dashboard.closeApproveModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header reject-modal-header">
+      <h5 class="modal-title" style="color:#fff;display:flex;align-items:center;gap:8px">
+        <i class="fa fa-circle-xmark"></i> Reject Invoice
+        <span id="rejectModalInvoiceNo" style="font-size:0.85rem;opacity:0.85;margin-left:4px"></span>
+      </h5>
+      <button class="modal-close" onclick="Dashboard.closeRejectModal()">✕</button>
+    </div>
+    <div style="padding:20px">
+      <p style="font-size:0.85rem;color:var(--gray-600);margin-bottom:14px;line-height:1.5">
+        <i class="fa fa-circle-info" style="color:#ea4335;margin-right:6px"></i>
+        This invoice will be <strong>rejected</strong> and returned to Biller for correction.
+      </p>
+      <label class="form-label" style="font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:6px;display:block">
+        Rejection Reason <span style="color:#ea4335">*</span>
+      </label>
+      <textarea id="rejectReason" placeholder="e.g., TDS section incorrect, GST number mismatch..." style="width:100%;resize:vertical;font-size:0.85rem;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-family:'Inter',sans-serif;outline:none;min-height:100px"></textarea>
+      <div id="rejectReasonError" style="display:none;color:#ea4335;font-size:0.78rem;margin-top:6px">Rejection reason is required.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="confirmRejectBtn" style="background:#ea4335;color:#fff;padding:7px 18px;font-weight:600;border:none;border-radius:7px;cursor:pointer" onclick="Dashboard.confirmReject()">
+        <i class="fa fa-circle-xmark"></i> Confirm Reject
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="Dashboard.closeRejectModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/sidebar.js"></script>
+<script>
+const Dashboard = {
+  queueData: [],
+  queueFiltered: [],
+  allInvoicesData: [],
+  currentRow: null,
+  pendingApproveRow: null,
+  pendingApproveInvoiceNo: "",
+  pendingRejectRow: null,
+  pendingRejectInvoiceNo: "",
+
+  generateTrackingTimeline(inv) {
+    const steps = [
+      { key: "Received", label: "Received",    date: inv["Timestamp"],       icon: "fa-envelope" },
+      { key: "Biller",   label: "Biller",      date: inv["Biller_Send_At"],  icon: "fa-user-check", statusCol: "" },
+      { key: "Account",  label: "Account",     date: inv["Account_Send_At"], icon: "fa-calculator", statusCol: inv["Account_Status"] },
+      { key: "CFO",      label: "CFO",         date: inv["CFO_Send_At"],     icon: "fa-briefcase",  statusCol: inv["CFO_Status"] },
+      { key: "Admin",    label: "Admin",       date: inv["Admin_Send_At"],   icon: "fa-user-shield",statusCol: inv["Admin_Status"] },
+      { key: "SA",       label: "Super Admin", date: inv["SA_Approved_At"],  icon: "fa-crown",      statusCol: inv["SA_Status"] }
+    ];
+    const currentStage = inv["Current_Stage"] || "New";
+    let hasRejected = steps.some(s => s.statusCol && s.statusCol.includes("Rejected"));
+    let stageReached = false;
+    let html = `<div class="tracking-wrapper"><div class="tracking-container">`;
+    steps.forEach((step) => {
+      let statusClass = ""; let iconHtml = `<i class="fa ${step.icon}"></i>`; let dateText = step.date ? step.date : "Pending...";
+      if (step.date && step.date !== "") {
+        statusClass = "completed"; iconHtml = `<i class="fa fa-check"></i>`; 
+        if (step.statusCol && step.statusCol.includes("Rejected")) { statusClass = "rejected"; iconHtml = `<i class="fa fa-times"></i>`; }
+      } else {
+        if (!stageReached && !hasRejected && currentStage !== "Completed") { statusClass = "active"; stageReached = true; }
+      }
+      html += `<div class="track-step ${statusClass}"><div class="track-icon">${iconHtml}</div><div class="track-text"><h6>${step.label}</h6><p>${dateText}</p></div></div>`;
+    });
+    html += `</div></div>`;
+    return html;
+  },
+
+  async init() {
+    Auth.requireRole("CFO");
+    Header.render("Dashboard");
+    Sidebar.init("dashboard");
+    
+    // 🔥 1 Smart API Load
+    await Dashboard.loadDashboardData();
+    
+    const hash = window.location.hash.replace("#","");
+    if (hash) Dashboard.showSection(hash);
+
+    // Binders
+    document.getElementById("searchInput")?.addEventListener("input", Utils.debounce(() => Dashboard.filterAllInvoices(), 350));
+    document.querySelectorAll(".filter-tab[data-status]").forEach(btn => {
+      btn.addEventListener("click", function() {
+        document.querySelectorAll(".filter-tab[data-status]").forEach(b => b.classList.remove("active"));
+        this.classList.add("active"); Dashboard.filterAllInvoices();
+      });
+    });
+  },
+
+  showSection(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(`section-${id}`)?.classList.add("active");
+    const titles = { dashboard: "Dashboard", invoices : "All Invoices", redflags : "Red Flags", approve  : "CFO Approvals", profile : "My Profile", password : "Change Password" };
+    Header.setTitle(titles[id] || "Dashboard");
+    Sidebar.setActive(id);
+    if (id === "approve")   Dashboard.loadApprovalQueue();
+    if (id === "profile")   Dashboard.loadProfile();
+  },
+
+  switchTab(btn, tabId) {
+    document.querySelectorAll(".detail-tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".detail-tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    const targetContent = document.getElementById(tabId);
+    if (targetContent) targetContent.classList.add("active");
+  },
+
+  async loadDashboardData() {
+    // Stats
+    try {
+      const res = await API.dashboard.getStats();
+      if (res?.success) {
+        const d = res.data;
+        document.getElementById("statTotal").textContent = d.invoiceStats?.total  || 0;
+        document.getElementById("statPass").textContent = d.invoiceStats?.pass   || 0;
+        document.getElementById("statReview").textContent = d.invoiceStats?.review || 0;
+        document.getElementById("statFail").textContent = d.invoiceStats?.fail   || 0;
+        document.getElementById("statAmount").textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || 0);
+
+        if (d.billerQueueStats) {
+          document.getElementById("billerTotal").textContent = d.billerQueueStats.total;
+          document.getElementById("billerPending").textContent = d.billerQueueStats.pending;
+          document.getElementById("billerApproved").textContent = d.billerQueueStats.approved;
+          document.getElementById("billerRejected").textContent = d.billerQueueStats.rejected;
+        }
+        if (d.accountQueueStats) {
+          document.getElementById("accountTotal").textContent = d.accountQueueStats.total;
+          document.getElementById("accountPending").textContent = d.accountQueueStats.pending;
+          document.getElementById("accountApproved").textContent = d.accountQueueStats.approved;
+          document.getElementById("accountRejected").textContent = d.accountQueueStats.rejected;
+        }
+      }
+    } catch(e) {}
+
+    // Invoices (Populates Recent, Flags, and All Invoices)
+    try {
+      const res = await API.invoices.getAll();
+      if (res?.success) {
+        Dashboard.allInvoicesData = res.data.invoices || [];
+        Dashboard.filterAllInvoices();
+
+        const recent = [...Dashboard.allInvoicesData].reverse().slice(0, 5);
+        document.getElementById("recentBody").innerHTML = recent.length === 0 
+          ? `<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--gray-400)">No invoices yet</td></tr>`
+          : recent.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+              <td><strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong></td>
+              <td style="font-size:0.82rem">${Utils.truncate(inv["A14. Vendor Name"], 18)}</td>
+              <td style="font-size:0.83rem">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
+              <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i></button></td>
+            </tr>`).join("");
+
+        const flagged = Dashboard.allInvoicesData.filter(i => i["🚩 Red Flags"] && i["🚩 Red Flags"].trim() !== "");
+        document.getElementById("redFlagsPanel").innerHTML = flagged.length === 0
+          ? `<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div>`
+          : flagged.slice(0, 8).map(inv => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong>${Utils.statusBadge(inv["Current_Stage"])}
+              </div>
+              <div style="font-size:0.78rem;color:var(--gray-600)">${Utils.truncate(inv["A14. Vendor Name"], 24)}</div>
+              <div style="font-size:0.72rem;color:var(--danger);margin-top:3px">🚩 ${Utils.truncate(inv["🚩 Red Flags"], 48)}</div>
+            </div>`).join("");
+        
+        // Full Red Flags Table
+        const rfBody = document.getElementById("redFlagBody");
+        if(rfBody) {
+          rfBody.innerHTML = flagged.length === 0 
+            ? `<tr><td colspan="7" class="text-center" style="padding:32px"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div></td></tr>`
+            : flagged.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+                <td><strong>${inv["A13. Invoice Number"]||"—"}</strong></td><td>${Utils.truncate(inv["A14. Vendor Name"], 20)}</td>
+                <td>${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
+                <td>${(inv["🚩 Red Flags"]||"").split("|").map(f => `<div class="red-flag-item" style="margin-bottom:4px">🚩 ${f.trim()}</div>`).join("")}</td>
+                <td>${Utils.statusBadge(inv["Current_Stage"])}</td><td style="white-space:nowrap;font-size:0.8rem">${inv["Timestamp"] || "—"}</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> View</button></td>
+              </tr>`).join("");
+        }
+      }
+    } catch(e) {}
+  },
+
+  filterAllInvoices() {
+    const status = document.querySelector(".filter-tab.active")?.dataset.status || "ALL";
+    const search = (document.getElementById("searchInput")?.value || "").toLowerCase();
+    
+    let filtered = [...(Dashboard.allInvoicesData || [])];
+    if (status !== "ALL") {
+      filtered = filtered.filter(i => {
+        if(status === "Completed") return i["Current_Stage"] === "Completed";
+        return i["Current_Stage"] === "CFO" || i["Current_Stage"] === "Account";
+      });
+    }
+    if (search) {
+      filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    }
+
+    const tbody = document.getElementById("allInvoicesBody");
+    const count = document.getElementById("allInvoicesCount");
+    if(!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-folder-open"></i> No invoices found</td></tr>`;
+      count.textContent = " (0)";
+      return;
+    }
+
+    count.textContent = ` (${filtered.length})`;
+    tbody.innerHTML = filtered.map((inv, idx) => `
+      <tr onclick="Dashboard.openDetail(${inv.rowIndex});" style="cursor:pointer;transition:all 0.2s ease">
+        <td style="color:var(--gray-500);font-size:0.85rem">${idx + 1}</td>
+        <td style="font-weight:600;color:var(--primary)">${inv["A13. Invoice Number"] || "—"}</td>
+        <td>${Utils.truncate(inv["A14. Vendor Name"], 25)}</td>
+        <td style="font-size:0.85rem;color:var(--gray-600)">${inv["Timestamp"] || "—"}</td>
+        <td style="text-align:right">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
+        <td style="text-align:right;font-size:0.85rem">${inv["B1. TDS Applicable"] === "Yes" ? Utils.formatCurrency(inv["B8. TDS Amount"]) : "N/A"}</td>
+        <td style="text-align:right;font-weight:600">${Utils.formatCurrency(inv["D1. Final Payable Amt"])}</td>
+        <td style="text-align:center">${inv["🚩 Red Flags"] ? '🚩' : '—'}</td>
+        <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
+      </tr>
+    `).join("");
+  },
+
+  async loadApprovalQueue() {
+    const tbody = document.getElementById("cfoQueueBody");
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+
+    const res = await API.cfo.getQueue();
+    if (!res?.success) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px">Failed to load.</td></tr>`;
+      return;
+    }
+
+    Dashboard.queueData = res.data.queue || [];
+    Dashboard.queueFiltered = [...Dashboard.queueData];
+    Dashboard.renderQueue();
+
+    const input = document.getElementById("cfoQueueSearch");
+    if (input && !input._bound) {
+      input._bound = true;
+      input.addEventListener("input", Utils.debounce(() => Dashboard.filterQueue(), 350));
+    }
+
+    document.querySelectorAll(".filter-tab-q").forEach(btn => {
+      if (!btn._bound) {
+        btn._bound = true;
+        btn.addEventListener("click", function() {
+          document.querySelectorAll(".filter-tab-q").forEach(b => b.classList.remove("active"));
+          this.classList.add("active");
+          Dashboard.filterQueue();
+        });
+      }
+    });
+  },
+
+  filterQueue() {
+    const status = document.querySelector(".filter-tab-q.active")?.dataset.status || "ALL";
+    const search = (document.getElementById("cfoQueueSearch")?.value || "").toLowerCase();
+    
+    let filtered = [...Dashboard.queueData];
+    if (status !== "ALL") {
+      filtered = filtered.filter(i => (i["Approval Status"]||"") === status);
+    }
+    if (search) {
+      filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    }
+    Dashboard.queueFiltered = filtered;
+    Dashboard.renderQueue();
+  },
+
+  renderQueue() {
+    const tbody = document.getElementById("cfoQueueBody");
+    const count = document.getElementById("cfoQueueCount");
+    const data = Dashboard.queueFiltered;
+
+    if(count) count.textContent = `(${data.length} items)`;
+    
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:40px"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Queue is empty</div></div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((item, i) => {
+      const status = item["Approval Status"] || "Pending";
+      const isPending = status === "Pending" || status === "";
+      const rowIdx = item.queueRowIndex;
+      return `<tr style="cursor:pointer; ${isPending ? '' : 'opacity:0.75'}" onclick="Dashboard.openDetail(${rowIdx})">
+        <td style="color:var(--gray-400);font-size:0.75rem">${i+1}</td>
+        <td><strong>${item["A13. Invoice Number"]||"—"}</strong></td>
+        <td>${Utils.truncate(item["A14. Vendor Name"], 18)}</td>
+        <td>${Utils.formatCurrency(item["A20. Basic Amount"])}</td>
+        <td>${item["B1. TDS Applicable"]==="Yes" ? Utils.formatCurrency(item["B8. TDS Amount"]) : "N/A"}</td>
+        <td><strong>${Utils.formatCurrency(item["D1. Final Payable Amt"])}</strong></td>
+        <td>${item["🚩 Red Flags"] ? "🚩" : "—"}</td>
+        <td>${isPending ? '<span style="background:#fff3e0;color:#f9a825;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600">Pending</span>' : status}</td>
+        <td onclick="event.stopPropagation()">${isPending ? `<div style="display:flex;gap:6px">
+          <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600" 
+            onclick="Dashboard.openApproveModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
+          <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600"
+            onclick="Dashboard.openRejectModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
+        </div>` : ""}</td>
+      </tr>`;
+    }).join("");
+  },
+
+  // 🔥 DETAIL MODAL LOGIC (READ ONLY)
+  openDetail(rowIndex) {
+    if (!rowIndex) return;
+
+    let inv = Dashboard.queueData.find(b => b.rowIndex === rowIndex || b.queueRowIndex === rowIndex);
+    if (!inv) inv = Dashboard.allInvoicesData.find(b => b.rowIndex === rowIndex);
+    
+    if (!inv) {
+      Toast.error("Invoice details not found. Please refresh page.");
+      return;
+    }
+
+    Dashboard.currentRow = rowIndex;
+
+    document.getElementById("modalInvoiceNo").textContent = inv["A13. Invoice Number"] || "N/A";
+    document.getElementById("modalStatus").innerHTML = Utils.statusBadge(inv["Current_Stage"] || "N/A");
+
+    const trackingBox = document.getElementById("modalTrackingTimeline");
+    if(trackingBox) trackingBox.innerHTML = Dashboard.generateTrackingTimeline(inv);
+
+    const driveUrl = inv["Drive URL"];
+    const driveBtn = document.getElementById("driveLink");
+    if (driveUrl && driveUrl !== "N/A" && driveUrl !== "Upload Failed") {
+      driveBtn.href = driveUrl; driveBtn.style.display = "inline-flex";
+    } else { driveBtn.style.display = "none"; }
+
+    // SHOW APPROVE/REJECT BUTTONS ONLY IF AT CFO OR ACCOUNT (for bypass)
+    const isPending = inv["Current_Stage"] === "CFO" || inv["Current_Stage"] === "Account";
+    document.getElementById("modalApproveBtn").style.display = isPending ? "inline-flex" : "none";
+    document.getElementById("modalRejectBtn").style.display  = isPending ? "inline-flex" : "none";
+
+    Dashboard.buildAttachmentTab(inv); 
+    Dashboard.buildAccountingTab(inv); 
+    Dashboard.buildTdsTab(inv);
+    Dashboard.buildGstTab(inv); 
+    Dashboard.buildProcessTab(inv); 
+    Dashboard.buildFlagsTab(inv);
+
+    document.querySelectorAll(".detail-tab").forEach((t, i) => t.classList.toggle("active", i === 0));
+    document.querySelectorAll(".detail-tab-content").forEach((c, i) => c.classList.toggle("active", i === 0));
+    document.getElementById("detailModal").classList.add("active");
+  },
+
+  closeDetailModal() {
+    document.getElementById("detailModal").classList.remove("active");
+    Dashboard.currentRow = null; 
+  },
+
+  openApproveFromModal() {
+    const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
+    const rowToApprove = Dashboard.currentRow; // 🔥 FIX: Capture row BEFORE closing modal
+    Dashboard.closeDetailModal();
+    Dashboard.openApproveModal(rowToApprove, invoiceNo);
+  },
+
+  openRejectFromModal() {
+    const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
+    const rowToReject = Dashboard.currentRow; // 🔥 FIX: Capture row BEFORE closing modal
+    Dashboard.closeDetailModal();
+    Dashboard.openRejectModal(rowToReject, invoiceNo);
+  },
+
+  buildAttachmentTab(inv) {
+    const driveUrl = inv["Drive URL"];
+    const attachmentName = inv["Attachment Name"] || "Invoice File";
+    let html = `<div style="padding:20px">`;
+    if (driveUrl && driveUrl !== "N/A" && driveUrl !== "Upload Failed") {
+      const isImage = attachmentName.toLowerCase().endsWith(".jpg") || attachmentName.toLowerCase().endsWith(".jpeg") || attachmentName.toLowerCase().endsWith(".png");
+      html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div><div style="font-weight:600;font-size:0.95rem">📎 ${attachmentName}</div><div style="font-size:0.75rem;color:var(--gray-500);margin-top:4px">Click button to open full size</div></div>
+          <a href="${driveUrl}" target="_blank" class="btn btn-primary btn-sm"><i class="fa fa-external-link"></i> Open Full Size</a>
+        </div>
+        <div style="border:2px solid var(--gray-200);border-radius:12px;overflow:hidden;background:#f8f9fa;min-height:320px;display:flex;align-items:center;justify-content:center">
+          ${isImage ? `<img src="${driveUrl}" alt="Invoice" style="max-width:100%;max-height:500px;object-fit:contain"/>` : `<div style="text-align:center;padding:48px 24px"><div style="font-size:5rem;margin-bottom:16px">📄</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px">${attachmentName}</div><div style="color:var(--gray-500);font-size:0.85rem;margin-bottom:20px">PDF preview not available here</div><a href="${driveUrl}" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> View Invoice PDF</a></div>`}
+        </div>`;
+    } else {
+      html += `<div style="background:#f8f9fa;border:1px solid var(--gray-200);border-radius:12px;padding:48px 24px;text-align:center"><div style="font-size:4rem;margin-bottom:16px">📎</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px;color:var(--gray-700)">No Attachment</div></div>`;
+    }
+    html += `</div>`;
+    document.getElementById("tab-attachment").innerHTML = html;
+  },
+
+  buildAccountingTab(inv) {
+    document.getElementById("tab-accounting").innerHTML = `<div class="section-header">📊 Accounting Checks</div><div class="detail-grid">
+        ${Dashboard.field("A1. Billed To", inv["A1. Billed To"])}
+        ${Dashboard.field("A2. Our Name Correct", inv["A2. Our Name Correct"])}
+        ${Dashboard.field("A3. Address Present", inv["A3. Address Present"])}
+        ${Dashboard.field("A4. Our Address", inv["A4. Our Address"])}
+        ${Dashboard.field("A5. Address Correct", inv["A5. Address Correct"])}
+        ${Dashboard.field("A6. PAN Present", inv["A6. PAN Present"])}
+        ${Dashboard.field("A7. Our PAN", inv["A7. Our PAN"])}
+        ${Dashboard.field("A8. PAN Correct", inv["A8. PAN Correct"])}
+        ${Dashboard.field("A9. GST Present", inv["A9. GST Present"])}
+        ${Dashboard.field("A10. Our GST No", inv["A10. Our GST"])}
+        ${Dashboard.field("A11. GST Correct", inv["A11. GST Correct"])}
+        ${Dashboard.field("A12. Invoice Date", inv["A12. Invoice Date"])}
+        ${Dashboard.field("A13. Invoice Number", inv["A13. Invoice Number"])}
+        ${Dashboard.field("A14. Vendor Name", inv["A14. Vendor Name"])}
+        ${Dashboard.field("A15. Vendor Address", inv["A15. Vendor Address"])}
+        ${Dashboard.field("A16. Bill Description", inv["A16. Bill Description"])}
+        ${Dashboard.field("A17. Notes", inv["A17. Notes"])}
+        ${Dashboard.field("A18. Rev / Capital", inv["A18. Rev/Capital"])}
+        ${Dashboard.field("A19. Ledger Name", inv["A19. Ledger Name"])}
+        ${Dashboard.field("A20. Basic Amount", Utils.formatCurrency(inv["A20. Basic Amount"]))}
+        ${Dashboard.field("A21. Invoice Type", inv["A21. Invoice Type"])}
+        ${Dashboard.field("A22. Final Invoice By", inv["A22. Final Invoice By"])}
+      </div>`;
+  },
+
+  buildTdsTab(inv) {
+    document.getElementById("tab-tds").innerHTML = `<div class="section-header">💰 TDS Checks</div><div class="detail-grid">
+        ${Dashboard.field("B1. TDS Applicable", inv["B1. TDS Applicable"])}
+        ${Dashboard.field("B2. Vendor PAN Avail", inv["B2. Vendor PAN Avail"])}
+        ${Dashboard.field("B3. Vendor PAN", inv["B3. Vendor PAN"])}
+        ${Dashboard.field("B4. PAN Inoperative", inv["B4. PAN Inoperative"])}
+        ${Dashboard.field("B5. Entity Type", inv["B5. Vendor Entity Type"])}
+        ${Dashboard.field("B6. TDS Section", inv["B6. TDS Section"])}
+        ${Dashboard.field("B7. TDS Rate", inv["B7. TDS Rate"])}
+        ${Dashboard.field("B8. TDS Amount", Utils.formatCurrency(inv["B8. TDS Amount"]))}
+      </div>`;
+  },
+
+  buildGstTab(inv) {
+    document.getElementById("tab-gst").innerHTML = `<div class="section-header">🧾 GST Checks</div><div class="detail-grid">
+        ${Dashboard.field("C1. GST Charged", inv["C1. GST Charged"])}
+        ${Dashboard.field("C2. Vendor GST Avail", inv["C2. Vendor GST Avail"])}
+        ${Dashboard.field("C3. Vendor GST No", inv["C3. Vendor GST No"])}
+        ${Dashboard.field("C4. Taxpayer Type", inv["C4. Taxpayer Type"])}
+        ${Dashboard.field("C5. Comp GST Wrong", inv["C5. Comp GST Wrong"])}
+        ${Dashboard.field("C6. GST Returns Filed", inv["C6. GST Returns Filed"])}
+        ${Dashboard.field("C7. Our GST Correct", inv["C7. Our GST Correct"])}
+        ${Dashboard.field("C8. Place of Supply", inv["C8. Place of Supply"])}
+      </div>`;
+  },
+
+  buildProcessTab(inv) {
+    document.getElementById("tab-process").innerHTML = `<div class="section-header">⚙️ Process Checks</div><div class="detail-grid">
+        ${Dashboard.field("D1. Final Payable", Utils.formatCurrency(inv["D1. Final Payable Amt"]))}
+        ${Dashboard.field("D2. Invoice By", inv["D2. Invoice By"])}
+        ${Dashboard.field("D3. Received Via", inv["D3. Received Via"])}
+        ${Dashboard.field("D4. HOD Name", inv["D4. HOD Name"])}
+        ${Dashboard.field("D5. HOD Approval", inv["D5. HOD Approval"])}
+        ${Dashboard.field("D11. Narration", inv["D11. Narration"])}
+      </div>`;
+  },
+
+  buildFlagsTab(inv) {
+    const flags  = inv["🚩 Red Flags"] || "";
+    const status = inv["Current_Stage"] || "N/A";
+    document.getElementById("tab-flags").innerHTML = `
+      <div class="section-header">🚩 Red Flags & Overall Status</div>
+      <div style="padding:20px">
+        <div style="margin-bottom:20px;padding:16px;background:var(--gray-50);border-radius:10px;border:1px solid var(--gray-200)">
+          <label style="font-size:0.72rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Current Stage</label>
+          <div style="font-size:1.2rem">${Utils.statusBadge(status)}</div>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px">Red Flags Detected</label>
+          ${flags && flags.trim() !== "" ? Utils.buildRedFlags(flags) : `<div class="empty-state" style="padding:24px"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div>`}
+        </div>
+      </div>`;
+  },
+
+  field(label, value) {
+    const display = (value !== undefined && value !== null && value !== "") ? value : "—";
+    // Pure Read-Only
+    return `<div class="detail-item"><label>${label}</label><p style="margin:0;font-size:0.875rem">${display}</p></div>`;
+  },
+
+  // 🔥 APPROVE / REJECT MODALS & LOGIC 🔥
+  openApproveModal(rowIdx, invoiceNo) {
+    Dashboard.pendingApproveRow = rowIdx;
+    Dashboard.pendingApproveInvoiceNo = invoiceNo;
+    document.getElementById("approveModalInvoiceNo").textContent = invoiceNo ? `— ${invoiceNo}` : "";
+    document.getElementById("approveNote").value = "Approved by CFO";
+    document.getElementById("bypassAccountCheckbox").checked = false;
+    document.getElementById("selectAdminDropdown").value = "";
+    document.getElementById("adminSelectError").style.display = "none";
+    Dashboard.loadAdminsForDropdown();
+    document.getElementById("approveModal").classList.add("active");
+    setTimeout(() => document.getElementById("approveNote").focus(), 150);
+  },
+
+  async loadAdminsForDropdown() {
+    const res = await API.users.getByRole("Admin");
+    const dropdown = document.getElementById("selectAdminDropdown");
+    if (!res?.success || !res.data || res.data.length === 0) {
+      dropdown.innerHTML = `<option value="">No Admins available</option>`; return;
+    }
+    dropdown.innerHTML = `<option value="">-- Select Admin --</option>`;
+    const admins = res.data.users ? res.data.users : res.data;
+    admins.forEach(admin => {
+      const option = document.createElement("option");
+      option.value = admin.email; option.textContent = `${admin.name} (${admin.email})`;
+      dropdown.appendChild(option);
+    });
+  },
+
+  closeApproveModal() { document.getElementById("approveModal").classList.remove("active"); Dashboard.pendingApproveRow = null; },
+
+  async confirmApprove() {
+    const bypass = document.getElementById("bypassAccountCheckbox").checked;
+    const selectedAdmin = document.getElementById("selectAdminDropdown").value;
+    const note = document.getElementById("approveNote").value.trim() || "Approved by CFO";
+    const btn = document.getElementById("confirmApproveBtn");
+    const errorDiv = document.getElementById("adminSelectError");
+    
+    if (!selectedAdmin) { errorDiv.style.display = "block"; document.getElementById("selectAdminDropdown").focus(); return; }
+    errorDiv.style.display = "none";
+    
+    btn.disabled = true; btn.innerHTML = "Approving...";
+    Loader.show("Approving invoice...");
+    const res = await API.cfo.approveBill(Dashboard.pendingApproveRow, note, bypass, selectedAdmin);
+    Loader.hide();
+    
+    btn.disabled = false; btn.innerHTML = '<i class="fa fa-circle-check"></i> Confirm Approval';
+    if (res?.success) {
+      Dashboard.closeApproveModal();
+      Toast.success(bypass ? `✅ Approved! Sent to ${selectedAdmin} (Account bypassed ⚡)` : `✅ Approved! Sent to ${selectedAdmin}`);
+      await Dashboard.loadApprovalQueue();
+      await Dashboard.loadDashboardData();
+    } else { Toast.error(res?.message || "Failed to approve"); }
+  },
+
+  openRejectModal(rowIdx, invoiceNo) {
+    Dashboard.pendingRejectRow = rowIdx;
+    Dashboard.pendingRejectInvoiceNo = invoiceNo;
+    document.getElementById("rejectModalInvoiceNo").textContent = invoiceNo ? `— ${invoiceNo}` : "";
+    document.getElementById("rejectReason").value = "";
+    document.getElementById("rejectReasonError").style.display = "none";
+    document.getElementById("rejectModal").classList.add("active");
+    setTimeout(() => document.getElementById("rejectReason").focus(), 150);
+  },
+
+  closeRejectModal() { document.getElementById("rejectModal").classList.remove("active"); Dashboard.pendingRejectRow = null; },
+
+  async confirmReject() {
+    const reason = document.getElementById("rejectReason").value.trim();
+    const errorDiv = document.getElementById("rejectReasonError");
+    if (!reason) { errorDiv.style.display = "block"; return; }
+    errorDiv.style.display = "none";
+    
+    const btn = document.getElementById("confirmRejectBtn");
+    btn.disabled = true; Loader.show("Rejecting invoice...");
+    const res = await API.cfo.rejectBill(Dashboard.pendingRejectRow, reason);
+    Loader.hide();
+    
+    btn.disabled = false;
+    if (res?.success) {
+      Dashboard.closeRejectModal();
+      Toast.success("❌ Invoice rejected");
+      await Dashboard.loadApprovalQueue();
+      await Dashboard.loadDashboardData();
+    } else { Toast.error(res?.message || "Failed to reject"); }
+  },
+
+  loadProfile() {
+    const user  = Auth.getUser(); const color = Utils.getRoleColor(user?.role||"");
+    document.getElementById("profileBody").innerHTML = `
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="width:72px;height:72px;border-radius:50%;background:${color};display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin-bottom:12px">${Utils.getInitials(user?.name||"")}</div>
+        <div style="font-size:1.1rem;font-weight:700">${user?.name||""}</div>
+        <div style="margin-top:6px">${Utils.roleBadge(user?.role||"")}</div>
+      </div>
+      <div class="detail-grid" style="grid-template-columns:1fr">
+        <div class="detail-item"><label>Email</label><p>${user?.email||"—"}</p></div>
+        <div class="detail-item"><label>Role</label><p>${user?.role||"—"}</p></div>
+      </div>`;
+  },
+
+  async changePassword() {
+    const o = document.getElementById("oldPassword").value; const n = document.getElementById("newPassword").value; const c = document.getElementById("confirmPassword").value;
+    if (!o||!n||!c) { Toast.warning("Fill all fields"); return; }
+    if (n!==c)      { Toast.error("Passwords don't match"); return; }
+    if (n.length<6) { Toast.error("Min 6 characters"); return; }
+    Loader.show("Updating...");
+    const res = await API.auth.changePassword(o,n);
+    Loader.hide();
+    res?.success ? Toast.success("Password updated!") : Toast.error(res?.message||"Failed");
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => Dashboard.init());
+</script>
+</body>
+</html>
