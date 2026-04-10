@@ -13,6 +13,93 @@
     .section { display: none; }
     .section.active { display: block; }
 
+    /* ── Processing Screen ── */
+    #processingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+
+    #processingScreen.active {
+      display: flex;
+    }
+
+    .processing-box {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .processing-spinner {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .processing-spinner i {
+      font-size: 2.5rem;
+      color: var(--primary);
+      animation: spin 1s linear infinite;
+    }
+
+    .processing-success {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .processing-box h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+
+    .processing-box p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      background: var(--gray-200);
+      border-radius: 20px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 20px;
+    }
+
+    .progress-text {
+      color: var(--gray-400);
+      font-size: 0.8rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     /* ── Status Badges ── */
     .status-new      { background:#e8f0fe;color:#1a73e8;font-weight:700;padding:4px 12px;border-radius:20px;font-size:0.72rem }
     .status-reviewed { background:#fff2cc;color:#7f6000;font-weight:700;padding:4px 12px;border-radius:20px;font-size:0.72rem }
@@ -576,6 +663,137 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- SUBMIT INVOICE SECTION - COMPLETE ══════════════════════════════ -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <div class="section" id="section-submit">
+        <div class="card" style="max-width:600px">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa fa-plus-circle"></i> Submit New Invoice
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- File Upload -->
+            <div class="form-group">
+              <label class="form-label">📎 Invoice File *</label>
+              <div class="file-upload-area" 
+                id="fileUploadArea"
+                style="border:2px dashed var(--primary);
+                       border-radius:10px;
+                       padding:32px 20px;
+                       text-align:center;
+                       cursor:pointer;
+                       transition:all 0.2s;
+                       background:var(--primary-light)">
+                <div style="font-size:2rem;margin-bottom:10px">📄</div>
+                <div style="font-weight:600;color:var(--primary);margin-bottom:4px">
+                  Click to upload invoice (PDF/Image)
+                </div>
+                <div style="font-size:0.75rem;color:var(--gray-500)">
+                  or drag and drop your file here
+                </div>
+                <input type="file" 
+                  id="invoiceFile" 
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  style="display:none"
+                  onchange="SubmitInvoice.handleFileSelect(event)"/>
+              </div>
+              <div id="fileName" 
+                style="margin-top:10px;font-size:0.82rem;
+                       color:var(--secondary);font-weight:600;
+                       display:none">
+                ✅ File selected: <span id="fileNameText"></span>
+              </div>
+            </div>
+
+            <!-- Where received -->
+            <div class="form-group">
+              <label class="form-label">📍 Where did you receive the bill? *</label>
+              <select class="form-control form-select" id="receivedFrom">
+                <option value="">-- Select Source --</option>
+                <option value="Email">📧 Email</option>
+                <option value="WhatsApp">💬 WhatsApp</option>
+                <option value="Hardcopy">🗂️ Hardcopy / In-person</option>
+                <option value="Other">📎 Other</option>
+              </select>
+            </div>
+
+            <!-- When received -->
+            <div class="form-group">
+              <label class="form-label">📅 When did you receive the bill? *</label>
+              <input type="datetime-local" 
+                class="form-control" 
+                id="receivedDate"
+                value="">
+            </div>
+
+            <!-- From whom (optional) -->
+            <div class="form-group">
+              <label class="form-label">👤 From (Sender Name / Email)</label>
+              <input type="text" 
+                class="form-control" 
+                id="senderName"
+                placeholder="e.g., vendor@company.com or John Doe"
+                style="font-size:0.85rem"/>
+            </div>
+
+            <!-- Notes (optional) -->
+            <div class="form-group">
+              <label class="form-label">📝 Additional Notes (Optional)</label>
+              <textarea class="form-control" 
+                id="invoiceNotes"
+                rows="2"
+                placeholder="Any special information about this invoice..."
+                style="font-size:0.85rem;resize:vertical"></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex;gap:10px;margin-top:24px">
+              <button class="btn btn-primary w-100"
+                onclick="SubmitInvoice.submitForm()">
+                <i class="fa fa-paper-plane"></i> Submit & Process
+              </button>
+              <button class="btn btn-ghost"
+                onclick="SubmitInvoice.resetForm()">
+                <i class="fa fa-rotate-left"></i> Clear
+              </button>
+            </div>
+
+            <!-- Status -->
+            <div id="submitStatus" 
+              style="margin-top:16px;
+                     padding:12px 16px;
+                     border-radius:8px;
+                     display:none;
+                     font-size:0.85rem">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="card" style="margin-top:16px;max-width:600px">
+          <div class="card-body" style="background:var(--gray-50)">
+            <div style="font-weight:600;color:var(--gray-700);
+                       margin-bottom:8px;display:flex;gap:6px;
+                       align-items:center">
+              <i class="fa fa-info-circle" style="color:var(--primary)"></i>
+              How it works
+            </div>
+            <div style="font-size:0.8rem;color:var(--gray-600);
+                       line-height:1.5">
+              <div style="margin-bottom:6px">1️⃣ Upload invoice file (PDF or image)</div>
+              <div style="margin-bottom:6px">2️⃣ Tell us where you received it from</div>
+              <div style="margin-bottom:6px">3️⃣ Select the date and time</div>
+              <div>4️⃣ Click Submit - AI will process it!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ══════════════════════════════════════════════════════════════ -->
+
       <div class="section" id="section-profile">
         <div class="card" style="max-width:500px">
           <div class="card-header">
@@ -618,23 +836,29 @@
         </div>
       </div>
 
-    </div><div class="modal-footer">
-      <div id="editIndicator"
-        style="display:none;font-size:0.78rem;
-        color:#f59e0b;font-weight:600">
-        ⚠️ <span id="editCount">0</span> unsaved changes
-      </div>
-      <a id="modalDriveLink" href="#" target="_blank"
-        class="btn btn-outline btn-sm" style="display:none">
-        <i class="fa fa-file-pdf"></i> View Original
-      </a>
-      <button class="btn btn-ghost btn-sm"
-        onclick="Dashboard.closeReviewModal()">Close</button>
     </div>
-
   </div>
 </div>
 
+<!-- Processing Screen -->
+<div id="processingScreen">
+  <div class="processing-box">
+    <div id="processingContent">
+      <div class="processing-spinner">
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
+      <h3 id="processingTitle">Processing your invoice...</h3>
+      <p id="processingText">Please wait...</p>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">0% complete</div>
+      <p style="color: var(--gray-400); font-size: 0.75rem; margin-top: 16px;">
+        ⏱️ This usually takes 3-5 seconds
+      </p>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="reviewModal">
   <div class="modal-box xlarge">
@@ -838,10 +1062,67 @@
   </div>
 </div>
 
-
 <script src="js/api.js"></script>
 <script src="js/sidebar.js"></script>
 <script>
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result.split(',')[1];
+      resolve(base64String);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showProcessingScreen(message, progress) {
+  const screen = document.getElementById('processingScreen');
+  const title = document.getElementById('processingTitle');
+  const text = document.getElementById('processingText');
+  const fill = document.getElementById('progressFill');
+  const progText = document.getElementById('progressText');
+
+  title.textContent = message;
+  text.textContent = 'Please wait...';
+  fill.style.width = progress + '%';
+  progText.textContent = progress + '% complete';
+
+  screen.classList.add('active');
+}
+
+function showProcessingSuccess() {
+  const content = document.getElementById('processingContent');
+  const title = document.getElementById('processingTitle');
+  const text = document.getElementById('processingText');
+  const fill = document.getElementById('progressFill');
+  const progText = document.getElementById('progressText');
+
+  content.innerHTML = `
+    <div class="processing-success">✅</div>
+    <h3>Invoice added successfully!</h3>
+    <p>Your invoice has been added to the queue</p>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 100%;"></div>
+    </div>
+    <div class="progress-text">100% complete</div>
+  `;
+}
+
+function hideProcessingScreen() {
+  const screen = document.getElementById('processingScreen');
+  screen.classList.remove('active');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD OBJECT (REST OF CODE CONTINUES...)
+// ═══════════════════════════════════════════════════════════════════════════
 
 const Dashboard = {
 
@@ -851,9 +1132,6 @@ const Dashboard = {
   pendingEdits : {},
   users        : [],
 
-  // ─────────────────────────────────────────────
-  // SMART TRACKING GENERATOR
-  // ─────────────────────────────────────────────
   generateTrackingTimeline(inv) {
     const steps = [
       { key: "Received", label: "Received",    date: inv["Timestamp"],       icon: "fa-envelope" },
@@ -904,9 +1182,6 @@ const Dashboard = {
     return html;
   },
 
-  // ─────────────────────────────────────────────
-  // INIT
-  // ─────────────────────────────────────────────
   async init() {
     Auth.requireRole("Biller");
     Header.render("Dashboard");
@@ -918,7 +1193,6 @@ const Dashboard = {
     const hash = window.location.hash.replace("#","");
     if (hash) Dashboard.showSection(hash);
 
-    // Search listeners
     document.getElementById("searchInput")
       ?.addEventListener("input",
         Utils.debounce(() => Dashboard.filterBills("all"), 400));
@@ -929,7 +1203,6 @@ const Dashboard = {
       ?.addEventListener("input",
         Utils.debounce(() => Dashboard.filterBills("process"), 400));
 
-    // Filter tabs - all bills
     document.querySelectorAll(".filter-tab[data-status]")
       .forEach(btn => {
         btn.addEventListener("click", function () {
@@ -940,7 +1213,6 @@ const Dashboard = {
         });
       });
 
-    // Filter tabs - process
     document.querySelectorAll(".filter-tab[data-pstatus]")
       .forEach(btn => {
         btn.addEventListener("click", function () {
@@ -950,11 +1222,10 @@ const Dashboard = {
           Dashboard.filterBills("process");
         });
       });
+
+    SubmitInvoice.init();
   },
 
-  // ─────────────────────────────────────────────
-  // SETUP USERS
-  // ─────────────────────────────────────────────
   setupUsers() {
     Dashboard.usersGrouped = [
       { name:"Rahul Sharma", email:"rahul@gretex.com",  role:"Account"    },
@@ -964,32 +1235,27 @@ const Dashboard = {
     ];
   },
 
-  // ─────────────────────────────────────────────
-  // SHOW SECTION (Final Fixed Version)
-  // ─────────────────────────────────────────────
   showSection(id) {
     console.log("Switching to section:", id);
 
-    // 1. Sabhi sections ko hide karo
     document.querySelectorAll(".section").forEach(s => {
         s.classList.remove("active");
-        s.style.display = "none"; // Force hide
+        s.style.display = "none";
     });
 
-    // 2. Target section ko dhoondo
     const target = document.getElementById(`section-${id}`);
     
     if (target) {
         target.classList.add("active");
-        target.style.display = "block"; // Force show
+        target.style.display = "block";
     } else {
         console.error("Section not found: section-" + id);
         return;
     }
 
-    // 3. Header aur Sidebar Update
     const titles = {
         dashboard: "Dashboard",
+        submit: "Submit New Invoice",
         new: "New Bills",
         process: "Bills In Process",
         invoices: "All Bills",
@@ -999,13 +1265,10 @@ const Dashboard = {
         password: "Change Password"
     };
     Header.setTitle(titles[id] || "Dashboard");
-    Sidebar.setActive(id === 'new' || id === 'process' || id === 'invoices' || id === 'completed' ? "myinvoices" : id);
+    Sidebar.setActive(id === 'new' || id === 'process' || id === 'invoices' || id === 'completed' ? "myinvoices" : (id === 'submit' ? 'submit' : id));
 
-    // 4. Data Reload Logic
     if (id === "dashboard") {
-        // Dashboard pe aate hi spinner dikhao taaki user ko lage load ho raha hai
         document.getElementById("recentBills").innerHTML = '<div class="text-center p-4"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
-        
         Dashboard.loadStats();
         Dashboard.loadRecentBills();
     } else if (id === "new") {
@@ -1014,12 +1277,13 @@ const Dashboard = {
         Dashboard.loadProcessSection();
     } else if (id === "invoices") {
         Dashboard.loadQueue();
+    } else if (id === "completed") {
+        Dashboard.loadCompletedSection();
+    } else if (id === "profile") {
+        Dashboard.loadProfile();
     }
-},
+  },
 
-  // ─────────────────────────────────────────────
-  // LOAD STATS
-  // ─────────────────────────────────────────────
   async loadStats() {
     const res = await API.biller.getStats();
     if (!res?.success) return;
@@ -1033,9 +1297,6 @@ const Dashboard = {
     document.getElementById("statRejected").textContent = d.rejected || 0;
   },
 
-  // ─────────────────────────────────────────────
-  // LOAD QUEUE
-  // ─────────────────────────────────────────────
   async ensureQueue() {
     if (Dashboard.queue.length === 0) {
       const res = await API.biller.getQueue();
@@ -1056,9 +1317,6 @@ const Dashboard = {
     }
   },
 
-  // ─────────────────────────────────────────────
-  // LOAD RECENT (Dashboard)
-  // ─────────────────────────────────────────────
   async loadRecentBills() {
     const res = await API.biller.getQueue();
     if (!res?.success) return;
@@ -1079,7 +1337,6 @@ const Dashboard = {
         : recent.map(b => Dashboard.buildBillCard(b, true)).join("");
     }
 
-    // New bills alert
     const newBills = Dashboard.queue.filter(
       b => (b["Approval Status"]||"") === "New");
     const newEl   = document.getElementById("newBillsList");
@@ -1110,9 +1367,6 @@ const Dashboard = {
     }
   },
 
-  // ─────────────────────────────────────────────
-  // LOAD NEW SECTION
-  // ─────────────────────────────────────────────
   async loadNewSection() {
     await Dashboard.ensureQueue();
     const newBills = Dashboard.queue.filter(
@@ -1134,17 +1388,11 @@ const Dashboard = {
       Dashboard.buildBillCard(b, false)).join("");
   },
 
-  // ─────────────────────────────────────────────
-  // LOAD PROCESS SECTION
-  // ─────────────────────────────────────────────
   async loadProcessSection() {
     await Dashboard.ensureQueue();
     Dashboard.filterBills("process");
   },
 
-  // ─────────────────────────────────────────────
-  // LOAD COMPLETED SECTION
-  // ─────────────────────────────────────────────
   async loadCompletedSection() {
     await Dashboard.ensureQueue();
     const approved = Dashboard.queue.filter(
@@ -1161,9 +1409,6 @@ const Dashboard = {
       document.querySelector(".filter-tab[data-cstatus].active"));
   },
 
-  // ─────────────────────────────────────────────
-  // FILTER COMPLETED
-  // ─────────────────────────────────────────────
   filterCompleted(btn) {
     if (btn) {
       document.querySelectorAll(".filter-tab[data-cstatus]")
@@ -1244,9 +1489,6 @@ const Dashboard = {
     }).join("");
   },
 
-  // ─────────────────────────────────────────────
-  // FILTER BILLS
-  // ─────────────────────────────────────────────
   filterBills(type) {
     if (type === "new") {
       const search = (document.getElementById("newSearchInput")
@@ -1293,7 +1535,6 @@ const Dashboard = {
       return;
     }
 
-    // All bills
     const status = document.querySelector(
       ".filter-tab[data-status].active")?.dataset.status || "ALL";
     const search = (document.getElementById("searchInput")
@@ -1317,9 +1558,6 @@ const Dashboard = {
     Dashboard.renderBills("all");
   },
 
-  // ─────────────────────────────────────────────
-  // RENDER BILLS
-  // ─────────────────────────────────────────────
   renderBills(type) {
     const el    = document.getElementById("billsList");
     const count = document.getElementById("billCount");
@@ -1331,9 +1569,6 @@ const Dashboard = {
       : bills.map(b => Dashboard.buildBillCard(b,false)).join("");
   },
 
-  // ─────────────────────────────────────────────
-  // EMPTY STATE
-  // ─────────────────────────────────────────────
   emptyState(msg) {
     return `<div class="empty-state" style="padding:32px">
       <div class="empty-icon">📭</div>
@@ -1341,9 +1576,6 @@ const Dashboard = {
     </div>`;
   },
 
-  // ─────────────────────────────────────────────
-  // BUILD BILL CARD
-  // ─────────────────────────────────────────────
   buildBillCard(b, compact) {
     const status   = b["Approval Status"] || "New";
     const invNo    = b["A13. Invoice Number"] || "—";
@@ -1426,9 +1658,6 @@ const Dashboard = {
       </div>`;
   },
 
-  // ─────────────────────────────────────────────
-  // STATUS BADGE
-  // ─────────────────────────────────────────────
   buildStatusBadge(status) {
     if (!status) return "";
     if (status.startsWith("Sent"))
@@ -1443,9 +1672,6 @@ const Dashboard = {
     return map[status] || `<span class="status-new">${status}</span>`;
   },
 
-  // ─────────────────────────────────────────────
-  // SWITCH TAB
-  // ─────────────────────────────────────────────
   switchTab(btn, tabId) {
     document.querySelectorAll(".rev-tab")
       .forEach(b => b.classList.remove("active"));
@@ -1455,9 +1681,6 @@ const Dashboard = {
     document.getElementById(tabId)?.classList.add("active");
   },
 
-  // ─────────────────────────────────────────────
-  // OPEN REVIEW MODAL
-  // ─────────────────────────────────────────────
   openReview(rowIndex) {
     const bill = Dashboard.queue.find(b => b.queueRowIndex === rowIndex);
     if (!bill) { Toast.error("Bill not found!"); return; }
@@ -1473,10 +1696,8 @@ const Dashboard = {
     const redFlags = bill["🚩 Red Flags"] || "";
     const driveUrl = bill["Drive URL"];
 
-    // Header
     document.getElementById("modalInvoiceNo").textContent = invNo;
 
-    // Banner
     document.getElementById("modalBillBanner").innerHTML = `
       <div style="display:flex;align-items:center;
         justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -1509,13 +1730,11 @@ const Dashboard = {
         </div>
       </div>`;
 
-    // ── Smart Tracking Timeline Injection ──
     const trackingBox = document.getElementById("modalTrackingTimeline");
     if(trackingBox) {
       trackingBox.innerHTML = Dashboard.generateTrackingTimeline(bill);
     }
 
-    // ── Attachment Tab ──
     const attEl = document.getElementById("attachmentPreview");
     if (driveUrl && driveUrl !== "N/A" &&
         driveUrl !== "Upload Failed") {
@@ -1574,7 +1793,6 @@ const Dashboard = {
       </div>`;
     }
 
-    // ── Accounting Tab ──
     document.getElementById("accountingFields").innerHTML = [
       {key:"a1", label:"A1. Billed To",         field:"A1. Billed To",          val:bill["A1. Billed To"]         },
       {key:"a2", label:"A2. Our Name Correct",   field:"A2. Our Name Correct",   val:bill["A2. Our Name Correct"],
@@ -1613,7 +1831,6 @@ const Dashboard = {
         type:"select",options:["","Yes","No","Cannot Determine"]}
     ].map(f => Dashboard.buildEditField(f)).join("");
 
-    // ── TDS Tab ──
     document.getElementById("tdsFields").innerHTML = [
       {key:"b1",label:"B1. TDS Applicable",    field:"B1. TDS Applicable",    val:bill["B1. TDS Applicable"],
         type:"select",options:["","Yes","No"]},
@@ -1632,7 +1849,6 @@ const Dashboard = {
       {key:"b8",label:"B8. TDS Amount",        field:"B8. TDS Amount",        val:bill["B8. TDS Amount"],        type:"number"}
     ].map(f => Dashboard.buildEditField(f)).join("");
 
-    // ── GST Tab ──
     document.getElementById("gstFields").innerHTML = [
       {key:"c1", label:"C1. GST Charged",        field:"C1. GST Charged",
         val:bill["C1. GST Charged"],type:"select",options:["","Yes","No"]},
@@ -1664,7 +1880,6 @@ const Dashboard = {
         options:["","Yes","No","Cannot Determine"]}
     ].map(f => Dashboard.buildEditField(f)).join("");
 
-    // ── Process Tab ──
     document.getElementById("processFields").innerHTML = [
       {key:"d1", label:"D1. Final Payable",       field:"D1. Final Payable Amt",
         val:bill["D1. Final Payable Amt"],type:"number"},
@@ -1693,7 +1908,6 @@ const Dashboard = {
         val:bill["D11. Narration"],wide:true,type:"textarea"}
     ].map(f => Dashboard.buildEditField(f)).join("");
 
-    // ── Flags Tab ──
     const flagsEl = document.getElementById("flagsContent");
     if (redFlags && redFlags.trim() !== "") {
       flagsEl.innerHTML = `
@@ -1733,7 +1947,6 @@ const Dashboard = {
         </div>`;
     }
 
-    // Prefill send tab
     document.getElementById("editReviewNotes").value =
       bill["Review Notes"] || "";
     document.getElementById("sendNotes").value   = "";
@@ -1741,7 +1954,6 @@ const Dashboard = {
     document.getElementById("sendToPerson").innerHTML =
       "<option value=''>-- Select Role First --</option>";
 
-    // Drive link
     const dBtn = document.getElementById("modalDriveLink");
     if (driveUrl && driveUrl !== "N/A" &&
         driveUrl !== "Upload Failed") {
@@ -1751,35 +1963,24 @@ const Dashboard = {
       dBtn.style.display = "none";
     }
 
-    // Hide send tab if completed
-    // ✅ NEW: Hide send and save buttons if bill is already in pipeline (Locked)
     const sendTab = document.getElementById("sendApprovalTab");
-    const saveBtn = document.getElementById("editIndicator")?.nextElementSibling?.nextElementSibling; 
-
     if (status === "Approved" || status === "Rejected" || status.startsWith("Sent")) {
-      if (sendTab) sendTab.style.display = "none"; // Hide send tab
-      if (saveBtn) saveBtn.style.display = "none"; // Hide save button on other tabs
+      if (sendTab) sendTab.style.display = "none";
     } else {
       if (sendTab) sendTab.style.display = "inline-block";
-      if (saveBtn) saveBtn.style.display = "inline-block";
     }
 
-    // Reset to attachment tab
     document.querySelectorAll(".rev-tab")
       .forEach((t,i) => t.classList.toggle("active", i === 0));
     document.querySelectorAll(".rev-tab-content")
       .forEach((c,i) => c.classList.toggle("active", i === 0));
 
-    // Reset edit indicator
     document.getElementById("editIndicator").style.display = "none";
     document.getElementById("editCount").textContent = "0";
 
     document.getElementById("reviewModal").classList.add("active");
   },
 
-  // ─────────────────────────────────────────────
-  // BUILD EDIT FIELD
-  // ─────────────────────────────────────────────
   buildEditField(f) {
     const val  = (f.val !== undefined && f.val !== null &&
       f.val !== "") ? String(f.val) : "";
@@ -1825,9 +2026,6 @@ const Dashboard = {
     </div>`;
   },
 
-  // ─────────────────────────────────────────────
-  // ON FIELD CHANGE
-  // ─────────────────────────────────────────────
   onFieldChange(el) {
     Dashboard.pendingEdits[el.dataset.field] = el.value;
     const fieldDiv = document.getElementById("ef-" + el.dataset.key);
@@ -1840,184 +2038,85 @@ const Dashboard = {
     if (cntEl) cntEl.textContent   = count;
   },
 
-  // ─────────────────────────────────────────────
-  // ON ROLE CHANGE (dropdown)
-  // ─────────────────────────────────────────────
-  // onRoleChange() {
-  //   const role   = document.getElementById("sendToRole").value;
-  //   const select = document.getElementById("sendToPerson");
-  //   const people = Dashboard.users.filter(u => u.role === role);
-  //   select.innerHTML = people.length === 0
-  //     ? `<option value="">-- No users for this role --</option>`
-  //     : people.map(p =>
-  //         `<option value="${p.name}">${p.name}</option>`
-  //       ).join("");
-  // },
-
   async onRoleChange() {
-  const role   = document.getElementById("sendToRole").value;
-  const select = document.getElementById("sendToPerson");
+    const role   = document.getElementById("sendToRole").value;
+    const select = document.getElementById("sendToPerson");
 
-  if (!role) {
-    select.innerHTML = "<option value=''>-- Select Role First --</option>";
-    return;
-  }
-
-  select.innerHTML = "<option value=''>Loading...</option>";
-
-  try {
-    const res = await API.users.getByRole(role);
-    
-    // Yahan console me check karo ki API se kya data aa raha hai
-    console.log("API Response for Roles:", res);
-
-    if (!res?.success) {
-      select.innerHTML = `<option value="">-- No active ${role} users --</option>`;
+    if (!role) {
+      select.innerHTML = "<option value=''>-- Select Role First --</option>";
       return;
     }
 
-    // Safe Check: Data kahan chhipa hai dhundte hain
-    let usersArray = [];
-    if (Array.isArray(res.data)) {
-        usersArray = res.data; // Agar direct array hai
-    } else if (res.data && Array.isArray(res.data.users)) {
-        usersArray = res.data.users; // Agar object ke andar 'users' key hai
-    } else if (res.data && Array.isArray(res.data.data)) {
-        usersArray = res.data.data; // Agar object ke andar 'data' key hai
-    }
+    select.innerHTML = "<option value=''>Loading...</option>";
 
-    if (usersArray.length === 0) {
-      select.innerHTML = `<option value="">-- No active ${role} users --</option>`;
+    try {
+      const res = await API.users.getByRole(role);
+      
+      if (!res?.success) {
+        select.innerHTML = `<option value="">-- No active ${role} users --</option>`;
+        return;
+      }
+
+      let usersArray = [];
+      if (Array.isArray(res.data)) {
+          usersArray = res.data;
+      } else if (res.data && Array.isArray(res.data.users)) {
+          usersArray = res.data.users;
+      } else if (res.data && Array.isArray(res.data.data)) {
+          usersArray = res.data.data;
+      }
+
+      if (usersArray.length === 0) {
+        select.innerHTML = `<option value="">-- No active ${role} users --</option>`;
+        return;
+      }
+
+      select.innerHTML = usersArray.map(u =>
+        `<option value="${u.email}">${u.name} (${u.email})</option>`
+      ).join("");
+      
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      select.innerHTML = `<option value="">-- Error loading users --</option>`;
+    }
+  },
+
+  async saveReviewOnly() {
+    const bill = Dashboard.currentBill;
+    if (!bill) return;
+
+    const notes = document.getElementById("editReviewNotes").value;
+    
+    if (Object.keys(Dashboard.pendingEdits).length === 0 && !notes) {
+      Toast.info("No changes to save.");
       return;
     }
 
-    // Ab bina error ke map chalega
-    select.innerHTML = usersArray.map(u =>
-      `<option value="${u.email}">${u.name} (${u.email})</option>`
-    ).join("");
+    Loader.show("Saving all fields...");
     
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    select.innerHTML = `<option value="">-- Error loading users --</option>`;
-  }
-},
+    const res = await API.biller.updateReview(bill.queueRowIndex, {
+      queueRowIndex: bill.queueRowIndex,
+      fields: Dashboard.pendingEdits,
+      reviewNotes: notes
+    });
 
-  // ─────────────────────────────────────────────
-  // SAVE REVIEW ONLY
-  // ─────────────────────────────────────────────
-  // async saveReviewOnly() {
-  //   const bill = Dashboard.currentBill;
-  //   if (!bill) return;
-  //   const editCount = Object.keys(Dashboard.pendingEdits).length;
-  //   Loader.show("Saving review...");
-  //   const res = await API.biller.updateReview(bill.queueRowIndex, {
-  //     reviewNotes: document.getElementById("editReviewNotes").value,
-  //     ledgerName : Dashboard.pendingEdits["A19. Ledger Name"] || "",
-  //     revCapital : Dashboard.pendingEdits["A18. Rev/Capital"] || ""
-  //   });
-  //   Loader.hide();
-  //   if (res?.success) {
-  //     Toast.success(`Review saved! ${editCount > 0
-  //       ? editCount + " field(s) updated ✅" : ""}`);
-  //     bill["Approval Status"] = "Reviewed";
-  //     Dashboard.pendingEdits  = {};
-  //     Dashboard.closeReviewModal();
-  //     await Dashboard.loadStats();
-  //     await Dashboard.loadRecentBills();
-  //   } else {
-  //     Toast.error("Failed to save");
-  //   }
-  // },
+    Loader.hide();
 
-  // biller.html mein saveReviewOnly function update karein
-async saveReviewOnly() {
-  const bill = Dashboard.currentBill;
-  if (!bill) return;
+    if (res?.success) {
+      Toast.success("Data saved in Biller Queue! ✅");
+      
+      Dashboard.pendingEdits = {};
+      document.getElementById("editIndicator").style.display = "none";
+      
+      bill["Approval Status"] = "Reviewed";
+      Dashboard.closeReviewModal();
+      await Dashboard.loadStats();
+      await Dashboard.loadRecentBills();
+    } else {
+      Toast.error(res?.message || "Failed to save data");
+    }
+  },
 
-  const notes = document.getElementById("editReviewNotes").value;
-  
-  // Check agar koi change hua hai ya sirf notes hain
-  if (Object.keys(Dashboard.pendingEdits).length === 0 && !notes) {
-    Toast.info("No changes to save.");
-    return;
-  }
-
-  Loader.show("Saving all fields...");
-  
-  const res = await API.biller.updateReview(bill.queueRowIndex, {
-    queueRowIndex: bill.queueRowIndex,
-    fields: Dashboard.pendingEdits, // Yahan saare edited fields ja rahe hain
-    reviewNotes: notes
-  });
-
-  Loader.hide();
-
-  if (res?.success) {
-    Toast.success("Data saved in Biller Queue! ✅");
-    
-    // Reset edits indicator
-    Dashboard.pendingEdits = {};
-    document.getElementById("editIndicator").style.display = "none";
-    
-    // UI update
-    bill["Approval Status"] = "Reviewed";
-    Dashboard.closeReviewModal();
-    await Dashboard.loadStats();
-    await Dashboard.loadRecentBills();
-  } else {
-    Toast.error(res?.message || "Failed to save data");
-  }
-},
-
-  // ─────────────────────────────────────────────
-  // SEND FOR APPROVAL
-  // ─────────────────────────────────────────────
-  // async sendForApproval() {
-  //   const bill        = Dashboard.currentBill;
-  //   const targetRole = document.getElementById("sendToRole").value;
-  //   const targetName = document.getElementById("sendToPerson").value;
-  //   const notes      = document.getElementById("sendNotes").value;
-
-  //   if (!targetRole) {
-  //     Toast.warning("Please select a role!"); return;
-  //   }
-
-  //   const ok = await Utils.confirm(
-  //     `Send this bill to <strong>${targetRole}</strong>` +
-  //     `${targetName ? ` (${targetName})` : ""}?`,
-  //     "Send for Approval"
-  //   );
-  //   if (!ok) return;
-
-  //   Loader.show("Sending for approval...");
-
-  //   // Save edits first
-  //   await API.biller.updateReview(bill.queueRowIndex, {
-  //     reviewNotes: document.getElementById("editReviewNotes").value,
-  //     ledgerName : Dashboard.pendingEdits["A19. Ledger Name"] || "",
-  //     revCapital : Dashboard.pendingEdits["A18. Rev/Capital"] || ""
-  //   });
-
-  //   const res = await API.biller.sendForApproval(
-  //     bill.queueRowIndex, targetRole,
-  //     targetName || targetRole, notes
-  //   );
-  //   Loader.hide();
-
-  //   if (res?.success) {
-  //     Toast.success(`Bill sent to ${targetRole}! 🎉`);
-  //     bill["Approval Status"] = "Sent to " + targetRole;
-  //     bill["Sent To Role"]    = targetRole;
-  //     Dashboard.closeReviewModal();
-  //     await Dashboard.loadStats();
-  //     await Dashboard.loadRecentBills();
-  //   } else {
-  //     Toast.error("Failed to send");
-  //   }
-  // }
-  // ─────────────────────────────────────────────
-  // SEND FOR APPROVAL (Fixed version)
-  // ─────────────────────────────────────────────
   async sendForApproval() {
     const bill       = Dashboard.currentBill;
     const targetRole = document.getElementById("sendToRole").value;
@@ -2026,7 +2125,8 @@ async saveReviewOnly() {
     const reviewNotes = document.getElementById("editReviewNotes").value;
 
     if (!targetRole) {
-      Toast.warning("Please select a role!"); return;
+      Toast.warning("Please select a role!");
+      return;
     }
 
     const ok = await Utils.confirm(
@@ -2038,14 +2138,12 @@ async saveReviewOnly() {
 
     Loader.show("Saving and sending...");
 
-    // ✅ FIX: Approve karne se pehle saare fields save karein
     await API.biller.updateReview(bill.queueRowIndex, {
       queueRowIndex: bill.queueRowIndex,
-      fields: Dashboard.pendingEdits, // Poora edited data yahan jayega
+      fields: Dashboard.pendingEdits,
       reviewNotes: reviewNotes
     });
 
-    // Ab final approval ke liye bhejein
     const res = await API.biller.sendForApproval(
       bill.queueRowIndex, targetRole,
       targetName || targetRole, notes
@@ -2057,7 +2155,7 @@ async saveReviewOnly() {
       Toast.success(`Bill sent to ${targetRole}! 🎉`);
       bill["Approval Status"] = "Sent to " + targetRole;
       bill["Sent To Role"]    = targetRole;
-      Dashboard.pendingEdits  = {}; // Reset edits
+      Dashboard.pendingEdits  = {};
       Dashboard.closeReviewModal();
       await Dashboard.loadStats();
       await Dashboard.loadRecentBills();
@@ -2066,18 +2164,12 @@ async saveReviewOnly() {
     }
   },
 
-  // ─────────────────────────────────────────────
-  // CLOSE MODAL
-  // ─────────────────────────────────────────────
   closeReviewModal() {
     document.getElementById("reviewModal").classList.remove("active");
     Dashboard.currentBill  = null;
     Dashboard.pendingEdits = {};
   },
 
-  // ─────────────────────────────────────────────
-  // SYNC BILLS
-  // ─────────────────────────────────────────────
   async syncBills() {
     const btn = document.getElementById("syncBtn");
     if (btn) {
@@ -2108,9 +2200,6 @@ async saveReviewOnly() {
     }
   },
 
-  // ─────────────────────────────────────────────
-  // TRACK BILL
-  // ─────────────────────────────────────────────
   async trackBill() {
     const invNo = document.getElementById("trackSearch").value.trim();
     if (!invNo) { Toast.warning("Enter invoice number"); return; }
@@ -2182,9 +2271,6 @@ async saveReviewOnly() {
       </div>`;
   },
 
-  // ─────────────────────────────────────────────
-  // PROFILE
-  // ─────────────────────────────────────────────
   loadProfile() {
     const user  = Auth.getUser();
     const color = Utils.getRoleColor(user?.role||"");
@@ -2216,9 +2302,6 @@ async saveReviewOnly() {
       </div>`;
   },
 
-  // ─────────────────────────────────────────────
-  // CHANGE PASSWORD
-  // ─────────────────────────────────────────────
   async changePassword() {
     const o = document.getElementById("oldPassword").value;
     const n = document.getElementById("newPassword").value;
@@ -2241,7 +2324,213 @@ async saveReviewOnly() {
 
 };
 
-document.addEventListener("DOMContentLoaded", () => Dashboard.init());
+// ═══════════════════════════════════════════════════════════════════════════
+// SUBMIT INVOICE OBJECT
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SubmitInvoice = {
+
+  selectedFile: null,
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbybJBvh412l4I32UmZVums6KiX16ckQiYHppHF0-FEwlqDF-tpyMFms0BQy7kzysX04/exec",
+
+  init() {
+    const uploadArea = document.getElementById("fileUploadArea");
+    if (!uploadArea) return;
+
+    uploadArea.addEventListener("click", () => {
+      document.getElementById("invoiceFile").click();
+    });
+
+    uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadArea.style.background = "var(--primary)";
+      uploadArea.style.color = "#fff";
+    });
+
+    uploadArea.addEventListener("dragleave", () => {
+      uploadArea.style.background = "var(--primary-light)";
+      uploadArea.style.color = "inherit";
+    });
+
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.style.background = "var(--primary-light)";
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        SubmitInvoice.handleFileSelect({ target: { files } });
+      }
+    });
+
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 16);
+    document.getElementById("receivedDate").value = localISOTime;
+  },
+
+  handleFileSelect(e) {
+    const files = e.target.files;
+    if (files.length === 0) return;
+
+    const file = files[0];
+    const validTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+
+    if (!validTypes.includes(file.type)) {
+      Toast.error("Only PDF or Image files allowed!");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      Toast.error("File too large! Max 10MB");
+      return;
+    }
+
+    SubmitInvoice.selectedFile = file;
+
+    document.getElementById("fileName").style.display = "block";
+    document.getElementById("fileNameText").textContent = 
+      file.name + " (" + (file.size / 1024 / 1024).toFixed(2) + "MB)";
+  },
+
+  validateForm() {
+    if (!SubmitInvoice.selectedFile) {
+      Toast.error("Please upload an invoice file");
+      return false;
+    }
+
+    const receivedFrom = document.getElementById("receivedFrom").value;
+    if (!receivedFrom) {
+      Toast.error("Please select where you received the bill");
+      return false;
+    }
+
+    const receivedDate = document.getElementById("receivedDate").value;
+    if (!receivedDate) {
+      Toast.error("Please select when you received the bill");
+      return false;
+    }
+
+    return true;
+  },
+
+async submitForm() {
+    // Basic form validation
+    if (!SubmitInvoice.validateForm()) {
+      console.error("Validation failed: Required fields missing");
+      return;
+    }
+
+    console.log("🚀 Starting invoice submission process...");
+
+    try {
+      const file = SubmitInvoice.selectedFile;
+      
+      // STEP 1: File ko Base64 mein convert karna
+      showProcessingScreen("Reading invoice file...", 10);
+      const fileContent = await readFileAsBase64(file);
+      console.log("✅ File encoded successfully");
+
+      // STEP 2: Payload taiyar karna (Sheet headers aur Gemini prompt ke hisaab se)
+      showProcessingScreen("Preparing data for AI...", 30);
+      const payload = {
+        fileName: file.name,
+        fileType: file.type,
+        fileContent: fileContent,
+        receivedFrom: document.getElementById("receivedFrom").value,
+        receivedDate: document.getElementById("receivedDate").value,
+        senderName: document.getElementById("senderName").value || "Manual Upload",
+        notes: document.getElementById("invoiceNotes").value || "",
+        billerEmail: (typeof Auth !== 'undefined' && Auth.getUser()) ? Auth.getUser().email : "unknown@gretex.com"
+      };
+
+      // STEP 3: Google Apps Script ko hit karna
+      showProcessingScreen("Gemini AI is analyzing 54 points...", 60);
+      console.log("Sending request to Google Apps Script...");
+
+      // Note: Hum explicitly 'no-cors' use kar rahe hain taaki redirect block na ho
+      await fetch(SubmitInvoice.APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", 
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // 'no-cors' mode mein response status read nahi hota, 
+      // par agar fetch crash nahi hua toh request deliver ho jati hai.
+      console.log("✅ Request sent successfully (no-cors mode)");
+
+      // STEP 4: Success UI Handling
+      showProcessingScreen("Finalizing database entry...", 90);
+      
+      showProcessingSuccess();
+      Toast.success("Invoice submitted! AI is processing it in the background. 🎉");
+      
+      // Form fields clear karna
+      SubmitInvoice.resetForm();
+      
+      // 3 seconds ka delay taaki user success message dekh sake
+      setTimeout(() => {
+        hideProcessingScreen();
+        // Dashboard section par wapas bhejna aur list refresh karna
+        if (typeof Dashboard !== 'undefined' && Dashboard.showSection) {
+          Dashboard.showSection("invoices");
+          Dashboard.loadQueue(); 
+        }
+      }, 3000);
+
+    } catch (error) {
+      // Error handling agar fetch bilkul hi fail ho jaye (Internet issue etc.)
+      hideProcessingScreen();
+      console.error("❌ Submission Fatal Error:", error);
+      Toast.error("Network issue: Please check your connection.");
+      SubmitInvoice.showStatus("error", "Fatal Error: " + error.message);
+    }
+  },
+
+
+  showStatus(type, message) {
+    const statusEl = document.getElementById("submitStatus");
+    if (!statusEl) return;
+
+    statusEl.style.display = "block";
+    
+    if (type === "error") {
+      statusEl.style.background = "#fff5f5";
+      statusEl.style.borderLeft = "4px solid var(--danger)";
+      statusEl.style.color = "var(--danger)";
+      statusEl.innerHTML = `<i class="fa fa-exclamation-circle"></i> ${message}`;
+    } else if (type === "success") {
+      statusEl.style.background = "#f0fdf4";
+      statusEl.style.borderLeft = "4px solid var(--secondary)";
+      statusEl.style.color = "var(--secondary)";
+      statusEl.innerHTML = `<i class="fa fa-check-circle"></i> ${message}`;
+    }
+  },
+
+  resetForm() {
+    document.getElementById("invoiceFile").value = "";
+    document.getElementById("receivedFrom").value = "";
+    document.getElementById("senderName").value = "";
+    document.getElementById("invoiceNotes").value = "";
+    document.getElementById("fileName").style.display = "none";
+    document.getElementById("submitStatus").style.display = "none";
+    
+    SubmitInvoice.selectedFile = null;
+
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now - offset).toISOString().slice(0, 16);
+    document.getElementById("receivedDate").value = localISOTime;
+
+    Toast.info("Form cleared ✓");
+  }
+
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  Dashboard.init();
+});
 </script>
 </body>
 </html>

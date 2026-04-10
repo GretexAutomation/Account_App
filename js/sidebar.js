@@ -1,5 +1,5 @@
 // ============================================================
-// sidebar.js — Gretex Invoice Web App
+// sidebar.js — Gretex Invoice Web App (UPDATED)
 // Handles: Sidebar rendering, navigation, toggle, active states
 // ============================================================
 
@@ -290,6 +290,15 @@ const Sidebar = {
     } else {
       // 3. Different page — navigate properly
       window.location.href = page;
+    }
+  },
+
+  // ─────────────────────────────────────────────
+  // SUBMIT INVOICE: Show form to collect details
+  // ─────────────────────────────────────────────
+  openSubmitInvoice() {
+    if (typeof Dashboard !== "undefined") {
+      Dashboard.showSection("submit");
     }
   },
 
