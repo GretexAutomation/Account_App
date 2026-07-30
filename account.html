@@ -298,6 +298,7 @@
 
     <div class="page-content">
 
+      <!-- DASHBOARD OVERVIEW -->
       <div class="section active" id="section-dashboard">
 
         <div class="stats-grid">
@@ -386,6 +387,7 @@
         </div>
       </div>
 
+      <!-- ALL INVOICES -->
       <div class="section" id="section-invoices">
         <div class="card" style="margin-bottom:16px">
           <div class="card-body" style="padding:14px 20px">
@@ -398,7 +400,7 @@
               </div>
               <div style="flex:1;min-width:200px;position:relative">
                 <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
-                <input type="text" class="form-control" id="searchInput" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+                <input type="text" class="form-control" id="searchInput" autocomplete="off" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
               </div>
               <button class="btn btn-outline btn-sm" id="redFlagToggle" onclick="Dashboard.toggleRedFlagFilter()">
                 🚩 Red Flags Only
@@ -436,6 +438,7 @@
         </div>
       </div>
 
+      <!-- APPROVAL QUEUE -->
       <div class="section" id="section-approval">
         <div class="queue-stats-row" id="queueStatsRow">
           <div class="queue-mini-stat"><div class="mini-val total" id="qStatTotal">--</div><div class="mini-label">Total</div></div>
@@ -455,7 +458,7 @@
               </div>
               <div style="flex:1;min-width:200px;position:relative">
                 <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
-                <input type="text" class="form-control" id="queueSearchInput" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+                <input type="text" class="form-control" id="queueSearchInput" autocomplete="off" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
               </div>
               <button class="btn btn-outline btn-sm" onclick="Dashboard.loadApprovalQueue()">
                 <i class="fa fa-rotate-right"></i> Refresh
@@ -472,9 +475,10 @@
             </div>
             <div style="font-size:0.78rem;color:var(--gray-500)">Pending invoices require your action</div>
           </div>
-          <div class="table-wrapper">
+          <!-- Updated Table Wrapper for Scrolling -->
+          <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
             <table class="data-table" id="queueTable">
-              <thead>
+              <thead style="position: sticky; top: 0; z-index: 10;">
                 <tr>
                   <th>#</th><th>Invoice No</th><th>Vendor</th><th>Basic Amt</th><th>TDS</th>
                   <th>Final Payable</th><th>🚩</th><th>Queue Status</th><th>Actions</th>
@@ -487,9 +491,26 @@
               </tbody>
             </table>
           </div>
+          <!-- New Pagination Controls -->
+          <div style="padding:12px 20px;border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--white);border-radius:0 0 12px 12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.78rem;color:var(--gray-500)">Rows per page:</span>
+              <select id="queuePageSize" style="font-size:0.78rem;padding:4px 8px;border-radius:6px;border:1px solid var(--gray-300);outline:none;cursor:pointer;" onchange="Dashboard.changeQueuePageSize(this.value)">
+                <option value="10">10</option>
+                <option value="15" selected>15</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <span id="queueTableInfo" style="font-size:0.78rem;color:var(--gray-500);margin-left:10px;"></span>
+            </div>
+            <div id="queueTablePagination" style="display:flex;gap:6px"></div>
+          </div>
         </div>
       </div>
 
+      <!-- COMPLETED -->
       <div class="section" id="section-completed">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="card">
@@ -535,6 +556,7 @@
         </div>
       </div>
 
+      <!-- RED FLAGS -->
       <div class="section" id="section-redflags">
         <div class="card">
           <div class="card-header">
@@ -559,6 +581,59 @@
         </div>
       </div>
 
+      <!-- DETAILED SUMMARY SECTION -->
+      <div class="section" id="section-summary">
+        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-bottom: 16px;">
+          <div class="card">
+            <div class="card-body" style="padding: 20px; text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--gray-500); text-transform: uppercase; font-weight: 600;">Total Invoices</div>
+              <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-top: 8px;" id="sumTotalCount">0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding: 20px; text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--gray-500); text-transform: uppercase; font-weight: 600;">Total Amount</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--gray-800); margin-top: 8px;" id="sumTotalAmount">₹0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding: 20px; text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--gray-500); text-transform: uppercase; font-weight: 600;">Approved Value</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: #34a853; margin-top: 8px;" id="sumApprovedAmount">₹0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding: 20px; text-align: center;">
+              <div style="font-size: 0.85rem; color: var(--gray-500); text-transform: uppercase; font-weight: 600;">Pending Value</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: #f9a825; margin-top: 8px;" id="sumPendingAmount">₹0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-chart-pie"></i> Vendor-wise Summary</div>
+          </div>
+          <div class="table-wrapper" style="max-height: 50vh; overflow-y: auto;">
+            <table class="data-table">
+              <thead style="position: sticky; top: 0; z-index: 10;">
+                <tr>
+                  <th>Vendor Name</th>
+                  <th style="text-align:center;">Total Invoices</th>
+                  <th style="text-align:center;">Approved</th>
+                  <th style="text-align:center;">Pending/Other</th>
+                  <th style="text-align:right;">Total Value</th>
+                </tr>
+              </thead>
+              <tbody id="summaryVendorBody">
+                <tr><td colspan="5" class="text-center" style="padding: 32px; color: var(--gray-400);"><i class="fa fa-spinner fa-spin"></i> Generating summary...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
       <div class="section" id="section-profile">
         <div class="card" style="max-width:500px">
           <div class="card-header">
@@ -570,6 +645,7 @@
         </div>
       </div>
 
+      <!-- PASSWORD -->
       <div class="section" id="section-password">
         <div class="card" style="max-width:440px">
           <div class="card-header">
@@ -599,6 +675,7 @@
   </div>
 </div>
 
+<!-- INVOICE DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box large">
     <div class="modal-header" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">
@@ -648,6 +725,7 @@
   </div>
 </div>
 
+<!-- REJECT MODAL -->
 <div class="modal-overlay" id="rejectModal">
   <div class="modal-box" style="max-width:440px">
     <div class="modal-header reject-modal-header">
@@ -679,6 +757,7 @@
   </div>
 </div>
 
+<!-- APPROVE MODAL -->
 <div class="modal-overlay" id="approveModal">
   <div class="modal-box" style="max-width:440px">
     <div class="modal-header" style="background: linear-gradient(135deg, #34a853, #1b5e20);">
@@ -723,6 +802,8 @@ const Dashboard = {
 
   queueData        : [],
   queueFiltered    : [],
+  queueCurrentPage : 1, // New Pagination Variable
+  queuePageSize    : 15, // New Pagination Variable
   pendingRejectRow : null,
   pendingRejectInvoiceNo: "",
   
@@ -791,12 +872,13 @@ const Dashboard = {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
 
-    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approval : "Approval Queue", redflags : "Red Flags", completed: "Completed Bills", profile: "My Profile", password : "Change Password" };
+    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approval : "Approval Queue", redflags : "Red Flags", completed: "Completed Bills", summary: "Summary Report", profile: "My Profile", password : "Change Password" };
     Header.setTitle(titles[id] || "Dashboard");
     Sidebar.setActive(id);
 
     if (id === "approval") Dashboard.loadApprovalQueue();
     if (id === "completed") Dashboard.loadCompletedSection();
+    if (id === "summary") Dashboard.loadSummary();
     if (id === "profile") Dashboard.loadProfile();
   },
 
@@ -990,6 +1072,7 @@ const Dashboard = {
     }
     Dashboard.queueData     = res.data.queue || [];
     Dashboard.queueFiltered = [...Dashboard.queueData];
+    Dashboard.queueCurrentPage = 1; // Reset to page 1 on load
     Dashboard.updateQueueStats();
     Dashboard.renderQueue();
 
@@ -1030,6 +1113,7 @@ const Dashboard = {
     if (status !== "ALL") filtered = filtered.filter(i => (i["Approval Status"] || "Pending") === status);
     if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"] || "").toLowerCase().includes(search) || (i["A14. Vendor Name"] || "").toLowerCase().includes(search));
     Dashboard.queueFiltered = filtered;
+    Dashboard.queueCurrentPage = 1; // 👈 Reset filter to page 1
     Dashboard.renderQueue();
   },
 
@@ -1037,20 +1121,31 @@ const Dashboard = {
     const tbody = document.getElementById("queueBody");
     const count = document.getElementById("queueCount");
     const data  = Dashboard.queueFiltered;
+
     if(count) count.textContent = `(${data.length} items)`;
+
     if (data.length === 0) {
       if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:40px"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Queue is empty</div></div></td></tr>`;
+      Dashboard.renderQueuePagination(0, 0);
       return;
     }
-    if(tbody) tbody.innerHTML = data.map((item, i) => {
+
+    // Pagination logic applied here
+    const total = data.length;
+    const start = (Dashboard.queueCurrentPage - 1) * Dashboard.queuePageSize;
+    const end = Math.min(start + parseInt(Dashboard.queuePageSize), total);
+    const pageData = data.slice(start, end);
+
+    if(tbody) tbody.innerHTML = pageData.map((item, i) => {
       const status    = item["Approval Status"] || "Pending";
       const isPending = status === "Pending" || status === "";
       const rowIdx    = item.queueRowIndex;
       const redFlags  = item["🚩 Red Flags"] || "";
       const tdsAmt    = item["B8. TDS Amount"];
+      
       return `
         <tr style="cursor:pointer; ${isPending ? '' : 'opacity:0.75'}" onclick="Dashboard.openDetail(${rowIdx})">
-          <td style="color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+          <td style="color:var(--gray-400);font-size:0.75rem">${start + i + 1}</td>
           <td><strong style="font-size:0.83rem">${item["A13. Invoice Number"] || "—"}</strong><div style="font-size:0.72rem;color:var(--gray-400);margin-top:2px">${item["Timestamp"] || item["A12. Invoice Date"]}</div></td>
           <td style="font-size:0.82rem"><div>${Utils.truncate(item["A14. Vendor Name"], 20)}</div><div style="font-size:0.72rem;color:var(--gray-400)">${Utils.truncate(item["A16. Bill Description"] || "", 22)}</div></td>
           <td style="font-size:0.83rem">${Utils.formatCurrency(item["A20. Basic Amount"])}</td>
@@ -1061,13 +1156,51 @@ const Dashboard = {
           <td onclick="event.stopPropagation()">
             ${isPending
               ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
-                   <button class="queue-action-btn btn-approve" onclick="Dashboard.approveItem(${rowIdx}, '${(item["A13. Invoice Number"] || "").replace(/'/g, "\\'")}')"><i class="fa fa-check" style="font-size:0.72rem"></i> Approve</button>
-                   <button class="queue-action-btn btn-reject" onclick="Dashboard.openRejectModal(${rowIdx}, '${(item["A13. Invoice Number"] || "").replace(/'/g, "\\'")}')"><i class="fa fa-xmark" style="font-size:0.72rem"></i> Reject</button>
+                   <button class="queue-action-btn btn-approve" onclick="Dashboard.approveItem(${rowIdx}, '${String(item["A13. Invoice Number"] || "").replace(/'/g, "\\'")}')"><i class="fa fa-check" style="font-size:0.72rem"></i> Approve</button>
+                   <button class="queue-action-btn btn-reject" onclick="Dashboard.openRejectModal(${rowIdx}, '${String(item["A13. Invoice Number"] || "").replace(/'/g, "\\'")}')"><i class="fa fa-xmark" style="font-size:0.72rem"></i> Reject</button>
                  </div>`
               : `<span style="font-size:0.78rem;color:var(--gray-400)">${status === "Approved" ? '<i class="fa fa-check" style="color:#34a853"></i> Sent to CFO' : '<i class="fa fa-xmark" style="color:#ea4335"></i> Stopped'}</span>`}
           </td>
         </tr>`;
     }).join("");
+
+    Dashboard.renderQueuePagination(total, end);
+  },
+
+  renderQueuePagination(total, end) {
+    const info = document.getElementById("queueTableInfo");
+    const pagDiv = document.getElementById("queueTablePagination");
+    if(!info || !pagDiv) return;
+
+    const pages = Math.ceil(total / Dashboard.queuePageSize);
+    const start = (Dashboard.queueCurrentPage - 1) * Dashboard.queuePageSize + 1;
+
+    info.textContent = total > 0 ? `Showing ${start}–${end} of ${total}` : "";
+    if (pages <= 1) { pagDiv.innerHTML = ""; return; }
+
+    let html = `<button class="btn btn-ghost btn-sm" ${Dashboard.queueCurrentPage === 1 ? "disabled" : ""} onclick="Dashboard.goQueuePage(${Dashboard.queueCurrentPage - 1})"><i class="fa fa-chevron-left"></i></button>`;
+    for (let i = 1; i <= pages; i++) {
+      if (i === 1 || i === pages || (i >= Dashboard.queueCurrentPage - 1 && i <= Dashboard.queueCurrentPage + 1)) {
+        html += `<button class="btn btn-sm ${i === Dashboard.queueCurrentPage ? 'btn-primary' : 'btn-ghost'}" onclick="Dashboard.goQueuePage(${i})">${i}</button>`;
+      } else if (i === Dashboard.queueCurrentPage - 2 || i === Dashboard.queueCurrentPage + 2) {
+        html += `<span style="padding:0 4px;color:var(--gray-400)">...</span>`;
+      }
+    }
+    html += `<button class="btn btn-ghost btn-sm" ${Dashboard.queueCurrentPage === pages ? "disabled" : ""} onclick="Dashboard.goQueuePage(${Dashboard.queueCurrentPage + 1})"><i class="fa fa-chevron-right"></i></button>`;
+    pagDiv.innerHTML = html;
+  },
+
+  goQueuePage(page) {
+    const pages = Math.ceil(Dashboard.queueFiltered.length / Dashboard.queuePageSize);
+    if (page < 1 || page > pages) return;
+    Dashboard.queueCurrentPage = page;
+    Dashboard.renderQueue();
+  },
+
+  changeQueuePageSize(size) {
+    Dashboard.queuePageSize = parseInt(size);
+    Dashboard.queueCurrentPage = 1;
+    Dashboard.renderQueue();
   },
 
   queueStatusBadge(status) {
@@ -1079,7 +1212,7 @@ const Dashboard = {
   // APPROVE ITEM & MODAL
   // ─────────────────────────────────────────────
   approveItem(queueRowIndex, invoiceNo) {
-    Dashboard.pendingApproveRow       = queueRowIndex;
+    Dashboard.pendingApproveRow        = queueRowIndex;
     Dashboard.pendingApproveInvoiceNo = invoiceNo || "";
     
     document.getElementById("approveReason").value = "Verified and Approved."; // Default text
@@ -1121,7 +1254,7 @@ const Dashboard = {
   },
 
   openRejectModal(queueRowIndex, invoiceNo) {
-    Dashboard.pendingRejectRow       = queueRowIndex;
+    Dashboard.pendingRejectRow        = queueRowIndex;
     Dashboard.pendingRejectInvoiceNo = invoiceNo || "";
     document.getElementById("rejectReason").value = "";
     document.getElementById("rejectReasonError").style.display = "none";
@@ -1213,6 +1346,65 @@ const Dashboard = {
     }).join("");
   },
 
+  // ─────────────────────────────────────────────
+  // SUMMARY REPORT LOGIC
+  // ─────────────────────────────────────────────
+  async loadSummary() {
+    if (Dashboard.invoices.length === 0) {
+      await Dashboard.loadDashboardData();
+    }
+    
+    const all = Dashboard.invoices;
+    let totalAmount = 0, approvedAmount = 0, pendingAmount = 0;
+    const vendorStats = {};
+
+    all.forEach(inv => {
+      const amt = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+      const stage = inv["Current_Stage"] || "";
+      // Simplified status logic
+      const isApproved = stage === "Completed" && inv["Account_Status"] !== "Rejected"; 
+      const isPending = stage !== "Completed" && stage !== "Rejected";
+      
+      totalAmount += amt;
+      if (isApproved) approvedAmount += amt;
+      else if (isPending) pendingAmount += amt;
+      
+      const vendor = inv["A14. Vendor Name"] || "Unknown Vendor";
+      if (!vendorStats[vendor]) {
+        vendorStats[vendor] = { count: 0, approved: 0, pending: 0, value: 0 };
+      }
+      
+      vendorStats[vendor].count += 1;
+      vendorStats[vendor].value += amt;
+      if (isApproved) vendorStats[vendor].approved += 1;
+      else vendorStats[vendor].pending += 1;
+    });
+
+    document.getElementById("sumTotalCount").textContent = all.length;
+    document.getElementById("sumTotalAmount").textContent = Utils.formatCurrency(totalAmount);
+    document.getElementById("sumApprovedAmount").textContent = Utils.formatCurrency(approvedAmount);
+    document.getElementById("sumPendingAmount").textContent = Utils.formatCurrency(pendingAmount);
+
+    const vendorArr = Object.keys(vendorStats).map(v => ({ name: v, ...vendorStats[v] }));
+    vendorArr.sort((a, b) => b.value - a.value); // Sort highest value first
+
+    const tbody = document.getElementById("summaryVendorBody");
+    if (vendorArr.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 32px; color: var(--gray-400);">No data available</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = vendorArr.map(v => `
+      <tr>
+        <td><strong>${Utils.truncate(v.name, 40)}</strong></td>
+        <td style="text-align:center;">${v.count}</td>
+        <td style="text-align:center; color: var(--secondary); font-weight: 600;">${v.approved}</td>
+        <td style="text-align:center; color: var(--warning);">${v.pending}</td>
+        <td style="text-align:right; font-weight: 600;">${Utils.formatCurrency(v.value)}</td>
+      </tr>
+    `).join("");
+  },
+
   openDetail(rowIndex) {
     if (!rowIndex) return;
 
@@ -1256,16 +1448,16 @@ const Dashboard = {
     document.getElementById("detailModal").classList.add("active");
   },
 
- approveFromModal() {
+  approveFromModal() {
     const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
-    const rowToApprove = Dashboard.currentRow; // 🔥 FIX
+    const rowToApprove = Dashboard.currentRow;
     Dashboard.closeModal();
     Dashboard.approveItem(rowToApprove, invoiceNo);
   },
 
   rejectFromModal() {
     const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
-    const rowToReject = Dashboard.currentRow; // 🔥 FIX
+    const rowToReject = Dashboard.currentRow; 
     Dashboard.closeModal();
     Dashboard.openRejectModal(rowToReject, invoiceNo);
   },
