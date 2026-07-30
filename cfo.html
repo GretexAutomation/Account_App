@@ -62,6 +62,7 @@
     <header class="app-header" id="appHeader"></header>
     <div class="page-content">
 
+      <!-- DASHBOARD SECTION -->
       <div class="section active" id="section-dashboard">
         <div class="stats-grid">
           <div class="stat-card total" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
@@ -102,7 +103,6 @@
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px">
-          
           <div class="card">
             <div class="card-header"><div class="card-title"><i class="fa fa-user-tie"></i> Biller Queue</div></div>
             <div class="card-body" style="padding:16px">
@@ -158,6 +158,7 @@
         </div>
       </div>
 
+      <!-- ALL INVOICES SECTION -->
       <div class="section" id="section-invoices">
         <div class="card" style="margin-bottom:16px">
           <div class="card-body" style="padding:14px 20px">
@@ -169,7 +170,7 @@
               </div>
               <div style="flex:1;min-width:200px;position:relative">
                 <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
-                <input type="text" class="form-control" id="searchInput" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+                <input type="text" autocomplete="off" class="form-control" id="searchInput" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
               </div>
               <button class="btn btn-outline btn-sm" onclick="Dashboard.loadAllInvoices()">
                 <i class="fa fa-rotate-right"></i> Refresh
@@ -185,9 +186,9 @@
               <span id="allInvoicesCount" style="font-weight:400;color:var(--gray-500);font-size:0.8rem"></span>
             </div>
           </div>
-          <div class="table-wrapper">
+          <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
             <table class="data-table">
-              <thead>
+              <thead style="position: sticky; top: 0; z-index: 10;">
                 <tr>
                   <th>#</th><th>Invoice No</th><th>Vendor</th><th>Date</th><th>Basic Amt</th><th>TDS</th><th>Final Payable</th><th>🚩</th><th>Status</th>
                 </tr>
@@ -200,15 +201,24 @@
         </div>
       </div>
 
+      <!-- RED FLAGS SECTION -->
       <div class="section" id="section-redflags">
         <div class="card">
           <div class="card-header"><div class="card-title" style="color:var(--danger)">🚩 Red Flag Invoices</div></div>
-          <div class="card-body" id="redFlagBody">
-            <div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Loading...</div></div>
+          <div class="table-wrapper" style="max-height: 65vh; overflow-y: auto;">
+            <table class="data-table">
+              <thead style="position: sticky; top: 0; z-index: 10;">
+                <tr><th>Invoice No</th><th>Vendor</th><th>Amount</th><th>Red Flags</th><th>Stage</th><th>Date</th><th>Action</th></tr>
+              </thead>
+              <tbody id="redFlagBody">
+                <tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
+      <!-- APPROVE QUEUE SECTION -->
       <div class="section" id="section-approve">
         <div class="card" style="margin-bottom:16px">
           <div class="card-body" style="padding:14px 20px">
@@ -221,7 +231,7 @@
               </div>
               <div style="flex:1;min-width:200px;position:relative">
                 <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none"></i>
-                <input type="text" class="form-control" id="cfoQueueSearch" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
+                <input type="text" autocomplete="off" class="form-control" id="cfoQueueSearch" placeholder="Search vendor, invoice no..." style="padding-left:36px"/>
               </div>
               <button class="btn btn-outline btn-sm" onclick="Dashboard.loadApprovalQueue()">
                 <i class="fa fa-rotate-right"></i> Refresh
@@ -237,9 +247,10 @@
               <span id="cfoQueueCount" style="font-weight:400;color:var(--gray-500);font-size:0.8rem"></span>
             </div>
           </div>
-          <div class="table-wrapper">
+          <!-- Pagination enabled scrolling table -->
+          <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
             <table class="data-table">
-              <thead>
+              <thead style="position: sticky; top: 0; z-index: 10;">
                 <tr>
                   <th>#</th><th>Invoice No</th><th>Vendor</th><th>Basic Amt</th><th>TDS</th><th>Final Payable</th><th>🚩</th><th>Queue Status</th><th>Actions</th>
                 </tr>
@@ -249,9 +260,114 @@
               </tbody>
             </table>
           </div>
+          <!-- Queue Pagination Controls -->
+          <div style="padding:12px 20px;border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--white);border-radius:0 0 12px 12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.78rem;color:var(--gray-500)">Rows per page:</span>
+              <select id="queuePageSize" style="font-size:0.78rem;padding:4px 8px;border-radius:6px;border:1px solid var(--gray-300);outline:none;cursor:pointer;" onchange="Dashboard.changeQueuePageSize(this.value)">
+                <option value="10">10</option>
+                <option value="15" selected>15</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <span id="queueTableInfo" style="font-size:0.78rem;color:var(--gray-500);margin-left:10px;"></span>
+            </div>
+            <div id="queueTablePagination" style="display:flex;gap:6px"></div>
+          </div>
         </div>
       </div>
 
+      <!-- NEW: REPORTS (GENERAL SUMMARY) -->
+      <div class="section" id="section-reports">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:16px;">
+          <div class="card">
+            <div class="card-body" style="padding:20px;text-align:center;">
+              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Total Invoices</div>
+              <div style="font-size:2rem;font-weight:800;color:var(--primary);margin-top:8px;" id="repTotalCount">0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:20px;text-align:center;">
+              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Total Amount</div>
+              <div style="font-size:1.8rem;font-weight:800;color:var(--gray-800);margin-top:8px;" id="repTotalAmount">₹0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:20px;text-align:center;">
+              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Approved Value</div>
+              <div style="font-size:1.8rem;font-weight:800;color:#34a853;margin-top:8px;" id="repApprovedAmount">₹0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:20px;text-align:center;">
+              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Pending Value</div>
+              <div style="font-size:1.8rem;font-weight:800;color:#f9a825;margin-top:8px;" id="repPendingAmount">₹0</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-chart-pie"></i> Vendor-wise Summary</div></div>
+          <div class="table-wrapper" style="max-height: 50vh; overflow-y: auto;">
+            <table class="data-table">
+              <thead style="position: sticky; top: 0; z-index: 10;">
+                <tr>
+                  <th>Vendor Name</th><th style="text-align:center;">Total Invoices</th>
+                  <th style="text-align:center;">Approved</th><th style="text-align:center;">Pending/Other</th>
+                  <th style="text-align:right;">Total Value</th>
+                </tr>
+              </thead>
+              <tbody id="reportsVendorBody">
+                <tr><td colspan="5" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Generating summary...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: TDS SUMMARY -->
+      <div class="section" id="section-tds">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-percent"></i> TDS Summary Report</div></div>
+          <div class="table-wrapper" style="max-height: 65vh; overflow-y: auto;">
+            <table class="data-table">
+              <thead style="position: sticky; top: 0; z-index: 10;">
+                <tr>
+                  <th>Vendor Name</th><th>PAN Number</th><th style="text-align:center;">Total Basic Amt</th>
+                  <th style="text-align:center;">TDS Section</th><th style="text-align:center;">TDS Rate</th>
+                  <th style="text-align:right;color:var(--warning)">Total TDS Deducted</th>
+                </tr>
+              </thead>
+              <tbody id="tdsReportBody">
+                <tr><td colspan="6" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Generating TDS Report...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: GST SUMMARY -->
+      <div class="section" id="section-gst">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-file-invoice-dollar"></i> GST Summary Report</div></div>
+          <div class="table-wrapper" style="max-height: 65vh; overflow-y: auto;">
+            <table class="data-table">
+              <thead style="position: sticky; top: 0; z-index: 10;">
+                <tr>
+                  <th>Vendor Name</th><th>GSTIN</th><th style="text-align:center;">Total Basic Amt</th>
+                  <th style="text-align:center;">Total Final Payable</th><th style="text-align:center;">Invoices Count</th>
+                </tr>
+              </thead>
+              <tbody id="gstReportBody">
+                <tr><td colspan="5" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Generating GST Report...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
       <div class="section" id="section-profile">
         <div class="card" style="max-width:500px">
           <div class="card-header"><div class="card-title"><i class="fa fa-user"></i> My Profile</div></div>
@@ -259,6 +375,7 @@
         </div>
       </div>
 
+      <!-- PASSWORD -->
       <div class="section" id="section-password">
         <div class="card" style="max-width:440px">
           <div class="card-header"><div class="card-title"><i class="fa fa-lock"></i> Change Password</div></div>
@@ -275,6 +392,7 @@
   </div>
 </div>
 
+<!-- INVOICE DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box large">
     <div class="modal-header" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">
@@ -322,6 +440,7 @@
   </div>
 </div>
 
+<!-- APPROVE MODAL -->
 <div class="modal-overlay" id="approveModal">
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header" style="background:linear-gradient(135deg,#34a853,#1b5e20)">
@@ -366,6 +485,7 @@
   </div>
 </div>
 
+<!-- REJECT MODAL -->
 <div class="modal-overlay" id="rejectModal">
   <div class="modal-box" style="max-width:440px">
     <div class="modal-header reject-modal-header">
@@ -402,6 +522,8 @@
 const Dashboard = {
   queueData: [],
   queueFiltered: [],
+  queueCurrentPage: 1, 
+  queuePageSize: 15,
   allInvoicesData: [],
   currentRow: null,
   pendingApproveRow: null,
@@ -441,13 +563,13 @@ const Dashboard = {
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     
-    // 🔥 1 Smart API Load
     await Dashboard.loadDashboardData();
     
-    const hash = window.location.hash.replace("#","");
+    let hash = window.location.hash.replace("#","");
+    if(hash === "tds-summary") hash = "tds";
+    if(hash === "gst-summary") hash = "gst";
     if (hash) Dashboard.showSection(hash);
 
-    // Binders
     document.getElementById("searchInput")?.addEventListener("input", Utils.debounce(() => Dashboard.filterAllInvoices(), 350));
     document.querySelectorAll(".filter-tab[data-status]").forEach(btn => {
       btn.addEventListener("click", function() {
@@ -458,13 +580,30 @@ const Dashboard = {
   },
 
   showSection(id) {
+    if(id === "tds-summary") id = "tds";
+    if(id === "gst-summary") id = "gst";
+
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
-    const titles = { dashboard: "Dashboard", invoices : "All Invoices", redflags : "Red Flags", approve  : "CFO Approvals", profile : "My Profile", password : "Change Password" };
+    
+    const titles = { 
+      dashboard: "Dashboard", invoices: "All Invoices", redflags: "Red Flags", 
+      approve: "CFO Approvals", reports: "General Reports", tds: "TDS Summary", 
+      gst: "GST Summary", profile: "My Profile", password: "Change Password" 
+    };
     Header.setTitle(titles[id] || "Dashboard");
-    Sidebar.setActive(id);
-    if (id === "approve")   Dashboard.loadApprovalQueue();
-    if (id === "profile")   Dashboard.loadProfile();
+    
+    // Attempt to map back to sidebar IDs properly
+    let sbId = id;
+    if(id === "tds") sbId = "tds-summary";
+    if(id === "gst") sbId = "gst-summary";
+    Sidebar.setActive(sbId);
+    
+    if (id === "approve") Dashboard.loadApprovalQueue();
+    if (id === "reports") Dashboard.loadReports();
+    if (id === "tds")     Dashboard.loadTDSSummary();
+    if (id === "gst")     Dashboard.loadGSTSummary();
+    if (id === "profile") Dashboard.loadProfile();
   },
 
   switchTab(btn, tabId) {
@@ -476,7 +615,6 @@ const Dashboard = {
   },
 
   async loadDashboardData() {
-    // Stats
     try {
       const res = await API.dashboard.getStats();
       if (res?.success) {
@@ -502,7 +640,6 @@ const Dashboard = {
       }
     } catch(e) {}
 
-    // Invoices (Populates Recent, Flags, and All Invoices)
     try {
       const res = await API.invoices.getAll();
       if (res?.success) {
@@ -531,7 +668,6 @@ const Dashboard = {
               <div style="font-size:0.72rem;color:var(--danger);margin-top:3px">🚩 ${Utils.truncate(inv["🚩 Red Flags"], 48)}</div>
             </div>`).join("");
         
-        // Full Red Flags Table
         const rfBody = document.getElementById("redFlagBody");
         if(rfBody) {
           rfBody.innerHTML = flagged.length === 0 
@@ -601,6 +737,7 @@ const Dashboard = {
 
     Dashboard.queueData = res.data.queue || [];
     Dashboard.queueFiltered = [...Dashboard.queueData];
+    Dashboard.queueCurrentPage = 1;
     Dashboard.renderQueue();
 
     const input = document.getElementById("cfoQueueSearch");
@@ -633,6 +770,7 @@ const Dashboard = {
       filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     }
     Dashboard.queueFiltered = filtered;
+    Dashboard.queueCurrentPage = 1; // Reset to page 1 on filter
     Dashboard.renderQueue();
   },
 
@@ -645,15 +783,22 @@ const Dashboard = {
     
     if (data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:40px"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Queue is empty</div></div></td></tr>`;
+      Dashboard.renderQueuePagination(0, 0);
       return;
     }
 
-    tbody.innerHTML = data.map((item, i) => {
+    // Pagination bounds
+    const total = data.length;
+    const start = (Dashboard.queueCurrentPage - 1) * Dashboard.queuePageSize;
+    const end = Math.min(start + parseInt(Dashboard.queuePageSize), total);
+    const pageData = data.slice(start, end);
+
+    tbody.innerHTML = pageData.map((item, i) => {
       const status = item["Approval Status"] || "Pending";
       const isPending = status === "Pending" || status === "";
       const rowIdx = item.queueRowIndex;
       return `<tr style="cursor:pointer; ${isPending ? '' : 'opacity:0.75'}" onclick="Dashboard.openDetail(${rowIdx})">
-        <td style="color:var(--gray-400);font-size:0.75rem">${i+1}</td>
+        <td style="color:var(--gray-400);font-size:0.75rem">${start + i+1}</td>
         <td><strong>${item["A13. Invoice Number"]||"—"}</strong></td>
         <td>${Utils.truncate(item["A14. Vendor Name"], 18)}</td>
         <td>${Utils.formatCurrency(item["A20. Basic Amount"])}</td>
@@ -663,12 +808,169 @@ const Dashboard = {
         <td>${isPending ? '<span style="background:#fff3e0;color:#f9a825;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600">Pending</span>' : status}</td>
         <td onclick="event.stopPropagation()">${isPending ? `<div style="display:flex;gap:6px">
           <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600" 
-            onclick="Dashboard.openApproveModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
+            onclick="Dashboard.openApproveModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
           <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600"
-            onclick="Dashboard.openRejectModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
+            onclick="Dashboard.openRejectModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
         </div>` : ""}</td>
       </tr>`;
     }).join("");
+
+    Dashboard.renderQueuePagination(total, end);
+  },
+
+  renderQueuePagination(total, end) {
+    const info = document.getElementById("queueTableInfo");
+    const pagDiv = document.getElementById("queueTablePagination");
+    if(!info || !pagDiv) return;
+
+    const pages = Math.ceil(total / Dashboard.queuePageSize);
+    const start = (Dashboard.queueCurrentPage - 1) * Dashboard.queuePageSize + 1;
+
+    info.textContent = total > 0 ? `Showing ${start}–${end} of ${total}` : "";
+    if (pages <= 1) { pagDiv.innerHTML = ""; return; }
+
+    let html = `<button class="btn btn-ghost btn-sm" ${Dashboard.queueCurrentPage === 1 ? "disabled" : ""} onclick="Dashboard.goQueuePage(${Dashboard.queueCurrentPage - 1})"><i class="fa fa-chevron-left"></i></button>`;
+    for (let i = 1; i <= pages; i++) {
+      if (i === 1 || i === pages || (i >= Dashboard.queueCurrentPage - 1 && i <= Dashboard.queueCurrentPage + 1)) {
+        html += `<button class="btn btn-sm ${i === Dashboard.queueCurrentPage ? 'btn-primary' : 'btn-ghost'}" onclick="Dashboard.goQueuePage(${i})">${i}</button>`;
+      } else if (i === Dashboard.queueCurrentPage - 2 || i === Dashboard.queueCurrentPage + 2) {
+        html += `<span style="padding:0 4px;color:var(--gray-400)">...</span>`;
+      }
+    }
+    html += `<button class="btn btn-ghost btn-sm" ${Dashboard.queueCurrentPage === pages ? "disabled" : ""} onclick="Dashboard.goQueuePage(${Dashboard.queueCurrentPage + 1})"><i class="fa fa-chevron-right"></i></button>`;
+    pagDiv.innerHTML = html;
+  },
+
+  goQueuePage(page) {
+    const pages = Math.ceil(Dashboard.queueFiltered.length / Dashboard.queuePageSize);
+    if (page < 1 || page > pages) return;
+    Dashboard.queueCurrentPage = page;
+    Dashboard.renderQueue();
+  },
+
+  changeQueuePageSize(size) {
+    Dashboard.queuePageSize = parseInt(size);
+    Dashboard.queueCurrentPage = 1;
+    Dashboard.renderQueue();
+  },
+
+  // 🔥 REPORTS LOGIC 🔥
+  async loadReports() {
+    if (Dashboard.allInvoicesData.length === 0) await Dashboard.loadDashboardData();
+    const all = Dashboard.allInvoicesData;
+    
+    let totalAmount = 0, approvedAmount = 0, pendingAmount = 0;
+    const vendorStats = {};
+
+    all.forEach(inv => {
+      const amt = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+      const stage = inv["Current_Stage"] || "";
+      const isApproved = stage === "Completed" && inv["CFO_Status"] !== "Rejected" && inv["Account_Status"] !== "Rejected"; 
+      const isPending = stage !== "Completed" && !inv["CFO_Status"]?.includes("Rejected") && !inv["Account_Status"]?.includes("Rejected");
+      
+      totalAmount += amt;
+      if (isApproved) approvedAmount += amt;
+      else if (isPending) pendingAmount += amt;
+      
+      const vendor = inv["A14. Vendor Name"] || "Unknown Vendor";
+      if (!vendorStats[vendor]) vendorStats[vendor] = { count: 0, approved: 0, pending: 0, value: 0 };
+      
+      vendorStats[vendor].count += 1;
+      vendorStats[vendor].value += amt;
+      if (isApproved) vendorStats[vendor].approved += 1;
+      else vendorStats[vendor].pending += 1;
+    });
+
+    document.getElementById("repTotalCount").textContent = all.length;
+    document.getElementById("repTotalAmount").textContent = Utils.formatCurrency(totalAmount);
+    document.getElementById("repApprovedAmount").textContent = Utils.formatCurrency(approvedAmount);
+    document.getElementById("repPendingAmount").textContent = Utils.formatCurrency(pendingAmount);
+
+    const vendorArr = Object.keys(vendorStats).map(v => ({ name: v, ...vendorStats[v] })).sort((a, b) => b.value - a.value);
+    const tbody = document.getElementById("reportsVendorBody");
+    
+    if (vendorArr.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 32px; color: var(--gray-400);">No data available</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = vendorArr.map(v => `
+      <tr>
+        <td><strong>${Utils.truncate(v.name, 40)}</strong></td>
+        <td style="text-align:center;">${v.count}</td>
+        <td style="text-align:center; color: var(--secondary); font-weight: 600;">${v.approved}</td>
+        <td style="text-align:center; color: var(--warning);">${v.pending}</td>
+        <td style="text-align:right; font-weight: 600;">${Utils.formatCurrency(v.value)}</td>
+      </tr>
+    `).join("");
+  },
+
+  async loadTDSSummary() {
+    if (Dashboard.allInvoicesData.length === 0) await Dashboard.loadDashboardData();
+    const tdsStats = {};
+
+    Dashboard.allInvoicesData.forEach(inv => {
+      if (inv["B1. TDS Applicable"] !== "Yes" && !(Number(inv["B8. TDS Amount"]) > 0)) return;
+      const vendor = inv["A14. Vendor Name"] || "Unknown";
+      const pan = inv["B3. Vendor PAN"] || "N/A";
+      const key = vendor + "_" + pan;
+      
+      if (!tdsStats[key]) tdsStats[key] = { vendor, pan, basic: 0, tdsAmt: 0, section: inv["B6. TDS Section"] || "—", rate: inv["B7. TDS Rate"] || "—" };
+      tdsStats[key].basic += Number(inv["A20. Basic Amount"]) || 0;
+      tdsStats[key].tdsAmt += Number(inv["B8. TDS Amount"]) || 0;
+    });
+
+    const arr = Object.values(tdsStats).sort((a, b) => b.tdsAmt - a.tdsAmt);
+    const tbody = document.getElementById("tdsReportBody");
+    if (arr.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 32px; color: var(--gray-400);">No TDS data found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = arr.map(v => `
+      <tr>
+        <td><strong>${Utils.truncate(v.vendor, 35)}</strong></td>
+        <td>${v.pan}</td>
+        <td style="text-align:center;">${Utils.formatCurrency(v.basic)}</td>
+        <td style="text-align:center;">${v.section}</td>
+        <td style="text-align:center;">${v.rate}</td>
+        <td style="text-align:right; color:var(--warning); font-weight:600;">${Utils.formatCurrency(v.tdsAmt)}</td>
+      </tr>
+    `).join("");
+  },
+
+  async loadGSTSummary() {
+    if (Dashboard.allInvoicesData.length === 0) await Dashboard.loadDashboardData();
+    const gstStats = {};
+
+    Dashboard.allInvoicesData.forEach(inv => {
+      if (inv["C1. GST Charged"] !== "Yes" && !inv["C3. Vendor GST No"]) return;
+      const vendor = inv["A14. Vendor Name"] || "Unknown";
+      const gst = inv["C3. Vendor GST No"] || "N/A";
+      const key = vendor + "_" + gst;
+      
+      if (!gstStats[key]) gstStats[key] = { vendor, gst, count: 0, basic: 0, payable: 0 };
+      gstStats[key].count += 1;
+      gstStats[key].basic += Number(inv["A20. Basic Amount"]) || 0;
+      gstStats[key].payable += Number(inv["D1. Final Payable Amt"]) || 0;
+    });
+
+    const arr = Object.values(gstStats).sort((a, b) => b.payable - a.payable);
+    const tbody = document.getElementById("gstReportBody");
+    if (arr.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 32px; color: var(--gray-400);">No GST data found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = arr.map(v => `
+      <tr>
+        <td><strong>${Utils.truncate(v.vendor, 35)}</strong></td>
+        <td>${v.gst}</td>
+        <td style="text-align:center;">${Utils.formatCurrency(v.basic)}</td>
+        <td style="text-align:center; font-weight:600;">${Utils.formatCurrency(v.payable)}</td>
+        <td style="text-align:center;">${v.count}</td>
+      </tr>
+    `).join("");
   },
 
   // 🔥 DETAIL MODAL LOGIC (READ ONLY)
@@ -721,14 +1023,14 @@ const Dashboard = {
 
   openApproveFromModal() {
     const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
-    const rowToApprove = Dashboard.currentRow; // 🔥 FIX: Capture row BEFORE closing modal
+    const rowToApprove = Dashboard.currentRow; 
     Dashboard.closeDetailModal();
     Dashboard.openApproveModal(rowToApprove, invoiceNo);
   },
 
   openRejectFromModal() {
     const invoiceNo = document.getElementById("modalInvoiceNo").textContent;
-    const rowToReject = Dashboard.currentRow; // 🔥 FIX: Capture row BEFORE closing modal
+    const rowToReject = Dashboard.currentRow; 
     Dashboard.closeDetailModal();
     Dashboard.openRejectModal(rowToReject, invoiceNo);
   },
@@ -837,7 +1139,6 @@ const Dashboard = {
 
   field(label, value) {
     const display = (value !== undefined && value !== null && value !== "") ? value : "—";
-    // Pure Read-Only
     return `<div class="detail-item"><label>${label}</label><p style="margin:0;font-size:0.875rem">${display}</p></div>`;
   },
 
