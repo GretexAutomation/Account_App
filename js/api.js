@@ -7,7 +7,8 @@ const API = {
 
   // 🔁 Replace with your Web App URL
   BASE_URL: "https://script.google.com/macros/s/AKfycbyCGjp70iepiS4t5Zlb5LTk-bFsqtcZfSdrVrxeBKIxPvfx9IdeUZ4J-9ki1mDpwLBWOQ/exec",
-            // https://script.google.com/macros/s/AKfycbyCGjp70iepiS4t5Zlb5LTk-bFsqtcZfSdrVrxeBKIxPvfx9IdeUZ4J-9ki1mDpwLBWOQ/exec Next
+  
+
   // ─────────────────────────────────────────────
   // 🔧 CORE: Base request function
   // ─────────────────────────────────────────────
@@ -143,9 +144,15 @@ const API = {
       return await API.request("getBillStatusHistory", { invoiceNumber });
     },
 
+    async deleteNewBill(queueRowIndex) {
+      return await API.request("deleteNewBill", { queueRowIndex });
+    },
+
     async sync() {
       return await API.request("syncBillerQueue");
     }
+
+    
   },
 
   // ─────────────────────────────────────────────
