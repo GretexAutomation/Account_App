@@ -488,19 +488,26 @@
       transition: left 0.5s ease;
     }
 
-    .login-btn:hover::before { left: 100%; }
+    .login-btn:hover:not(:disabled)::before { left: 100%; }
 
-    .login-btn:hover {
+    .login-btn:hover:not(:disabled) {
       transform  : translateY(-2px);
       box-shadow : 0 12px 32px rgba(79,70,229,0.5);
     }
 
-    .login-btn:active { transform: translateY(0); }
+    .login-btn:active:not(:disabled) { transform: translateY(0); }
 
     .login-btn:disabled {
-      opacity   : 0.6;
+      opacity   : 0.5;
       cursor    : not-allowed;
       transform : none;
+      box-shadow: none;
+      background: rgba(255,255,255,0.1);
+      color     : rgba(255,255,255,0.4);
+    }
+    
+    .login-btn:disabled::before {
+      display: none;
     }
 
     /* Button Spinner */
@@ -533,57 +540,6 @@
     .error-box.show { display: flex; }
 
     .error-box i { color: #ef4444; font-size: 0.9rem; }
-
-    /* Divider */
-    .divider {
-      display    : flex;
-      align-items: center;
-      gap        : 12px;
-      margin     : 24px 0 20px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content   : "";
-      flex      : 1;
-      height    : 1px;
-      background: rgba(255,255,255,0.08);
-    }
-
-    .divider span {
-      font-size: 0.72rem;
-      color    : rgba(255,255,255,0.25);
-      white-space: nowrap;
-    }
-
-    /* Role Badges */
-    .roles-row {
-      display  : flex;
-      gap      : 6px;
-      flex-wrap: wrap;
-    }
-
-    .role-pill {
-      padding      : 5px 12px;
-      border-radius: 20px;
-      font-size    : 0.68rem;
-      font-weight  : 600;
-      border       : 1px solid;
-      cursor       : default;
-      transition   : all 0.2s;
-      white-space  : nowrap;
-    }
-
-    .role-pill:hover {
-      transform: translateY(-1px);
-    }
-
-    .rp-biller     { color:#a78bfa;border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.08) }
-    .rp-account    { color:#60a5fa;border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.08)  }
-    .rp-cfo        { color:#34d399;border-color:rgba(52,211,153,0.3); background:rgba(52,211,153,0.08)  }
-    .rp-admin      { color:#fbbf24;border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.08)  }
-    .rp-superadmin { color:#f87171;border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.08) }
-    .rp-billing    { color:#4ade80;border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.08)  }
 
     /* Footer */
     .form-footer {
@@ -791,28 +747,13 @@
           </button>
         </div>
 
-        <!-- Login Button -->
+        <!-- Login Button (Initially disabled) -->
         <button class="login-btn" id="loginBtn"
-          onclick="handleLogin()">
+          onclick="handleLogin()" disabled>
           <div class="btn-spinner" id="btnSpinner"></div>
           <i class="fa fa-arrow-right-to-bracket" id="btnIcon"></i>
           <span id="btnText">Sign In</span>
         </button>
-
-        <!-- Divider -->
-        <div class="divider">
-          <span>Available Roles</span>
-        </div>
-
-        <!-- Role Pills -->
-        <div class="roles-row">
-          <span class="role-pill rp-biller">📝 Biller</span>
-          <span class="role-pill rp-account">🧾 Account</span>
-          <span class="role-pill rp-cfo">💼 CFO</span>
-          <span class="role-pill rp-admin">⚙️ Admin</span>
-          <span class="role-pill rp-superadmin">👑 Super Admin</span>
-          <span class="role-pill rp-billing">💰 Billing</span>
-        </div>
 
         <!-- Footer -->
         <div class="form-footer">
@@ -845,9 +786,22 @@
       }
     })();
 
+    // ── Form Validity Check ──
+    function checkFormValidity() {
+      const email    = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
+      const btn      = document.getElementById("loginBtn");
+      const isLoading = document.getElementById("btnSpinner").style.display === "block";
+      
+      // Button enable hoga sirf tab jab dono fields mein value ho aur loading state na ho
+      if (!isLoading) {
+        btn.disabled = (!email || !password);
+      }
+    }
+
     // ── Check if already logged in ──
     window.addEventListener("DOMContentLoaded", () => {
-      if (Auth.isLoggedIn()) {
+      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
         const user = Auth.getUser();
         window.location.href = user.dashboard || "account.html";
         return;
@@ -861,6 +815,7 @@
       }
 
       document.getElementById("emailInput").focus();
+      checkFormValidity(); // Initial check incase fields are pre-filled
     });
 
     // ── Toggle password ──
@@ -875,7 +830,9 @@
     // ── Enter key ──
     document.getElementById("passwordInput")
       .addEventListener("keydown", e => {
-        if (e.key === "Enter") handleLogin();
+        if (e.key === "Enter" && !document.getElementById("loginBtn").disabled) {
+          handleLogin();
+        }
       });
 
     document.getElementById("emailInput")
@@ -884,36 +841,29 @@
           document.getElementById("passwordInput").focus();
       });
 
-    // ── Clear error on type ──
+    // ── Clear error and check validity on type ──
     ["emailInput", "passwordInput"].forEach(id => {
-      document.getElementById(id)
-        .addEventListener("input", hideError);
+      document.getElementById(id).addEventListener("input", () => {
+        hideError();
+        checkFormValidity();
+      });
     });
 
     // ── Handle Login ──
     async function handleLogin() {
       hideError();
 
-      const email    = document.getElementById("emailInput")
-                       .value.trim();
+      const email    = document.getElementById("emailInput").value.trim();
       const password = document.getElementById("passwordInput").value;
       const remember = document.getElementById("rememberMe").checked;
 
-      if (!email) {
-        showError("Please enter your email address");
-        document.getElementById("emailInput").focus();
-        return;
-      }
-      if (!password) {
-        showError("Please enter your password");
-        document.getElementById("passwordInput").focus();
-        return;
-      }
+      // Extra check just in case
+      if (!email || !password) return;
 
       setLoading(true);
 
       try {
-        const res = await API.auth.login(email, password);
+        const res = typeof API !== 'undefined' ? await API.auth.login(email, password) : { success: false, message: "API not defined" };
 
         if (!res?.success) {
           showError(res?.message || "Invalid email or password");
@@ -931,7 +881,7 @@
         }
 
         // Save session
-        Auth.saveSession(res.data);
+        if (typeof Auth !== 'undefined') Auth.saveSession(res.data);
 
         // Remember me
         if (remember) {
@@ -979,7 +929,12 @@
       const icon    = document.getElementById("btnIcon");
       const text    = document.getElementById("btnText");
 
-      btn.disabled          = loading;
+      if (loading) {
+        btn.disabled = true;
+      } else {
+        checkFormValidity(); // Re-evaluate based on input fields
+      }
+      
       spinner.style.display = loading ? "block"  : "none";
       icon.style.display    = loading ? "none"   : "inline";
       text.textContent      = loading
