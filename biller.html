@@ -678,9 +678,15 @@
           </div>
           <div class="card-body">
             <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-              <div>
+              <div style="display: flex; gap: 8px;">
                 <button class="btn btn-outline btn-sm" onclick="const el = document.getElementById('columnSelector'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';">
                   <i class="fa fa-columns"></i> Select Columns
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="const el = document.getElementById('stageFilterSelector'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';" style="background: var(--blue-50); color: var(--primary); border-color: var(--primary);">
+                  <i class="fa fa-filter"></i> Filter Stages
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="Dashboard.exportFlowupCSV()" style="background: var(--success-50, #e8f5e9); color: var(--success, #2e7d32); border-color: var(--success, #2e7d32);">
+                  <i class="fa fa-file-excel"></i> <span id="exportCsvBtnText">Export CSV</span>
                 </button>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -698,6 +704,35 @@
             <div id="columnSelector" style="display: none; flex-wrap: wrap; gap: 10px; padding: 12px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;">
               <!-- checkboxes will go here -->
             </div>
+            
+            <!-- Stage Filter Panel -->
+            <div id="stageFilterSelector" style="display: none; flex-wrap: wrap; gap: 12px; padding: 16px; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 700; color: var(--gray-800); border-right: 1px solid #bbdefb; padding-right: 12px; margin-right: 4px;">
+                <input type="checkbox" id="selectAllStages" checked onchange="Dashboard.toggleAllFlowupFilters(this)" /> All
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="New" checked onchange="Dashboard.toggleFlowupFilter()" /> New Bills
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="Account" checked onchange="Dashboard.toggleFlowupFilter()" /> Account
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="CFO" checked onchange="Dashboard.toggleFlowupFilter()" /> CFO
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="Admin" checked onchange="Dashboard.toggleFlowupFilter()" /> Admin
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="Super Admin" checked onchange="Dashboard.toggleFlowupFilter()" /> Final Approval (Super Admin)
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #1565c0;">
+                <input type="checkbox" value="Completed" checked onchange="Dashboard.toggleFlowupFilter()" /> Approved
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #d32f2f;">
+                <input type="checkbox" value="Rejected" checked onchange="Dashboard.toggleFlowupFilter()" /> Rejected
+              </label>
+            </div>
+
             <div class="table-wrapper" style="overflow: auto; width: 100%; max-width: 100%; max-height: 60vh; border: 1px solid var(--gray-200); border-radius: 8px;">
               <table class="data-table" style="width:100%; border-collapse: collapse; text-align: left;">
                 <thead id="flowupTableHead" style="position: sticky; top: 0; z-index: 2;">
@@ -1386,12 +1421,94 @@ const Dashboard = {
     "D1. Final Payable Amt",
     "Approval Status",
     "Current_Stage",
-    "Rejection Reason",
-    "Reject Reason",
+    "Rejection By",
+    "Rejection Remark",
     "D11. Narration"
   ],
+  flowupSelectedStages: ["New", "Account", "CFO", "Admin", "Super Admin", "Completed", "Rejected"],
+  flowupFilteredQueue: [],
   flowupRowsPerPage: 10,
   flowupCurrentPage: 1,
+
+  toggleFlowupFilter() {
+    const checkboxes = document.querySelectorAll("#stageFilterSelector input[type='checkbox']:not(#selectAllStages)");
+    const selected = [];
+    let allChecked = true;
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+          selected.push(cb.value);
+      } else {
+          allChecked = false;
+      }
+    });
+    
+    // Sync Select All checkbox state
+    const selectAllCb = document.getElementById("selectAllStages");
+    if (selectAllCb) selectAllCb.checked = allChecked;
+
+    Dashboard.flowupSelectedStages = selected;
+    Dashboard.flowupCurrentPage = 1;
+    Dashboard.renderFlowupTable();
+  },
+
+  toggleAllFlowupFilters(mainCb) {
+    const checkboxes = document.querySelectorAll("#stageFilterSelector input[type='checkbox']:not(#selectAllStages)");
+    checkboxes.forEach(cb => {
+      cb.checked = mainCb.checked;
+    });
+    Dashboard.toggleFlowupFilter();
+  },
+
+  exportFlowupCSV() {
+    if (!Dashboard.flowupFilteredQueue || Dashboard.flowupFilteredQueue.length === 0) {
+        Toast.warning("No data to export!");
+        return;
+    }
+    
+    // Get only checked rows
+    const dataToExport = Dashboard.flowupFilteredQueue.filter(b => b._exportChecked !== false);
+    
+    if (dataToExport.length === 0) {
+        Toast.warning("No rows selected for export!");
+        return;
+    }
+
+    const columns = Dashboard.flowupSelectedColumns;
+    let csvContent = "";
+    
+    // CSV Headers
+    csvContent += columns.map(c => `"${c.replace(/"/g, '""')}"`).join(",") + "\r\n";
+    
+    // CSV Data Rows
+    dataToExport.forEach(row => {
+        const rowData = columns.map(c => {
+            let val = (row[c] !== undefined && row[c] !== null) ? String(row[c]).trim() : "";
+            const isEmpty = !val || val === "N/A" || val === "NA" || val === "n/a" || val === "null" || val === "undefined";
+            if (isEmpty) val = "—";
+            
+            // Apply similar formatting as HTML table (currency prefix)
+            if (["D1. Final Payable Amt", "A20. Basic Amount", "B8. TDS Amount"].includes(c)) {
+                if (!isEmpty && !isNaN(parseFloat(val))) {
+                    val = "₹" + val;
+                }
+            }
+            
+            return `"${val.replace(/"/g, '""')}"`;
+        });
+        csvContent += rowData.join(",") + "\r\n";
+    });
+    
+    // Download via Blob
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Flowup_Export_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  },
 
   changeFlowupLimit(val) {
     Dashboard.flowupRowsPerPage = parseInt(val, 10);
@@ -1400,7 +1517,7 @@ const Dashboard = {
   },
 
   changeFlowupPage(delta) {
-    const totalPages = Math.ceil(Dashboard.queue.length / Dashboard.flowupRowsPerPage);
+    const totalPages = Math.ceil(Dashboard.flowupFilteredQueue.length / Dashboard.flowupRowsPerPage);
     let newPage = Dashboard.flowupCurrentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) {
       Dashboard.flowupCurrentPage = newPage;
@@ -1418,6 +1535,32 @@ const Dashboard = {
       if (el) el.innerHTML = `<tr><td colspan="100%" class="text-center" style="padding: 32px;">No bills found.</td></tr>`;
       return;
     }
+
+    // Compute Rejection Virtual Columns & initialize export state
+    Dashboard.queue.forEach(b => {
+      b._uid = b._uid || Math.random().toString(36).substr(2, 9);
+      if (b._exportChecked === undefined) b._exportChecked = true;
+
+      let rBy = "", rRem = "";
+      if ((b["Account_Status"] || "").includes("Rejected")) { 
+          rBy = "Account"; rRem = b["Account_Remark"] || ""; 
+      }
+      else if ((b["CFO_Status"] || "").includes("Rejected")) { 
+          rBy = "CFO"; rRem = b["CFO_Remark"] || ""; 
+      }
+      else if ((b["Admin_Status"] || "").includes("Rejected")) { 
+          rBy = "Admin"; rRem = b["Admin_Remark"] || ""; 
+      }
+      else if ((b["SA_Status"] || "").includes("Rejected")) { 
+          rBy = "Super Admin"; rRem = b["SA_Remark"] || ""; 
+      }
+      else if (b["Approval Status"] === "Rejected") {
+          rBy = "Unknown Stage"; rRem = "—";
+      }
+      
+      b["Rejection By"] = rBy;
+      b["Rejection Remark"] = rRem;
+    });
 
     
     // Build column selector if not built yet
@@ -1451,15 +1594,71 @@ const Dashboard = {
     Dashboard.renderFlowupTable();
   },
 
+  updateExportCount() {
+    if (!Dashboard.flowupFilteredQueue) return;
+    const count = Dashboard.flowupFilteredQueue.filter(b => b._exportChecked !== false).length;
+    const btnText = document.getElementById("exportCsvBtnText");
+    if (btnText) {
+        btnText.innerText = `Export CSV (${count})`;
+    }
+  },
+
+  toggleFlowupMasterCb(masterCb) {
+    Dashboard.flowupFilteredQueue.forEach(b => {
+        b._exportChecked = masterCb.checked;
+    });
+    Dashboard.renderFlowupTable();
+  },
+
+  toggleFlowupRowCb(uid, cbElement) {
+    const row = Dashboard.queue.find(b => b._uid === uid);
+    if (row) {
+        row._exportChecked = cbElement.checked;
+    }
+    
+    // Update the row background instantly without full re-render
+    const tr = cbElement.closest("tr");
+    if (tr) {
+        tr.style.background = cbElement.checked ? '' : '#fff5f5';
+        tr.setAttribute("onmouseout", `this.style.background='${cbElement.checked ? 'transparent' : '#fff5f5'}'`);
+    }
+    
+    // Check if we need to update the master checkbox
+    const allChecked = Dashboard.flowupFilteredQueue.every(b => b._exportChecked);
+    const masterCb = document.getElementById("flowupMasterCb");
+    if (masterCb) masterCb.checked = allChecked;
+
+    Dashboard.updateExportCount();
+  },
+
   renderFlowupTable() {
     const thead = document.getElementById("flowupTableHead");
     const tbody = document.getElementById("flowupTableBody");
     if (!thead || !tbody) return;
 
+    // Filter queue by selected stages FIRST so we have accurate counts for the master checkbox
+    Dashboard.flowupFilteredQueue = Dashboard.queue.filter(b => {
+        let stage = b["Current_Stage"] || "New";
+        let isRejected = b["Approval Status"] === "Rejected" || (b["Rejection By"] && b["Rejection By"] !== "");
+        
+        // If the bill is rejected, it should ONLY appear if 'Rejected' is checked
+        if (isRejected) {
+            return Dashboard.flowupSelectedStages.includes("Rejected");
+        }
+        
+        // Otherwise, match against the normal stages
+        return Dashboard.flowupSelectedStages.includes(stage) || (stage === "New" && Dashboard.flowupSelectedStages.includes("New"));
+    });
+
     // Center these columns
-    const centerCols = ["Approval Status", "Current_Stage", "Rejection Reason", "Reject Reason"];
+    const centerCols = ["Approval Status", "Current_Stage", "Rejection By"];
 
     let thHtml = `<tr style="background-color: var(--gray-50); border-bottom: 2px solid var(--gray-200);">`;
+    
+    // Master checkbox in header
+    const isAllChecked = Dashboard.flowupFilteredQueue && Dashboard.flowupFilteredQueue.length > 0 && Dashboard.flowupFilteredQueue.every(b => b._exportChecked);
+    thHtml += `<th style="padding: 16px 10px; width: 40px; text-align: center;"><input type="checkbox" id="flowupMasterCb" ${isAllChecked ? 'checked' : ''} onchange="Dashboard.toggleFlowupMasterCb(this)" style="cursor: pointer;"></th>`;
+    
     Dashboard.flowupSelectedColumns.forEach(c => {
         const align = centerCols.includes(c) ? "center" : "left";
         thHtml += `<th style="padding: 16px 20px; font-weight: 600; color: var(--gray-700); white-space: nowrap; text-align: ${align}; font-size: 0.85rem;">${c}</th>`;
@@ -1468,16 +1667,26 @@ const Dashboard = {
     thead.innerHTML = thHtml;
 
     let trHtml = "";
-    
+
     // Pagination slicing
     const limit = Dashboard.flowupRowsPerPage;
     const page = Dashboard.flowupCurrentPage;
     const start = (page - 1) * limit;
     const end = start + limit;
-    const pagedQueue = Dashboard.queue.slice(start, end);
+    const pagedQueue = Dashboard.flowupFilteredQueue.slice(start, end);
+
+    if (pagedQueue.length === 0) {
+        trHtml = `<tr><td colspan="100%" class="text-center" style="padding: 32px;">No bills match the selected filters.</td></tr>`;
+    }
 
     pagedQueue.forEach(b => {
-      trHtml += `<tr style="border-bottom: 1px solid var(--gray-100); transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">`;
+      // Light red background if unchecked
+      const bgStyle = b._exportChecked ? '' : 'background: #fff5f5;';
+      trHtml += `<tr style="border-bottom: 1px solid var(--gray-100); transition: background 0.2s; ${bgStyle}" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='${b._exportChecked ? 'transparent' : '#fff5f5'}'">`;
+      
+      // Row Checkbox
+      trHtml += `<td style="padding: 16px 10px; text-align: center;"><input type="checkbox" ${b._exportChecked ? 'checked' : ''} onchange="Dashboard.toggleFlowupRowCb('${b._uid}', this)" style="cursor: pointer;"></td>`;
+      
       Dashboard.flowupSelectedColumns.forEach(c => {
         let rawVal = (b[c] !== undefined && b[c] !== null) ? String(b[c]).trim() : "";
         const isEmpty = !rawVal || rawVal === "N/A" || rawVal === "NA" || rawVal === "n/a" || rawVal === "null" || rawVal === "undefined";
@@ -1505,6 +1714,10 @@ const Dashboard = {
             val = `<span style="color: var(--primary); font-weight: 600;">${val}</span>`;
         }
         
+        if ((c === "Rejection By" || c === "Rejection Remark") && !isEmpty) {
+            val = `<span style="color: var(--danger); font-size: ${c === 'Rejection By' ? '0.85rem; font-weight: 600;' : '0.8rem;'}">${val}</span>`;
+        }
+        
         trHtml += `<td style="padding: 16px 20px; font-size: 0.85rem; white-space: nowrap; text-align: ${align}; vertical-align: middle;">${val}</td>`;
       });
       trHtml += `</tr>`;
@@ -1512,18 +1725,19 @@ const Dashboard = {
     tbody.innerHTML = trHtml;
 
     // Render pagination controls
-    const totalItems = Dashboard.queue.length;
+    const totalItems = Dashboard.flowupFilteredQueue.length;
     const totalPages = Math.ceil(totalItems / limit);
     const pagEl = document.getElementById("flowupPagination");
     if (pagEl) {
         pagEl.innerHTML = `
             <div>Showing ${totalItems === 0 ? 0 : start + 1} to ${Math.min(end, totalItems)} of ${totalItems} entries</div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn btn-outline btn-sm" ${page === 1 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(-1)">Previous</button>
-                <button class="btn btn-outline btn-sm" ${page === totalPages || totalPages === 0 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(1)">Next</button>
+                <button class="btn btn-outline btn-sm" ${page <= 1 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(-1)">Previous</button>
+                <button class="btn btn-outline btn-sm" ${page >= totalPages || totalPages === 0 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(1)">Next</button>
             </div>
         `;
     }
+    Dashboard.updateExportCount();
   },
 
   async loadRecentBills() {
