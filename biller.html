@@ -2370,6 +2370,7 @@ const SubmitInvoice = {
 
   selectedFile: null,
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbybJBvh412l4I32UmZVums6KiX16ckQiYHppHF0-FEwlqDF-tpyMFms0BQy7kzysX04/exec",
+  
 
   init() {
     const uploadArea = document.getElementById("fileUploadArea");
@@ -2633,26 +2634,32 @@ async submitForm() {
         billerEmail: (typeof Auth !== 'undefined' && Auth.getUser()) ? Auth.getUser().email : "unknown@gretex.com"
       };
 
-      // STEP 3: Transmit the payload
+      // STEP 3: Transmit the payload to Google Apps Script
       showProcessingScreen("AI engine is currently analyzing the document...", 65);
       console.log("Transmitting request to the backend server...");
 
-      // We use 'no-cors' to prevent the browser from blocking the Google Apps Script redirect.
-      // NOTE: This means the response is "opaque" and we cannot read JSON from it.
-      await fetch(SubmitInvoice.APPS_SCRIPT_URL, {
+      // ✅ FIX: Removed 'no-cors' so we can read the real response from backend.
+      // GAS deployed Web Apps handle CORS via 302 redirects which browsers follow automatically.
+      const response = await fetch(SubmitInvoice.APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", 
         headers: {
-          "Content-Type": "text/plain;charset=utf-8" 
+          "Content-Type": "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        redirect: "follow"
       });
 
-      // STEP 4: Handle successful dispatch
-      // If fetch didn't throw a network error, the payload was delivered to Apps Script successfully.
+      // ✅ FIX: Parse the actual JSON response from backend
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "Backend processing failed. Please try again.");
+      }
+
+      // STEP 4: Handle successful submission
       showProcessingScreen("Finalizing database entry...", 90);
       showProcessingSuccess();
-      Toast.success("Invoice successfully submitted and processing! 🎉");
+      Toast.success("Invoice " + (result.invoiceNumber || "") + " successfully submitted! 🎉");
       
       // Clear the form inputs
       SubmitInvoice.resetForm();
@@ -2668,9 +2675,9 @@ async submitForm() {
 
     } catch (error) {
       hideProcessingScreen();
-      console.error("Critical Submission Error:", error);
-      Toast.error("Network error: Unable to connect to the processing server.");
-      SubmitInvoice.showStatus("error", "System Error: Please check your internet connection.");
+      console.error("Submission Error:", error);
+      Toast.error(error.message || "Failed to process invoice. Please try again.");
+      SubmitInvoice.showStatus("error", "Error: " + (error.message || "Network issue"));
     }
   },
 
