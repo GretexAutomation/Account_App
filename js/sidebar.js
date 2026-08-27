@@ -16,7 +16,8 @@ const Sidebar = {
         items: [
           { id: "dashboard", icon: "fa-gauge",        label: "Dashboard",       page: "biller.html"  },
           { id: "submit",    icon: "fa-plus-circle",  label: "Submit Invoice",  page: "biller.html#submit" },
-          { id: "myinvoices",icon: "fa-file-invoice", label: "My Invoices",     page: "biller.html#invoices" }
+          { id: "myinvoices",icon: "fa-file-invoice", label: "My Invoices",     page: "biller.html#invoices" },
+          { id: "flowup",    icon: "fa-list",         label: "Flowup",          page: "biller.html#flowup" }
         ]
       },
       {
@@ -35,7 +36,8 @@ const Sidebar = {
           { id: "dashboard", icon: "fa-gauge",         label: "Dashboard",      page: "account.html"  },
           { id: "invoices",  icon: "fa-file-invoice",  label: "All Invoices",   page: "account.html#invoices" },
           { id: "approval",  icon: "fa-list-check",    label: "Approval Queue", page: "account.html#approval", badge: "approval" },
-          { id: "redflags",  icon: "fa-flag",          label: "Red Flags",      page: "account.html#redflags", badge: "redflags" }
+          { id: "redflags",  icon: "fa-flag",          label: "Red Flags",      page: "account.html#redflags", badge: "redflags" },
+          { id: "flowup",    icon: "fa-list",          label: "Flowup",         page: "account.html#flowup" }
         ]
       },
       {
@@ -60,7 +62,8 @@ const Sidebar = {
           { id: "dashboard", icon: "fa-gauge",         label: "Dashboard",      page: "cfo.html"  },
           { id: "invoices",  icon: "fa-file-invoice",  label: "All Invoices",   page: "cfo.html#invoices" },
           { id: "redflags",  icon: "fa-flag",          label: "Red Flags",      page: "cfo.html#redflags", badge: "redflags" },
-          { id: "approve",   icon: "fa-circle-check",  label: "Approvals",      page: "cfo.html#approve" }
+          { id: "approve",   icon: "fa-circle-check",  label: "Approvals",      page: "cfo.html#approve" },
+          { id: "flowup",    icon: "fa-list",          label: "Flowup",         page: "cfo.html#flowup" }
         ]
       },
       {

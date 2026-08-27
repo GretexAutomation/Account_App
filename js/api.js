@@ -305,8 +305,8 @@ const API = {
 const Auth = {
 
   saveSession(data) {
-    sessionStorage.setItem("gretex_token", data.token);
-    sessionStorage.setItem("gretex_user", JSON.stringify({
+    localStorage.setItem("gretex_token", data.token);
+    localStorage.setItem("gretex_user", JSON.stringify({
       name     : data.name,
       email    : data.email,
       role     : data.role,
@@ -315,12 +315,12 @@ const Auth = {
   },
 
   getToken() {
-    return sessionStorage.getItem("gretex_token") || null;
+    return localStorage.getItem("gretex_token") || null;
   },
 
   getUser() {
     try {
-      const u = sessionStorage.getItem("gretex_user");
+      const u = localStorage.getItem("gretex_user");
       return u ? JSON.parse(u) : null;
     } catch { return null; }
   },
@@ -335,8 +335,8 @@ const Auth = {
   },
 
   clearSession() {
-    sessionStorage.removeItem("gretex_token");
-    sessionStorage.removeItem("gretex_user");
+    localStorage.removeItem("gretex_token");
+    localStorage.removeItem("gretex_user");
   },
 
   requireAuth() {
