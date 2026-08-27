@@ -664,6 +664,60 @@
       </div>
 
       <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- FLOWUP SECTION ═══════════════════════════════════════════════ -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <div class="section" id="section-flowup" style="width: 100%; overflow: hidden;">
+        <div class="card" style="max-width: 100%; overflow: hidden;">
+          <div class="card-header">
+            <div class="card-title" style="color:var(--primary)">
+              <i class="fa fa-list"></i> Flowup - All Bills Status
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="Dashboard.syncBills()">
+              <i class="fa fa-rotate"></i> Sync
+            </button>
+          </div>
+          <div class="card-body">
+            <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <button class="btn btn-outline btn-sm" onclick="const el = document.getElementById('columnSelector'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';">
+                  <i class="fa fa-columns"></i> Select Columns
+                </button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 0.85rem; color: var(--gray-600);">Show</label>
+                <select class="form-control" style="width: auto; padding: 4px 8px; height: 32px; font-size: 0.85rem;" onchange="Dashboard.changeFlowupLimit(this.value)">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                </select>
+                <label style="font-size: 0.85rem; color: var(--gray-600);">entries</label>
+              </div>
+            </div>
+            <div id="columnSelector" style="display: none; flex-wrap: wrap; gap: 10px; padding: 12px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;">
+              <!-- checkboxes will go here -->
+            </div>
+            <div class="table-wrapper" style="overflow: auto; width: 100%; max-width: 100%; max-height: 60vh; border: 1px solid var(--gray-200); border-radius: 8px;">
+              <table class="data-table" style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead id="flowupTableHead" style="position: sticky; top: 0; z-index: 2;">
+                </thead>
+                <tbody id="flowupTableBody">
+                  <tr>
+                    <td colspan="100%" class="text-center" style="padding: 32px; color: var(--gray-400);">
+                      <i class="fa fa-spinner fa-spin"></i> Loading...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="flowupPagination" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 0.85rem; color: var(--gray-600);">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
       <!-- SUBMIT INVOICE SECTION - COMPLETE ══════════════════════════════ -->
       <!-- ══════════════════════════════════════════════════════════════ -->
       <div class="section" id="section-submit">
@@ -1265,7 +1319,8 @@ const Dashboard = {
         completed: "Completed Bills",
         track: "Track Bills",
         profile: "My Profile",
-        password: "Change Password"
+        password: "Change Password",
+        flowup: "Flowup - All Bills Status"
     };
     Header.setTitle(titles[id] || "Dashboard");
     Sidebar.setActive(id === 'new' || id === 'process' || id === 'invoices' || id === 'completed' ? "myinvoices" : (id === 'submit' ? 'submit' : id));
@@ -1284,6 +1339,8 @@ const Dashboard = {
         Dashboard.loadCompletedSection();
     } else if (id === "profile") {
         Dashboard.loadProfile();
+    } else if (id === "flowup") {
+        Dashboard.loadFlowupSection();
     }
   },
 
@@ -1317,6 +1374,155 @@ const Dashboard = {
       Dashboard.queue    = res.data.queue || [];
       Dashboard.filtered = [...Dashboard.queue];
       Dashboard.renderBills("all");
+    }
+  },
+
+  flowupSelectedColumns: [
+    "Timestamp",
+    "A13. Invoice Number",
+    "A14. Vendor Name",
+    "A1. Billed To",
+    "B8. TDS Amount",
+    "D1. Final Payable Amt",
+    "Approval Status",
+    "Current_Stage",
+    "Rejection Reason",
+    "Reject Reason",
+    "D11. Narration"
+  ],
+  flowupRowsPerPage: 10,
+  flowupCurrentPage: 1,
+
+  changeFlowupLimit(val) {
+    Dashboard.flowupRowsPerPage = parseInt(val, 10);
+    Dashboard.flowupCurrentPage = 1;
+    Dashboard.renderFlowupTable();
+  },
+
+  changeFlowupPage(delta) {
+    const totalPages = Math.ceil(Dashboard.queue.length / Dashboard.flowupRowsPerPage);
+    let newPage = Dashboard.flowupCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      Dashboard.flowupCurrentPage = newPage;
+      Dashboard.renderFlowupTable();
+    }
+  },
+
+  async loadFlowupSection() {
+    const el = document.getElementById("flowupTableBody");
+    if (el) el.innerHTML = `<tr><td colspan="100%" class="text-center" style="padding: 32px; color: var(--gray-400);"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+    
+    await Dashboard.ensureQueue();
+    
+    if (Dashboard.queue.length === 0) {
+      if (el) el.innerHTML = `<tr><td colspan="100%" class="text-center" style="padding: 32px;">No bills found.</td></tr>`;
+      return;
+    }
+
+    
+    // Build column selector if not built yet
+    const colSelector = document.getElementById("columnSelector");
+    if (colSelector && colSelector.children.length === 0) {
+        // extract all keys from the first item
+        const allKeys = Object.keys(Dashboard.queue[0]).filter(k => 
+           !['queueRowIndex', 'Original_JSON'].includes(k)
+        );
+        let cbHtml = "";
+        allKeys.forEach(k => {
+            const isChecked = Dashboard.flowupSelectedColumns.includes(k) ? "checked" : "";
+            cbHtml += `<label style="display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer;">
+                <input type="checkbox" value="${k}" onchange="Dashboard.toggleFlowupColumn(this)" ${isChecked} /> ${k}
+            </label>`;
+        });
+        colSelector.innerHTML = cbHtml;
+    }
+
+    Dashboard.renderFlowupTable();
+  },
+
+  toggleFlowupColumn(cb) {
+    if (cb.checked) {
+        if (!Dashboard.flowupSelectedColumns.includes(cb.value)) {
+            Dashboard.flowupSelectedColumns.push(cb.value);
+        }
+    } else {
+        Dashboard.flowupSelectedColumns = Dashboard.flowupSelectedColumns.filter(c => c !== cb.value);
+    }
+    Dashboard.renderFlowupTable();
+  },
+
+  renderFlowupTable() {
+    const thead = document.getElementById("flowupTableHead");
+    const tbody = document.getElementById("flowupTableBody");
+    if (!thead || !tbody) return;
+
+    // Center these columns
+    const centerCols = ["Approval Status", "Current_Stage", "Rejection Reason", "Reject Reason"];
+
+    let thHtml = `<tr style="background-color: var(--gray-50); border-bottom: 2px solid var(--gray-200);">`;
+    Dashboard.flowupSelectedColumns.forEach(c => {
+        const align = centerCols.includes(c) ? "center" : "left";
+        thHtml += `<th style="padding: 16px 20px; font-weight: 600; color: var(--gray-700); white-space: nowrap; text-align: ${align}; font-size: 0.85rem;">${c}</th>`;
+    });
+    thHtml += `</tr>`;
+    thead.innerHTML = thHtml;
+
+    let trHtml = "";
+    
+    // Pagination slicing
+    const limit = Dashboard.flowupRowsPerPage;
+    const page = Dashboard.flowupCurrentPage;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const pagedQueue = Dashboard.queue.slice(start, end);
+
+    pagedQueue.forEach(b => {
+      trHtml += `<tr style="border-bottom: 1px solid var(--gray-100); transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">`;
+      Dashboard.flowupSelectedColumns.forEach(c => {
+        let rawVal = (b[c] !== undefined && b[c] !== null) ? String(b[c]).trim() : "";
+        const isEmpty = !rawVal || rawVal === "N/A" || rawVal === "NA" || rawVal === "n/a" || rawVal === "null" || rawVal === "undefined";
+        let val = isEmpty ? "—" : rawVal;
+        const align = centerCols.includes(c) ? "center" : "left";
+        
+        // format currency columns — only add ₹ if there is a real number
+        if (["D1. Final Payable Amt", "A20. Basic Amount", "B8. TDS Amount"].includes(c)) {
+            if (!isEmpty && !isNaN(parseFloat(rawVal))) {
+                val = "₹" + rawVal;
+            } else {
+                val = "—";
+            }
+        }
+        
+        if (c === "Approval Status" && !isEmpty) {
+            let statusBadge = "status-new";
+            if(val === "Approved") statusBadge = "status-approved";
+            else if(val === "Rejected") statusBadge = "status-rejected";
+            else if(val === "Reviewed" || val.startsWith("Sent")) statusBadge = "status-pending";
+            val = `<span class="${statusBadge}" style="display: inline-block; min-width: 120px; text-align: center; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.75rem;">${val}</span>`;
+        }
+        
+        if (c === "Current_Stage" && !isEmpty) {
+            val = `<span style="color: var(--primary); font-weight: 600;">${val}</span>`;
+        }
+        
+        trHtml += `<td style="padding: 16px 20px; font-size: 0.85rem; white-space: nowrap; text-align: ${align}; vertical-align: middle;">${val}</td>`;
+      });
+      trHtml += `</tr>`;
+    });
+    tbody.innerHTML = trHtml;
+
+    // Render pagination controls
+    const totalItems = Dashboard.queue.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const pagEl = document.getElementById("flowupPagination");
+    if (pagEl) {
+        pagEl.innerHTML = `
+            <div>Showing ${totalItems === 0 ? 0 : start + 1} to ${Math.min(end, totalItems)} of ${totalItems} entries</div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline btn-sm" ${page === 1 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(-1)">Previous</button>
+                <button class="btn btn-outline btn-sm" ${page === totalPages || totalPages === 0 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeFlowupPage(1)">Next</button>
+            </div>
+        `;
     }
   },
 
