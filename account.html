@@ -1057,7 +1057,7 @@ const Dashboard = {
         <td>${(inv["🚩 Red Flags"] || "").split("|").map(f => `<div class="red-flag-item" style="margin-bottom:4px">🚩 ${f.trim()}</div>`).join("")}</td>
         <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
         <td style="white-space:nowrap;font-size:0.8rem">${inv["Timestamp"] || "—"}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> View</button></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> Read View</button></td>
       </tr>`).join("");
   },
 
@@ -1474,7 +1474,7 @@ const Dashboard = {
           <a href="${driveUrl}" target="_blank" class="btn btn-primary btn-sm"><i class="fa fa-external-link"></i> Open Full Size</a>
         </div>
         <div style="border:2px solid var(--gray-200);border-radius:12px;overflow:hidden;background:#f8f9fa;min-height:320px;display:flex;align-items:center;justify-content:center">
-          ${isImage ? `<img src="${driveUrl}" alt="Invoice" style="max-width:100%;max-height:500px;object-fit:contain"/>` : `<div style="text-align:center;padding:48px 24px"><div style="font-size:5rem;margin-bottom:16px">📄</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px">${attachmentName}</div><div style="color:var(--gray-500);font-size:0.85rem;margin-bottom:20px">PDF preview not available here</div><a href="${driveUrl}" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> View Invoice PDF</a></div>`}
+          ${isImage ? `<img src="${driveUrl}" alt="Invoice" style="max-width:100%;max-height:500px;object-fit:contain"/>` : `<div style="text-align:center;padding:48px 24px"><div style="font-size:5rem;margin-bottom:16px">📄</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px">${attachmentName}</div><div style="color:var(--gray-500);font-size:0.85rem;margin-bottom:20px">PDF preview not available here</div><a href="${driveUrl}" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> Read View Invoice PDF</a></div>`}
         </div>`;
     } else {
       html += `<div style="background:#f8f9fa;border:1px solid var(--gray-200);border-radius:12px;padding:48px 24px;text-align:center"><div style="font-size:4rem;margin-bottom:16px">📎</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px;color:var(--gray-700)">No Attachment</div><div style="font-size:0.85rem;color:var(--gray-500)">Invoice file not uploaded to Drive</div></div>`;
