@@ -39,11 +39,6 @@ const API = {
         throw new Error(data.message || "Request failed");
       }
 
-      // 🔄 Globally reverse queue arrays so newest (last row in sheet) is always first
-      if (data.data && Array.isArray(data.data.queue)) {
-          data.data.queue.reverse();
-      }
-
       return data;
 
     } catch (err) {
