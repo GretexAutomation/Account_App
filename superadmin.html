@@ -103,7 +103,7 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:24px">
             <div class="card" style="cursor:pointer" onclick="Dashboard.showSection('approve')">
               <div class="card-body" style="text-align:center;padding:20px 12px">
-                <div style="font-size:1.8rem;margin-bottom:6px">✅</div><div style="font-weight:600;font-size:0.82rem;color:var(--gray-800)">Approvals</div>
+                <div style="font-size:1.8rem;margin-bottom:6px">✅</div><div style="font-weight:600;font-size:0.82rem;color:var(--gray-800)">Approval Pending By Me</div>
               </div>
             </div>
             <div class="card" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
@@ -191,7 +191,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <i class="fa fa-list-check"></i> Super Admin Approval Queue
+              <i class="fa fa-list-check"></i> Approval Pending By Me
               <span id="queueCount" style="font-weight:400;color:var(--gray-500);font-size:0.8rem"></span>
             </div>
           </div>
@@ -439,7 +439,8 @@ const Dashboard = {
     let html = `<div class="tracking-wrapper"><div class="tracking-container">`;
     steps.forEach((step) => {
       let statusClass = ""; let iconHtml = `<i class="fa ${step.icon}"></i>`; let dateText = step.date ? step.date : "Pending...";
-      if (step.date && step.date !== "") {
+      if ((step.date && step.date !== "") || (step.statusCol && step.statusCol.includes("Approved")) || (step.statusCol && step.statusCol.includes("Rejected"))) {
+        if (!step.date || step.date === "") dateText = "Done";
         statusClass = "completed"; iconHtml = `<i class="fa fa-check"></i>`; 
         if (step.statusCol && step.statusCol.includes("Rejected")) { statusClass = "rejected"; iconHtml = `<i class="fa fa-times"></i>`; }
       } else {
@@ -472,7 +473,7 @@ const Dashboard = {
   showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
-    const titles = { dashboard: "Super Admin Dashboard", invoices : "All Invoices", approve : "Approval Queue", redflags: "Red Flags", reports: "Reports", tds: "TDS Summary", gst: "GST Summary", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
+    const titles = { dashboard: "Super Admin Dashboard", invoices : "All Invoices", approve : "Approval Pending By Me", redflags: "Red Flags", reports: "Reports", tds: "TDS Summary", gst: "GST Summary", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
     Header.setTitle(titles[id] || "Dashboard"); Sidebar.setActive(id);
     
     if (id === "approve") Dashboard.loadApprovalQueue();
@@ -602,8 +603,8 @@ const Dashboard = {
         <td><strong>${Utils.formatCurrency(item["D1. Final Payable Amt"])}</strong></td>
         <td>${isPending ? '<span class="queue-status-badge status-pending">Pending</span>' : `<span class="queue-status-badge status-${status.toLowerCase()}">${status}</span>`}</td>
         <td onclick="event.stopPropagation()">${isPending ? `<div style="display:flex;gap:6px">
-          <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="Dashboard.openApproveModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅</button>
-          <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="Dashboard.openRejectModal(${rowIdx}, '${(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌</button>
+          <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="Dashboard.openApproveModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅</button>
+          <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-weight:600" onclick="Dashboard.openRejectModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌</button>
         </div>` : ""}</td>
       </tr>`;
     }).join("");

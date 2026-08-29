@@ -237,6 +237,41 @@
     }
     @media (max-width:1024px) { .dash-grid { grid-template-columns: 1fr; } }
 
+    /* ── Grid Layout for All Bills ── */
+    #billsList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      padding: 16px;
+      max-height: 800px; /* Approx 5 rows */
+      overflow-y: auto;
+    }
+    
+    /* Make empty/loading text span all columns */
+    #billsList > div:not(.bill-card) {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 32px;
+    }
+    
+    #billsList .bill-card {
+      margin-bottom: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      height: 100%;
+    }
+    
+    #billsList .bill-card > div:first-child {
+      width: 100%;
+    }
+    
+    #billsList .bill-card > div:last-child {
+      width: 100%;
+      text-align: right;
+      margin-top: auto;
+    }
+
     /* ── Flag count ── */
     .flag-count {
       display      : inline-flex;
@@ -546,6 +581,8 @@
               <i class="fa fa-spinner fa-spin"></i> Loading...
             </div>
           </div>
+          <div id="billerPagination" style="padding: 12px 16px; border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--gray-600); background: #fafafa; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          </div>
         </div>
       </div>
 
@@ -571,6 +608,10 @@
               </div>
             </div>
           </div>
+
+
+
+        
           <div class="card">
             <div class="card-body"
               style="display:flex;align-items:center;
@@ -624,6 +665,27 @@
             </div>
           </div>
           <div id="completedList" style="padding:16px">
+            <div class="text-center"
+              style="padding:32px;color:var(--gray-400)">
+              <i class="fa fa-spinner fa-spin"></i> Loading...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="section" id="section-approved">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa fa-check-double"></i>
+              Approved Bills
+              <span id="approvedCount"
+                style="font-weight:400;color:var(--gray-500);
+                font-size:0.8rem"></span>
+            </div>
+          </div>
+          <div id="approvedList" style="padding:16px">
             <div class="text-center"
               style="padding:32px;color:var(--gray-400)">
               <i class="fa fa-spinner fa-spin"></i> Loading...
@@ -1220,6 +1282,8 @@ const Dashboard = {
 
   queue        : [],
   filtered     : [],
+  billerCurrentPage: 1,
+  billerRowsPerPage: 15,
   currentBill  : null,
   pendingEdits : {},
   users        : [],
@@ -1239,18 +1303,40 @@ const Dashboard = {
     let stageReached = false;
 
     let html = `<div class="tracking-wrapper"><div class="tracking-container">`;
+    let rejectionHtml = "";
 
     steps.forEach((step) => {
       let statusClass = "";
       let iconHtml = `<i class="fa ${step.icon}"></i>`;
       let dateText = step.date ? step.date : "Pending...";
 
-      if (step.date && step.date !== "") {
+      if ((step.date && step.date !== "") || (step.statusCol && step.statusCol.includes("Approved")) || (step.statusCol && step.statusCol.includes("Rejected"))) {
+        if (!step.date || step.date === "") dateText = "Done";
         statusClass = "completed";
         iconHtml = `<i class="fa fa-check"></i>`; 
         if (step.statusCol && step.statusCol.includes("Rejected")) {
           statusClass = "rejected";
           iconHtml = `<i class="fa fa-times"></i>`;
+          
+          // Capture rejection details
+          let remark = "";
+          if (step.key === "Account") remark = inv["Account_Remark"];
+          else if (step.key === "CFO") remark = inv["CFO_Remark"];
+          else if (step.key === "Admin") remark = inv["Admin_Remark"];
+          else if (step.key === "SA") remark = inv["SA_Remark"];
+          
+          if (!remark || remark.trim() === "") remark = "No specific reason provided.";
+          
+          rejectionHtml = `
+            <div style="margin-top: 20px; background: #fff0f0; border-left: 4px solid #ea4335; border-radius: 8px; padding: 12px 16px;">
+              <div style="color: #d32f2f; font-weight: 700; margin-bottom: 4px; font-size: 0.9rem;">
+                ❌ Rejected at ${step.label} Stage
+              </div>
+              <div style="color: #5f6368; font-size: 0.85rem;">
+                <strong>Reason:</strong> ${remark}
+              </div>
+            </div>
+          `;
         }
       } else {
         if (!stageReached && !hasRejected && currentStage !== "Completed") {
@@ -1271,6 +1357,8 @@ const Dashboard = {
     });
 
     html += `</div></div>`;
+    if (rejectionHtml) html += rejectionHtml;
+    
     return html;
   },
 
@@ -1370,6 +1458,8 @@ const Dashboard = {
         Dashboard.loadProcessSection();
     } else if (id === "invoices") {
         Dashboard.loadQueue();
+    } else if (id === "approved") {
+        Dashboard.loadApprovedSection();
     } else if (id === "completed") {
         Dashboard.loadCompletedSection();
     } else if (id === "profile") {
@@ -1816,6 +1906,29 @@ const Dashboard = {
     Dashboard.filterBills("process");
   },
 
+  
+  
+
+  
+  async loadApprovedSection() {
+    await Dashboard.ensureQueue();
+    const bills = Dashboard.queue.filter(b => (b["Approval Status"]||"") === "Approved");
+    const count = document.getElementById("approvedCount");
+    if (count) count.textContent = `(${bills.length} bills)`;
+    
+    const el = document.getElementById("approvedList");
+    if (!el) return;
+    
+    if (bills.length === 0) {
+      el.innerHTML = `<div class="empty-state" style="padding:32px">
+        <div class="empty-icon">✅</div>
+        <div class="empty-title">No approved bills</div>
+      </div>`;
+      return;
+    }
+    el.innerHTML = bills.map(b => Dashboard.buildBillCard(b, false)).join("");
+  },
+
   async loadCompletedSection() {
     await Dashboard.ensureQueue();
     const approved = Dashboard.queue.filter(
@@ -1978,7 +2091,17 @@ const Dashboard = {
     }
 
     Dashboard.filtered = bills;
+    Dashboard.billerCurrentPage = 1;
     Dashboard.renderBills("all");
+  },
+
+  changeBillerPage(delta) {
+    const totalPages = Math.ceil(Dashboard.filtered.length / Dashboard.billerRowsPerPage);
+    let newPage = Dashboard.billerCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      Dashboard.billerCurrentPage = newPage;
+      Dashboard.renderBills("all");
+    }
   },
 
   renderBills(type) {
@@ -1987,9 +2110,36 @@ const Dashboard = {
     const bills = Dashboard.filtered;
     if (!el) return;
     if (count) count.textContent = `(${bills.length})`;
-    el.innerHTML = bills.length === 0
+    
+    // Pagination logic
+    const limit = Dashboard.billerRowsPerPage;
+    const page = Dashboard.billerCurrentPage;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const pagedBills = bills.slice(start, end);
+
+    el.innerHTML = pagedBills.length === 0
       ? Dashboard.emptyState("No bills found")
-      : bills.map(b => Dashboard.buildBillCard(b,false)).join("");
+      : pagedBills.map(b => Dashboard.buildBillCard(b,false)).join("");
+      
+    // Render pagination controls
+    const totalItems = bills.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const pagEl = document.getElementById("billerPagination");
+    if (pagEl) {
+        if (totalItems > 0) {
+            pagEl.innerHTML = `
+                <div>Showing ${start + 1} to ${Math.min(end, totalItems)} of ${totalItems} entries</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-sm" ${page <= 1 ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeBillerPage(-1)">Previous</button>
+                    <button class="btn btn-outline btn-sm" ${page >= totalPages ? 'disabled style="opacity:0.5"' : ''} onclick="Dashboard.changeBillerPage(1)">Next</button>
+                </div>
+            `;
+            pagEl.style.display = 'flex';
+        } else {
+            pagEl.style.display = 'none';
+        }
+    }
   },
 
   emptyState(msg) {
@@ -2031,6 +2181,16 @@ const Dashboard = {
             ${Utils.truncate(vendor,22)} •
             <strong>${amount}</strong>
           </div>
+          ${status === "Rejected" ? (() => {
+              let rBy = "Unknown", rRem = "No remark provided";
+              if ((b["Account_Status"] || "").includes("Rejected")) { rBy = "Account"; rRem = b["Account_Remark"] || rRem; }
+              else if ((b["CFO_Status"] || "").includes("Rejected")) { rBy = "CFO"; rRem = b["CFO_Remark"] || rRem; }
+              else if ((b["Admin_Status"] || "").includes("Rejected")) { rBy = "Admin"; rRem = b["Admin_Remark"] || rRem; }
+              else if ((b["SA_Status"] || "").includes("Rejected")) { rBy = "Super Admin"; rRem = b["SA_Remark"] || rRem; }
+              return `<div style="margin-top:6px;font-size:0.72rem;color:#d32f2f;">
+                <strong>Rejected by ${rBy}:</strong> ${Utils.truncate(rRem, 40)}
+              </div>`;
+          })() : ""}
         </div>
         <i class="fa fa-chevron-right"
           style="color:var(--gray-300)"></i>
@@ -2064,6 +2224,17 @@ const Dashboard = {
                    📤 → ${b["Sent To Role"]}
                  </span>` : ""}
           </div>
+          ${status === "Rejected" ? (() => {
+              let rBy = "Unknown", rRem = "No remark provided";
+              if ((b["Account_Status"] || "").includes("Rejected")) { rBy = "Account"; rRem = b["Account_Remark"] || rRem; }
+              else if ((b["CFO_Status"] || "").includes("Rejected")) { rBy = "CFO"; rRem = b["CFO_Remark"] || rRem; }
+              else if ((b["Admin_Status"] || "").includes("Rejected")) { rBy = "Admin"; rRem = b["Admin_Remark"] || rRem; }
+              else if ((b["SA_Status"] || "").includes("Rejected")) { rBy = "Super Admin"; rRem = b["SA_Remark"] || rRem; }
+              return `<div style="margin-top:8px;background:#fff0f0;border-left:3px solid #ea4335;border-radius:4px;padding:6px 10px;font-size:0.75rem;">
+                <div style="color:#d32f2f;font-weight:700;margin-bottom:2px">❌ Rejected by ${rBy}</div>
+                <div style="color:#5f6368">${rRem}</div>
+              </div>`;
+          })() : ""}
         </div>
         <div style="flex-shrink:0">
           ${status==="New" || status==="Reviewed"
@@ -2075,7 +2246,7 @@ const Dashboard = {
             : `<button class="btn btn-ghost btn-sm"
                 onclick="event.stopPropagation();
                   Dashboard.openReview(${rowIndex})">
-                <i class="fa fa-eye"></i> View
+                <i class="fa fa-eye"></i> Read View
                </button>`}
         </div>
       </div>`;

@@ -546,7 +546,8 @@ const Dashboard = {
     let html = `<div class="tracking-wrapper"><div class="tracking-container">`;
     steps.forEach((step) => {
       let statusClass = ""; let iconHtml = `<i class="fa ${step.icon}"></i>`; let dateText = step.date ? step.date : "Pending...";
-      if (step.date && step.date !== "") {
+      if ((step.date && step.date !== "") || (step.statusCol && step.statusCol.includes("Approved")) || (step.statusCol && step.statusCol.includes("Rejected"))) {
+        if (!step.date || step.date === "") dateText = "Done";
         statusClass = "completed"; iconHtml = `<i class="fa fa-check"></i>`; 
         if (step.statusCol && step.statusCol.includes("Rejected")) { statusClass = "rejected"; iconHtml = `<i class="fa fa-times"></i>`; }
       } else {
@@ -644,6 +645,37 @@ const Dashboard = {
       const res = await API.invoices.getAll();
       if (res?.success) {
         Dashboard.allInvoicesData = res.data.invoices || [];
+
+        const all = Dashboard.allInvoicesData;
+        let bTot = all.length, bPend = 0, bApp = 0, bRej = 0;
+        let aTot = 0, aPend = 0, aApp = 0, aRej = 0;
+        
+        all.forEach(inv => {
+           // Biller Queue Stats
+           const bs = inv["Approval Status"] || "";
+           if (bs === "Approved") bApp++;
+           else if (bs === "Rejected" || bs === "Reject") bRej++;
+           else bPend++;
+           
+           // Account Queue Stats
+           const as = inv["Account_Status"] || "";
+           // Only count invoices that actually reached account or have account status
+           if (as) aTot++;
+           if (as === "Approved") aApp++;
+           else if (as === "Rejected" || as === "Reject") aRej++;
+           else if (as) aPend++;
+        });
+        
+        if (document.getElementById("billerTotal")) document.getElementById("billerTotal").textContent = bTot;
+        if (document.getElementById("billerPending")) document.getElementById("billerPending").textContent = bPend;
+        if (document.getElementById("billerApproved")) document.getElementById("billerApproved").textContent = bApp;
+        if (document.getElementById("billerRejected")) document.getElementById("billerRejected").textContent = bRej;
+        
+        if (document.getElementById("accountTotal")) document.getElementById("accountTotal").textContent = aTot;
+        if (document.getElementById("accountPending")) document.getElementById("accountPending").textContent = aPend;
+        if (document.getElementById("accountApproved")) document.getElementById("accountApproved").textContent = aApp;
+        if (document.getElementById("accountRejected")) document.getElementById("accountRejected").textContent = aRej;
+
         Dashboard.filterAllInvoices();
 
         const recent = [...Dashboard.allInvoicesData].reverse().slice(0, 5);
@@ -677,7 +709,7 @@ const Dashboard = {
                 <td>${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
                 <td>${(inv["🚩 Red Flags"]||"").split("|").map(f => `<div class="red-flag-item" style="margin-bottom:4px">🚩 ${f.trim()}</div>`).join("")}</td>
                 <td>${Utils.statusBadge(inv["Current_Stage"])}</td><td style="white-space:nowrap;font-size:0.8rem">${inv["Timestamp"] || "—"}</td>
-                <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> View</button></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> Read View</button></td>
               </tr>`).join("");
         }
       }
@@ -1047,7 +1079,7 @@ const Dashboard = {
           <a href="${driveUrl}" target="_blank" class="btn btn-primary btn-sm"><i class="fa fa-external-link"></i> Open Full Size</a>
         </div>
         <div style="border:2px solid var(--gray-200);border-radius:12px;overflow:hidden;background:#f8f9fa;min-height:320px;display:flex;align-items:center;justify-content:center">
-          ${isImage ? `<img src="${driveUrl}" alt="Invoice" style="max-width:100%;max-height:500px;object-fit:contain"/>` : `<div style="text-align:center;padding:48px 24px"><div style="font-size:5rem;margin-bottom:16px">📄</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px">${attachmentName}</div><div style="color:var(--gray-500);font-size:0.85rem;margin-bottom:20px">PDF preview not available here</div><a href="${driveUrl}" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> View Invoice PDF</a></div>`}
+          ${isImage ? `<img src="${driveUrl}" alt="Invoice" style="max-width:100%;max-height:500px;object-fit:contain"/>` : `<div style="text-align:center;padding:48px 24px"><div style="font-size:5rem;margin-bottom:16px">📄</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px">${attachmentName}</div><div style="color:var(--gray-500);font-size:0.85rem;margin-bottom:20px">PDF preview not available here</div><a href="${driveUrl}" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> Read View Invoice PDF</a></div>`}
         </div>`;
     } else {
       html += `<div style="background:#f8f9fa;border:1px solid var(--gray-200);border-radius:12px;padding:48px 24px;text-align:center"><div style="font-size:4rem;margin-bottom:16px">📎</div><div style="font-weight:600;font-size:1rem;margin-bottom:6px;color:var(--gray-700)">No Attachment</div></div>`;
