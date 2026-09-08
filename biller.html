@@ -2032,8 +2032,8 @@ const Dashboard = {
       const bills  = Dashboard.queue
         .filter(b => (b["Approval Status"]||"") === "New")
         .filter(b => !search ||
-          (b["A13. Invoice Number"]||"").toLowerCase().includes(search) ||
-          (b["A14. Vendor Name"]   ||"").toLowerCase().includes(search));
+          String(b["A13. Invoice Number"]||"").toLowerCase().includes(search) ||
+          String(b["A14. Vendor Name"]||"").toLowerCase().includes(search));
       const el    = document.getElementById("newBillsList2");
       const count = document.getElementById("newCount");
       if (count) count.textContent = `(${bills.length})`;
@@ -2059,8 +2059,8 @@ const Dashboard = {
         }
         return true;
       }).filter(b => !search ||
-        (b["A13. Invoice Number"]||"").toLowerCase().includes(search)||
-        (b["A14. Vendor Name"]   ||"").toLowerCase().includes(search));
+        String(b["A13. Invoice Number"]||"").toLowerCase().includes(search)||
+        String(b["A14. Vendor Name"]||"").toLowerCase().includes(search));
 
       const el    = document.getElementById("processBillsList");
       const count = document.getElementById("processCount");
@@ -2086,8 +2086,8 @@ const Dashboard = {
     }
     if (search) {
       bills = bills.filter(b =>
-        (b["A13. Invoice Number"]||"").toLowerCase().includes(search)||
-        (b["A14. Vendor Name"]   ||"").toLowerCase().includes(search));
+        String(b["A13. Invoice Number"]||"").toLowerCase().includes(search)||
+        String(b["A14. Vendor Name"]||"").toLowerCase().includes(search));
     }
 
     Dashboard.filtered = bills;

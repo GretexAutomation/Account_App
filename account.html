@@ -958,7 +958,7 @@ const Dashboard = {
         return i["Current_Stage"] === status;
       });
     }
-    if (search) filtered = filtered.filter(i => (i["A14. Vendor Name"]||"").toLowerCase().includes(search) || (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A16. Bill Description"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A14. Vendor Name"]||"").toLowerCase().includes(search) || String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A16. Bill Description"]||"").toLowerCase().includes(search));
     if (redOnly) filtered = filtered.filter(i => i["🚩 Red Flags"] && i["🚩 Red Flags"].trim() !== "");
 
     Dashboard.filteredData = filtered;

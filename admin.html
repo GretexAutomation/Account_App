@@ -504,7 +504,7 @@ const Dashboard = {
         return i["Current_Stage"] === "Admin";
       });
     }
-    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     
     const tbody = document.getElementById("allInvoicesBody");
     const count = document.getElementById("allInvoicesCount");
@@ -553,7 +553,7 @@ const Dashboard = {
     
     let filtered = [...Dashboard.queueData];
     if (status !== "ALL") filtered = filtered.filter(i => (i["Approval Status"]||"Pending") === status);
-    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     Dashboard.queueFiltered = filtered;
     Dashboard.renderQueue();
   },
