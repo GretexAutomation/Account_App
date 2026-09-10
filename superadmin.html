@@ -887,10 +887,10 @@ const Dashboard = {
     if (Dashboard.pendingStage && Dashboard.pendingStage !== "SuperAdmin" && Dashboard.pendingStage !== "Completed") {
       bypassWarning.style.display = "block";
       bypassWarning.innerHTML = `⚡ <strong>Super Admin Override:</strong> This invoice is currently at <strong>${Dashboard.pendingStage}</strong>. Approving it will override all intermediate stages and permanently complete it.`;
-      document.getElementById("approveNote").value = `Final Approved by Super Admin (Override ${Dashboard.pendingStage})`;
+      document.getElementById("approveNote").value = `Final Approved by Arvind Harlalka (Override ${Dashboard.pendingStage})`;
     } else {
       bypassWarning.style.display = "none";
-      document.getElementById("approveNote").value = "Final Approved by Super Admin";
+      document.getElementById("approveNote").value = "Final Approved by Arvind Harlalka";
     }
 
     document.getElementById("approveModal").classList.add("active");
@@ -898,7 +898,7 @@ const Dashboard = {
   closeApproveModal() { document.getElementById("approveModal").classList.remove("active"); Dashboard.pendingApproveRow = null; },
   
   async confirmApprove() {
-    const note = document.getElementById("approveNote").value.trim() || "Final Approved by Super Admin";
+    const note = document.getElementById("approveNote").value.trim() || "Final Approved by Arvind Harlalka";
     const btn = document.getElementById("confirmApproveBtn");
     btn.disabled = true; btn.innerHTML = "Approving..."; Loader.show("Approving...");
     const res = await API.admin.approveBill(Dashboard.pendingApproveRow, note);
