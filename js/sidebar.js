@@ -114,6 +114,7 @@ const Sidebar = {
         section: "Main",
         items: [
           { id: "dashboard", icon: "fa-gauge",         label: "Dashboard",       page: "superadmin.html"  },
+          { id: "master",    icon: "fa-database",      label: "Master",          page: "superadmin.html#master" },
           { id: "invoices",  icon: "fa-file-invoice",  label: "All Invoices",    page: "superadmin.html#invoices" },
           { id: "approve",   icon: "fa-list-check",    label: "Approval Pending By Me",  page: "superadmin.html#approve", badge: "approval" },
           { id: "redflags",  icon: "fa-flag",          label: "Red Flags",       page: "superadmin.html#redflags", badge: "redflags" }
