@@ -86,7 +86,10 @@
             <div class="stat-icon"><i class="fa fa-circle-xmark"></i></div>
             <div class="stat-info"><div class="stat-value" id="statFail">--</div><div class="stat-label">Failed</div></div>
           </div>
-          
+          <div class="stat-card" style="border-left:4px solid var(--role-admin); cursor:pointer" onclick="Dashboard.showSection('users')">
+            <div class="stat-icon" style="background:#fff3e0;color:var(--role-admin)"><i class="fa fa-users"></i></div>
+            <div class="stat-info"><div class="stat-value" id="statUsers" style="color:var(--role-admin)">--</div><div class="stat-label">Total Users</div></div>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px,1fr));gap:16px;margin-top:24px">
@@ -102,8 +105,18 @@
               <div style="font-weight:600;color:var(--gray-800)">All Invoices</div>
             </div>
           </div>
-          
-          
+          <div class="card" style="cursor:pointer" onclick="Dashboard.showSection('users')">
+            <div class="card-body" style="text-align:center;padding:24px 16px">
+              <div style="font-size:2rem;margin-bottom:8px">👥</div>
+              <div style="font-weight:600;color:var(--gray-800)">User Mgmt</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="Dashboard.showSection('audit')">
+            <div class="card-body" style="text-align:center;padding:24px 16px">
+              <div style="font-size:2rem;margin-bottom:8px">🛡️</div>
+              <div style="font-weight:600;color:var(--gray-800)">Audit Log</div>
+            </div>
+          </div>
           <div class="card" style="cursor:pointer" onclick="Dashboard.showSection('settings')">
             <div class="card-body" style="text-align:center;padding:24px 16px">
               <div style="font-size:2rem;margin-bottom:8px">⚙️</div>
@@ -414,8 +427,7 @@ const Dashboard = {
     let html = `<div class="tracking-wrapper"><div class="tracking-container">`;
     steps.forEach((step) => {
       let statusClass = ""; let iconHtml = `<i class="fa ${step.icon}"></i>`; let dateText = step.date ? step.date : "Pending...";
-      if ((step.date && step.date !== "") || (step.statusCol && step.statusCol.includes("Approved")) || (step.statusCol && step.statusCol.includes("Rejected"))) {
-        if (!step.date || step.date === "") dateText = "Done";
+      if (step.date && step.date !== "") {
         statusClass = "completed"; iconHtml = `<i class="fa fa-check"></i>`; 
         if (step.statusCol && step.statusCol.includes("Rejected")) { statusClass = "rejected"; iconHtml = `<i class="fa fa-times"></i>`; }
       } else {
@@ -423,7 +435,22 @@ const Dashboard = {
       }
       html += `<div class="track-step ${statusClass}"><div class="track-icon">${iconHtml}</div><div class="track-text"><h6>${step.label}</h6><p>${dateText}</p></div></div>`;
     });
-    return html + `</div></div>`;
+    html += `</div></div>`;
+
+    let rBy = ""; let rRem = "";
+    if ((inv["Account_Status"] || "").includes("Rejected")) { rBy = "Account"; rRem = inv["Account_Remark"] || ""; }
+    else if ((inv["CFO_Status"] || "").includes("Rejected")) { rBy = "CFO"; rRem = inv["CFO_Remark"] || ""; }
+    else if ((inv["Admin_Status"] || "").includes("Rejected")) { rBy = "Admin"; rRem = inv["Admin_Remark"] || ""; }
+    else if ((inv["SA_Status"] || "").includes("Rejected")) { rBy = "Super Admin"; rRem = inv["SA_Remark"] || ""; }
+    
+    if (rBy) {
+      html += `<div style="margin-top:16px;background:#fff0f0;border-left:4px solid #ea4335;border-radius:6px;padding:12px 16px;font-size:0.9rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <div style="color:#d32f2f;font-weight:700;margin-bottom:6px;"><i class="fa fa-circle-exclamation"></i> Rejected by ${rBy}</div>
+        <div style="color:#444;line-height:1.4">${rRem || "No reason provided."}</div>
+      </div>`;
+    }
+
+    return html;
   },
 
   async init() {
@@ -448,7 +475,7 @@ const Dashboard = {
   showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
-    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approve : "Approval Pending By Me", completed: "Completed Bills", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
+    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approve : "Approval Queue", completed: "Completed Bills", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
     Header.setTitle(titles[id] || "Dashboard"); Sidebar.setActive(id);
     
     if (id === "approve") Dashboard.loadApprovalQueue();
@@ -504,7 +531,7 @@ const Dashboard = {
         return i["Current_Stage"] === "Admin";
       });
     }
-    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     
     const tbody = document.getElementById("allInvoicesBody");
     const count = document.getElementById("allInvoicesCount");
@@ -532,7 +559,17 @@ const Dashboard = {
     tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
     const res = await API.admin.getQueue();
     if (!res?.success) { tbody.innerHTML = `<tr><td colspan="7" class="text-center">Failed to load</td></tr>`; return; }
-    Dashboard.queueData = res.data.queue || [];
+    Dashboard.queueData = (res.data.queue || []).map(item => {
+      const accStatus   = (item["Account_Status"] || "").toString();
+      const cfoStatus   = (item["CFO_Status"] || "").toString();
+      const adminStatus = (item["Admin_Status"] || "").toString();
+      const saStatus    = (item["SA_Status"] || "").toString();
+      const isRejectedAnywhere = [accStatus, cfoStatus, adminStatus, saStatus].some(s => s === "Rejected");
+      if (isRejectedAnywhere) { item["Approval Status"] = "Rejected"; } 
+      else if (adminStatus === "Approved") { item["Approval Status"] = "Approved"; } 
+      else if (item["Current_Stage"] === "Admin") { item["Approval Status"] = "Pending"; }
+      return item;
+    });
     Dashboard.queueFiltered = [...Dashboard.queueData];
     Dashboard.renderQueue();
 
@@ -553,7 +590,7 @@ const Dashboard = {
     
     let filtered = [...Dashboard.queueData];
     if (status !== "ALL") filtered = filtered.filter(i => (i["Approval Status"]||"Pending") === status);
-    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     Dashboard.queueFiltered = filtered;
     Dashboard.renderQueue();
   },
@@ -646,22 +683,72 @@ const Dashboard = {
     } else { html += `<div class="empty-state">No Attachment</div>`; }
     document.getElementById("tab-attachment").innerHTML = html + `</div>`;
   },
-  buildAccountingTab(inv) {
-    document.getElementById("tab-accounting").innerHTML = `<div class="section-header">📊 Accounting Checks</div><div class="detail-grid">
-      ${Dashboard.field("Invoice Date", inv["A12. Invoice Date"])} ${Dashboard.field("Invoice Number", inv["A13. Invoice Number"])} ${Dashboard.field("Vendor Name", inv["A14. Vendor Name"])}
-      ${Dashboard.field("Basic Amount", Utils.formatCurrency(inv["A20. Basic Amount"]))} ${Dashboard.field("Invoice Type", inv["A21. Invoice Type"])}</div>`;
+    buildAccountingTab(inv) {
+    document.getElementById("tab-accounting").innerHTML = `<div class="section-header">📉 Accounting Checks</div><div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      ${Dashboard.field("A1. Billed To", inv["A1. Billed To"])}
+      ${Dashboard.field("A2. Our Name Correct", inv["A2. Our Name Correct"])}
+      ${Dashboard.field("A3. Address Present", inv["A3. Address Present"])}
+      ${Dashboard.field("A4. Our Address", inv["A4. Our Address"])}
+      ${Dashboard.field("A5. Address Correct", inv["A5. Address Correct"])}
+      ${Dashboard.field("A6. PAN Present", inv["A6. PAN Present"])}
+      ${Dashboard.field("A7. Our PAN", inv["A7. Our PAN"])}
+      ${Dashboard.field("A8. PAN Correct", inv["A8. PAN Correct"])}
+      ${Dashboard.field("A9. GST Present", inv["A9. GST Present"])}
+      ${Dashboard.field("A10. Our GST", inv["A10. Our GST"])}
+      ${Dashboard.field("A11. GST Correct", inv["A11. GST Correct"])}
+      ${Dashboard.field("A12. Invoice Date", inv["A12. Invoice Date"])}
+      ${Dashboard.field("A13. Invoice Number", inv["A13. Invoice Number"])}
+      ${Dashboard.field("A14. Vendor Name", inv["A14. Vendor Name"])}
+      ${Dashboard.field("A15. Vendor Address", inv["A15. Vendor Address"])}
+      ${Dashboard.field("A16. Bill Description", inv["A16. Bill Description"])}
+      ${Dashboard.field("A17. Notes", inv["A17. Notes"])}
+      ${Dashboard.field("A18. Rev/Capital", inv["A18. Rev/Capital"])}
+      ${Dashboard.field("A19. Ledger Name", inv["A19. Ledger Name"])}
+      ${Dashboard.field("A20. Basic Amount", Utils.formatCurrency(inv["A20. Basic Amount"]))}
+      ${Dashboard.field("A21. Invoice Type", inv["A21. Invoice Type"])}
+      ${Dashboard.field("A22. Final Invoice By", inv["A22. Final Invoice By"])}
+    </div>`;
   },
   buildTdsTab(inv) {
-    document.getElementById("tab-tds").innerHTML = `<div class="section-header">💰 TDS Checks</div><div class="detail-grid">
-      ${Dashboard.field("TDS Applicable", inv["B1. TDS Applicable"])} ${Dashboard.field("TDS Section", inv["B6. TDS Section"])} ${Dashboard.field("TDS Rate", inv["B7. TDS Rate"])} ${Dashboard.field("TDS Amount", Utils.formatCurrency(inv["B8. TDS Amount"]))}</div>`;
+    document.getElementById("tab-tds").innerHTML = `<div class="section-header">🔥 TDS Checks</div><div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      ${Dashboard.field("B1. TDS Applicable", inv["B1. TDS Applicable"])}
+      ${Dashboard.field("B2. Vendor PAN Avail", inv["B2. Vendor PAN Avail"])}
+      ${Dashboard.field("B3. Vendor PAN", inv["B3. Vendor PAN"])}
+      ${Dashboard.field("B4. PAN Inoperative", inv["B4. PAN Inoperative"])}
+      ${Dashboard.field("B5. Entity Type", inv["B5. Vendor Entity Type"])}
+      ${Dashboard.field("B6. TDS Section", inv["B6. TDS Section"])}
+      ${Dashboard.field("B7. TDS Rate", inv["B7. TDS Rate"])}
+      ${Dashboard.field("B8. TDS Amount", Utils.formatCurrency(inv["B8. TDS Amount"]))}
+    </div>`;
   },
   buildGstTab(inv) {
-    document.getElementById("tab-gst").innerHTML = `<div class="section-header">🧾 GST Checks</div><div class="detail-grid">
-      ${Dashboard.field("GST Charged", inv["C1. GST Charged"])} ${Dashboard.field("Vendor GST No", inv["C3. Vendor GST No"])} ${Dashboard.field("Taxpayer Type", inv["C4. Taxpayer Type"])} ${Dashboard.field("Place of Supply", inv["C8. Place of Supply"])}</div>`;
+    document.getElementById("tab-gst").innerHTML = `<div class="section-header">📑 GST Checks</div><div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      ${Dashboard.field("C1. GST Charged", inv["C1. GST Charged"])}
+      ${Dashboard.field("C2. Vendor GST Avail", inv["C2. Vendor GST Avail"])}
+      ${Dashboard.field("C3. Vendor GST No", inv["C3. Vendor GST No"])}
+      ${Dashboard.field("C4. Taxpayer Type", inv["C4. Taxpayer Type"])}
+      ${Dashboard.field("C5. Comp GST Wrong", inv["C5. Comp GST Wrong"])}
+      ${Dashboard.field("C6. GST Returns Filed", inv["C6. GST Returns Filed"])}
+      ${Dashboard.field("C7. Our GST Correct", inv["C7. Our GST Correct"])}
+      ${Dashboard.field("C8. Place of Supply", inv["C8. Place of Supply"])}
+      ${Dashboard.field("C9. Correct GST Type", inv["C9. Correct GST Type"])}
+      ${Dashboard.field("C10. Prior GST Pending", inv["C10. Prior GST Pending"])}
+    </div>`;
   },
   buildProcessTab(inv) {
-    document.getElementById("tab-process").innerHTML = `<div class="section-header">⚙️ Process Checks</div><div class="detail-grid">
-      ${Dashboard.field("Final Payable", Utils.formatCurrency(inv["D1. Final Payable Amt"]))} ${Dashboard.field("HOD Name", inv["D4. HOD Name"])} ${Dashboard.field("HOD Approval", inv["D5. HOD Approval"])}</div>`;
+    document.getElementById("tab-process").innerHTML = `<div class="section-header">⚙️ Process Checks</div><div class="detail-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      ${Dashboard.field("D1. Final Payable", Utils.formatCurrency(inv["D1. Final Payable Amt"]))}
+      ${Dashboard.field("D2. Invoice By", inv["D2. Invoice By"])}
+      ${Dashboard.field("D3. Received Via", inv["D3. Received Via"])}
+      ${Dashboard.field("D4. HOD Name", inv["D4. HOD Name"])}
+      ${Dashboard.field("D5. HOD Approval", inv["D5. HOD Approval"])}
+      ${Dashboard.field("D6. HOD Screenshot", inv["D6. HOD Screenshot"])}
+      ${Dashboard.field("D7. Arvind/Alok Apprvl", inv["D7. Arvind/Alok Apprvl"])}
+      ${Dashboard.field("D8. Arvind/Alok SS", inv["D8. Arvind/Alok SS"])}
+      ${Dashboard.field("D9. Update Person", inv["D9. Update Person"])}
+      ${Dashboard.field("D10. Update Email", inv["D10. Update Email"])}
+      ${Dashboard.field("D11. Narration", inv["D11. Narration"])}
+    </div>`;
   },
   buildFlagsTab(inv) {
     const flags = inv["🚩 Red Flags"] || "";
