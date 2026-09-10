@@ -604,7 +604,7 @@ const Dashboard = {
         return true;
       });
     }
-    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     
     const tbody = document.getElementById("masterInvoicesBody");
     const count = document.getElementById("masterInvoicesCount");
@@ -649,7 +649,7 @@ const Dashboard = {
         return i["Current_Stage"] === "SuperAdmin";
       });
     }
-    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     
     const tbody = document.getElementById("allInvoicesBody");
     const count = document.getElementById("allInvoicesCount");
@@ -708,7 +708,7 @@ const Dashboard = {
     
     let filtered = [...Dashboard.queueData];
     if (status !== "ALL") filtered = filtered.filter(i => (i["Approval Status"]||"Pending") === status);
-    if (search) filtered = filtered.filter(i => (i["A13. Invoice Number"]||"").toLowerCase().includes(search) || (i["A14. Vendor Name"]||"").toLowerCase().includes(search));
+    if (search) filtered = filtered.filter(i => String(i["A13. Invoice Number"]||"").toLowerCase().includes(search) || String(i["A14. Vendor Name"]||"").toLowerCase().includes(search));
     Dashboard.queueFiltered = filtered;
     Dashboard.renderQueue();
   },
@@ -887,10 +887,10 @@ const Dashboard = {
     if (Dashboard.pendingStage && Dashboard.pendingStage !== "SuperAdmin" && Dashboard.pendingStage !== "Completed") {
       bypassWarning.style.display = "block";
       bypassWarning.innerHTML = `⚡ <strong>Super Admin Override:</strong> This invoice is currently at <strong>${Dashboard.pendingStage}</strong>. Approving it will override all intermediate stages and permanently complete it.`;
-      document.getElementById("approveNote").value = `Final Approved by Arvind Harlalka (Override ${Dashboard.pendingStage})`;
+      document.getElementById("approveNote").value = `Final Approved by Super Admin (Override ${Dashboard.pendingStage})`;
     } else {
       bypassWarning.style.display = "none";
-      document.getElementById("approveNote").value = "Final Approved by Arvind Harlalka";
+      document.getElementById("approveNote").value = "Final Approved by Super Admin";
     }
 
     document.getElementById("approveModal").classList.add("active");
@@ -898,7 +898,7 @@ const Dashboard = {
   closeApproveModal() { document.getElementById("approveModal").classList.remove("active"); Dashboard.pendingApproveRow = null; },
   
   async confirmApprove() {
-    const note = document.getElementById("approveNote").value.trim() || "Final Approved by Arvind Harlalka";
+    const note = document.getElementById("approveNote").value.trim() || "Final Approved by Super Admin";
     const btn = document.getElementById("confirmApproveBtn");
     btn.disabled = true; btn.innerHTML = "Approving..."; Loader.show("Approving...");
     const res = await API.admin.approveBill(Dashboard.pendingApproveRow, note);
