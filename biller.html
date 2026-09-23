@@ -1440,6 +1440,7 @@ const Dashboard = {
         process: "Bills In Process",
         invoices: "All Bills",
         completed: "Completed Bills",
+        approved: "Approved Bills",
         track: "Track Bills",
         profile: "My Profile",
         password: "Change Password",
@@ -3204,19 +3205,26 @@ async submitForm() {
 
     console.log("Initiating invoice submission sequence...");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 85000); // 85 second timeout
+
     try {
       const file = SubmitInvoice.selectedFile;
       
       // STEP 1: Convert the selected file to a Base64 encoded string
       showProcessingScreen("Reading the invoice file...", 15);
-      const fileContent = await readFileAsBase64(file);
+      let fileContent = await readFileAsBase64(file);
+      if (fileContent && fileContent.includes(",")) {
+        fileContent = fileContent.split(",")[1];
+      }
+      fileContent = fileContent ? fileContent.trim() : "";
       console.log("File successfully encoded to Base64.");
 
       // STEP 2: Prepare the data payload for the AI processing engine
       showProcessingScreen("Preparing data payload for AI analysis...", 35);
       const payload = {
         fileName: file.name,
-        fileType: file.type,
+        fileType: file.type || "application/pdf",
         fileContent: fileContent,
         receivedFrom: document.getElementById("receivedFrom").value,
         receivedDate: document.getElementById("receivedDate").value,
@@ -3229,18 +3237,18 @@ async submitForm() {
       showProcessingScreen("AI engine is currently analyzing the document...", 65);
       console.log("Transmitting request to the backend server...");
 
-      // ✅ FIX: Removed 'no-cors' so we can read the real response from backend.
-      // GAS deployed Web Apps handle CORS via 302 redirects which browsers follow automatically.
       const response = await fetch(SubmitInvoice.APPS_SCRIPT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
         body: JSON.stringify(payload),
-        redirect: "follow"
+        redirect: "follow",
+        signal: controller.signal
       });
 
-      // ✅ FIX: Parse the actual JSON response from backend
+      clearTimeout(timeoutId);
+
       const result = await response.json();
 
       if (!result.success) {
@@ -3265,14 +3273,23 @@ async submitForm() {
       }, 2500);
 
     } catch (error) {
+      clearTimeout(timeoutId);
       hideProcessingScreen();
       console.error("Submission Error:", error);
-      Toast.error(error.message || "Failed to process invoice. Please try again.");
-      SubmitInvoice.showStatus("error", "Error: " + (error.message || "Network issue"));
+
+      let msg = error.message || "Network issue";
+      if (error.name === "AbortError") {
+        msg = "Request timed out (server took >85s). The document may still be processing. Please wait or retry.";
+      } else if (msg.includes("Failed to fetch")) {
+        msg = "Connection error / server timeout (Failed to fetch). Please check your internet or click Retry.";
+      }
+
+      Toast.error(msg);
+      SubmitInvoice.showStatus("error", msg, true);
     }
   },
 
-showStatus(type, message) {
+  showStatus(type, message, canRetry = false) {
     const statusEl = document.getElementById("submitStatus");
     if (!statusEl) return;
 
@@ -3282,7 +3299,13 @@ showStatus(type, message) {
       statusEl.style.background = "#fff5f5";
       statusEl.style.borderLeft = "4px solid var(--danger)";
       statusEl.style.color = "var(--danger)";
-      statusEl.innerHTML = `<i class="fa fa-exclamation-circle"></i> ${message}`;
+      let html = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><i class="fa fa-exclamation-circle"></i> ${message}</div>`;
+      if (canRetry) {
+        html += `<button class="btn btn-danger btn-sm" style="padding:4px 12px;font-size:0.75rem" onclick="SubmitInvoice.submitForm()"><i class="fa fa-rotate-right"></i> Retry Submit</button>`;
+      }
+      html += `</div>`;
+      statusEl.innerHTML = html;
     } else if (type === "success") {
       statusEl.style.background = "#f0fdf4";
       statusEl.style.borderLeft = "4px solid var(--secondary)";
