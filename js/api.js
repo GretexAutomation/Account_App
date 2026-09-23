@@ -25,9 +25,6 @@ const API = {
       });
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Backend deployment not found (HTTP 404). Please verify the Web App deployment URL.");
-        }
         throw new Error(`HTTP error: ${response.status}`);
       }
 
@@ -35,15 +32,8 @@ const API = {
 
       if (!data.success) {
         if (data.code === 401) {
-          console.warn(`[Auth 401] Unauthorized on action "${action}":`, data.message);
-          // If token is completely absent from storage or user explicitly logged out, redirect
-          if (!token || action === "logout") {
-            Auth.clearSession();
-            window.location.href = "index.html";
-            return null;
-          }
-          // For transient sheet glitches during background sync/stats, notify user without immediate session wipe
-          Toast.error(data.message || "Session error. Please check connection.");
+          Auth.clearSession();
+          window.location.href = "index.html";
           return null;
         }
         throw new Error(data.message || "Request failed");
