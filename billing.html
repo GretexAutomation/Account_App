@@ -207,17 +207,14 @@ const Dashboard = {
   },
 
   async loadStats() {
-    try {
-      const res = await API.dashboard.getStats();
-      if (!res?.success) return;
-      const d = res.data;
-      const stats = d.invoiceStats || d;
-      document.getElementById("statTotal") .textContent = stats.total  || 0;
-      document.getElementById("statPass")  .textContent = stats.pass   || 0;
-      document.getElementById("statReview").textContent = stats.review || 0;
-      document.getElementById("statAmount").textContent =
-        Utils.formatCurrency(stats.totalAmount || 0);
-    } catch(e) {}
+    const res = await API.dashboard.getStats();
+    if (!res?.success) return;
+    const d = res.data;
+    document.getElementById("statTotal") .textContent = d.total  || 0;
+    document.getElementById("statPass")  .textContent = d.pass   || 0;
+    document.getElementById("statReview").textContent = d.review || 0;
+    document.getElementById("statAmount").textContent =
+      Utils.formatCurrency(d.totalAmount);
   },
 
   showSection(id) {

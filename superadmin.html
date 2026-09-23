@@ -98,10 +98,6 @@
             <div class="stat-icon" style="background:#ffebee;color:var(--role-superadmin)"><i class="fa fa-users"></i></div>
             <div class="stat-info"><div class="stat-value" id="statUsers" style="color:var(--role-superadmin)">--</div><div class="stat-label">Total Users</div></div>
           </div>
-          <div class="stat-card" style="border-left:4px solid #b71c1c">
-            <div class="stat-icon" style="background:#ffebee;color:#b71c1c"><i class="fa fa-indian-rupee-sign"></i></div>
-            <div class="stat-info"><div class="stat-value" id="statAmount">--</div><div class="stat-label">Total Amount</div></div>
-          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:24px">
@@ -570,8 +566,7 @@ const Dashboard = {
         document.getElementById("statPass").textContent = d.invoiceStats?.pass || d.pass || 0;
         document.getElementById("statReview").textContent = d.invoiceStats?.review || d.review || 0;
         document.getElementById("statFail").textContent = d.invoiceStats?.fail || d.fail || 0;
-        const statAmt = document.getElementById("statAmount");
-        if (statAmt) statAmt.textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || d.totalAmount || 0);
+        document.getElementById("statAmount").textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || d.totalAmount || 0);
       }
     } catch(e) {}
     

@@ -90,10 +90,6 @@
             <div class="stat-icon" style="background:#fff3e0;color:var(--role-admin)"><i class="fa fa-users"></i></div>
             <div class="stat-info"><div class="stat-value" id="statUsers" style="color:var(--role-admin)">--</div><div class="stat-label">Total Users</div></div>
           </div>
-          <div class="stat-card" style="border-left:4px solid #1a73e8">
-            <div class="stat-icon" style="background:#e8f0fe;color:#1a73e8"><i class="fa fa-indian-rupee-sign"></i></div>
-            <div class="stat-info"><div class="stat-value" id="statAmount">--</div><div class="stat-label">Total Amount</div></div>
-          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px,1fr));gap:16px;margin-top:24px">
@@ -250,13 +246,6 @@
               <tbody id="auditBody"><tr><td colspan="4" class="text-center" style="padding:32px"><i class="fa fa-spinner fa-spin"></i></td></tr></tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <div class="section" id="section-reports">
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fa fa-chart-bar"></i> Reports</div></div>
-          <div class="card-body"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">Coming Soon</div></div></div>
         </div>
       </div>
 
@@ -486,7 +475,7 @@ const Dashboard = {
   showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
-    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approve : "Approval Queue", completed: "Completed Bills", reports: "Reports", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
+    const titles = { dashboard: "Dashboard", invoices : "All Invoices", approve : "Approval Queue", completed: "Completed Bills", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
     Header.setTitle(titles[id] || "Dashboard"); Sidebar.setActive(id);
     
     if (id === "approve") Dashboard.loadApprovalQueue();
@@ -514,8 +503,7 @@ const Dashboard = {
         document.getElementById("statPass").textContent = d.invoiceStats?.pass || d.pass || 0;
         document.getElementById("statReview").textContent = d.invoiceStats?.review || d.review || 0;
         document.getElementById("statFail").textContent = d.invoiceStats?.fail || d.fail || 0;
-        const statAmt = document.getElementById("statAmount");
-        if (statAmt) statAmt.textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || d.totalAmount || 0);
+        document.getElementById("statAmount").textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || d.totalAmount || 0);
       }
     } catch(e) {}
     

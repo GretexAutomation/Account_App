@@ -660,60 +660,27 @@ const Dashboard = {
         Dashboard.allInvoicesData = res.data.invoices || [];
         Dashboard.filterAllInvoices();
 
-        // Calculate and populate Biller & Account Queue stats
-        const all = Dashboard.allInvoicesData;
-        let bTot = all.length, bPend = 0, bApp = 0, bRej = 0;
-        let aTot = 0, aPend = 0, aApp = 0, aRej = 0;
-        all.forEach(inv => {
-          const bs = inv["Approval Status"] || "";
-          if (bs === "Approved") bApp++;
-          else if (bs === "Rejected" || bs === "Reject") bRej++;
-          else bPend++;
-
-          const as = inv["Account_Status"] || "";
-          if (as) aTot++;
-          if (as === "Approved") aApp++;
-          else if (as === "Rejected" || as === "Reject") aRej++;
-          else if (as) aPend++;
-        });
-
-        if (document.getElementById("billerTotal")) document.getElementById("billerTotal").textContent = bTot;
-        if (document.getElementById("billerPending")) document.getElementById("billerPending").textContent = bPend;
-        if (document.getElementById("billerApproved")) document.getElementById("billerApproved").textContent = bApp;
-        if (document.getElementById("billerRejected")) document.getElementById("billerRejected").textContent = bRej;
-
-        if (document.getElementById("accountTotal")) document.getElementById("accountTotal").textContent = aTot;
-        if (document.getElementById("accountPending")) document.getElementById("accountPending").textContent = aPend;
-        if (document.getElementById("accountApproved")) document.getElementById("accountApproved").textContent = aApp;
-        if (document.getElementById("accountRejected")) document.getElementById("accountRejected").textContent = aRej;
-
         const recent = [...Dashboard.allInvoicesData].reverse().slice(0, 5);
-        const recentBodyEl = document.getElementById("recentBody");
-        if (recentBodyEl) {
-          recentBodyEl.innerHTML = recent.length === 0 
-            ? `<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--gray-400)">No invoices yet</td></tr>`
-            : recent.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
-                <td><strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong></td>
-                <td style="font-size:0.82rem">${Utils.truncate(inv["A14. Vendor Name"], 18)}</td>
-                <td style="font-size:0.83rem">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
-                <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
-                <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i></button></td>
-              </tr>`).join("");
-        }
+        document.getElementById("recentBody").innerHTML = recent.length === 0 
+          ? `<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--gray-400)">No invoices yet</td></tr>`
+          : recent.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+              <td><strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong></td>
+              <td style="font-size:0.82rem">${Utils.truncate(inv["A14. Vendor Name"], 18)}</td>
+              <td style="font-size:0.83rem">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
+              <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i></button></td>
+            </tr>`).join("");
 
         const flagged = Dashboard.allInvoicesData.filter(i => i["🚩 Red Flags"] && i["🚩 Red Flags"].trim() !== "");
-        const redFlagsPanelEl = document.getElementById("redFlagsPanel");
-        if (redFlagsPanelEl) {
-          redFlagsPanelEl.innerHTML = flagged.length === 0
-            ? `<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div>`
-            : flagged.slice(0, 8).map(inv => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-                  <strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong>${Utils.statusBadge(inv["Current_Stage"])}
-                </div>
-                <div style="font-size:0.78rem;color:var(--gray-600)">${Utils.truncate(inv["A14. Vendor Name"], 24)}</div>
-                <div style="font-size:0.72rem;color:var(--danger);margin-top:3px">🚩 ${Utils.truncate(inv["🚩 Red Flags"], 48)}</div>
-              </div>`).join("");
-        }
+        document.getElementById("redFlagsPanel").innerHTML = flagged.length === 0
+          ? `<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div>`
+          : flagged.slice(0, 8).map(inv => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong>${Utils.statusBadge(inv["Current_Stage"])}
+              </div>
+              <div style="font-size:0.78rem;color:var(--gray-600)">${Utils.truncate(inv["A14. Vendor Name"], 24)}</div>
+              <div style="font-size:0.72rem;color:var(--danger);margin-top:3px">🚩 ${Utils.truncate(inv["🚩 Red Flags"], 48)}</div>
+            </div>`).join("");
         
         const rfBody = document.getElementById("redFlagBody");
         if(rfBody) {
@@ -865,9 +832,9 @@ const Dashboard = {
         <td>${isPending ? '<span style="background:#fff3e0;color:#f9a825;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600">Pending</span>' : status}</td>
         <td onclick="event.stopPropagation()">${isPending ? `<div style="display:flex;gap:6px">
           <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600" 
-            onclick="Dashboard.openApproveModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
+            onclick="Dashboard.openApproveModal(${rowIdx}, '${StringString(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
           <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600"
-            onclick="Dashboard.openRejectModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
+            onclick="Dashboard.openRejectModal(${rowIdx}, '${StringString(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
         </div>` : ""}</td>
       </tr>`;
     }).join("");
