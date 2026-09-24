@@ -454,7 +454,7 @@ const Dashboard = {
   },
 
   async init() {
-    Auth.requireRole("Admin", "SuperAdmin");
+    if (!Auth.requireRole("Admin", "SuperAdmin")) return;
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     

@@ -198,7 +198,7 @@
 <script>
 const Dashboard = {
   async init() {
-    Auth.requireRole("Billing");
+    if (!Auth.requireRole("Billing")) return;
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     await Dashboard.loadStats();

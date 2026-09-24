@@ -237,39 +237,71 @@
     }
     @media (max-width:1024px) { .dash-grid { grid-template-columns: 1fr; } }
 
-    /* ── Grid Layout for All Bills ── */
-    #billsList {
+    /* ── Grid Layout for Card Views (All Bills, Approved, Completed, Flowup) ── */
+    #billsList, #approvedList, #completedList, #processBillsList {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 16px;
       padding: 16px;
-      max-height: 800px; /* Approx 5 rows */
+    }
+
+    #billsList {
+      max-height: 800px;
       overflow-y: auto;
     }
     
     /* Make empty/loading text span all columns */
-    #billsList > div:not(.bill-card) {
+    #billsList > div:not(.bill-card),
+    #approvedList > div:not(.bill-card),
+    #completedList > div:not(.bill-card),
+    #processBillsList > div:not(.bill-card) {
       grid-column: 1 / -1;
       text-align: center;
       padding: 32px;
     }
     
-    #billsList .bill-card {
+    #billsList .bill-card,
+    #approvedList .bill-card,
+    #completedList .bill-card,
+    #processBillsList .bill-card {
       margin-bottom: 0;
       flex-direction: column;
       align-items: flex-start;
       gap: 12px;
       height: 100%;
+      background: #ffffff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #billsList .bill-card:hover,
+    #approvedList .bill-card:hover,
+    #completedList .bill-card:hover,
+    #processBillsList .bill-card:hover {
+      border-color: #27ae60;
+      box-shadow: 0 6px 20px rgba(39,174,96,0.12);
+      transform: translateY(-2px);
     }
     
-    #billsList .bill-card > div:first-child {
+    #billsList .bill-card > div:first-child,
+    #approvedList .bill-card > div:first-child,
+    #completedList .bill-card > div:first-child,
+    #processBillsList .bill-card > div:first-child {
       width: 100%;
     }
     
-    #billsList .bill-card > div:last-child {
+    #billsList .bill-card > div:last-child,
+    #approvedList .bill-card > div:last-child,
+    #completedList .bill-card > div:last-child,
+    #processBillsList .bill-card > div:last-child {
       width: 100%;
       text-align: right;
       margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px dashed var(--gray-200);
     }
 
     /* ── Flag count ── */
@@ -675,15 +707,48 @@
 
       
       <div class="section" id="section-approved">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa fa-check-double"></i>
-              Approved Bills
-              <span id="approvedCount"
-                style="font-weight:400;color:var(--gray-500);
-                font-size:0.8rem"></span>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div class="filter-tabs" style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="filter-tab active" id="btnApprovedOpen"
+                onclick="Dashboard.setApprovedFilter('OPEN', this)"
+                style="display:flex;align-items:center;gap:6px">
+                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981"></span>
+                Open Bills (<span id="appOpenCount">0</span>)
+              </button>
+              <button class="filter-tab" id="btnApprovedClosed"
+                onclick="Dashboard.setApprovedFilter('CLOSED', this)"
+                style="display:flex;align-items:center;gap:6px">
+                <i class="fa fa-lock" style="font-size:0.75rem"></i>
+                Closed Bills (<span id="appClosedCount">0</span>)
+              </button>
+              <button class="filter-tab" id="btnApprovedAll"
+                onclick="Dashboard.setApprovedFilter('ALL', this)"
+                style="display:flex;align-items:center;gap:6px">
+                <i class="fa fa-list" style="font-size:0.75rem"></i>
+                All Approved (<span id="appAllCount">0</span>)
+              </button>
             </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" class="form-control" id="approvedSearchInput"
+                placeholder="Search approved bills..."
+                style="width:240px;font-size:0.82rem;padding:6px 12px"
+                oninput="Dashboard.filterApproved(this.value)"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div class="card-title">
+              <i class="fa fa-check-double" style="color:var(--success)"></i>
+              <span id="approvedSectionTitle">Approved Bills (Open)</span>
+              <span id="approvedCount"
+                style="font-weight:600;color:var(--success);font-size:0.85rem;margin-left:6px"></span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="Dashboard.syncBills()">
+              <i class="fa fa-rotate"></i> Sync
+            </button>
           </div>
           <div id="approvedList" style="padding:16px">
             <div class="text-center"
@@ -740,12 +805,23 @@
           </div>
           <div class="card-body">
             <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-              <div style="display: flex; gap: 8px;">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <button class="btn btn-outline btn-sm" onclick="const el = document.getElementById('columnSelector'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';">
                   <i class="fa fa-columns"></i> Select Columns
                 </button>
                 <button class="btn btn-outline btn-sm" onclick="const el = document.getElementById('stageFilterSelector'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';" style="background: var(--blue-50); color: var(--primary); border-color: var(--primary);">
                   <i class="fa fa-filter"></i> Filter Stages
+                </button>
+                <div class="filter-tabs" style="display: inline-flex; gap: 2px; padding: 2px; background: var(--gray-100); border-radius: 6px;">
+                  <button class="filter-tab active" id="flowupCloseFilterAll" style="padding: 4px 10px; font-size: 0.78rem;" onclick="Dashboard.setFlowupCloseFilter('ALL', this)">All</button>
+                  <button class="filter-tab" id="flowupCloseFilterOpen" style="padding: 4px 10px; font-size: 0.78rem;" onclick="Dashboard.setFlowupCloseFilter('OPEN', this)">🟢 Open</button>
+                  <button class="filter-tab" id="flowupCloseFilterClosed" style="padding: 4px 10px; font-size: 0.78rem;" onclick="Dashboard.setFlowupCloseFilter('CLOSED', this)">🔒 Closed</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="Dashboard.bulkCloseFlowup(true)" style="color:#d93025; border-color:#d93025;" title="Mark selected bills as Closed">
+                  <i class="fa fa-lock"></i> Close Selected
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="Dashboard.bulkCloseFlowup(false)" title="Reopen selected bills">
+                  <i class="fa fa-lock-open"></i> Reopen Selected
                 </button>
                 <button class="btn btn-outline btn-sm" onclick="Dashboard.exportFlowupCSV()" style="background: var(--success-50, #e8f5e9); color: var(--success, #2e7d32); border-color: var(--success, #2e7d32);">
                   <i class="fa fa-file-excel"></i> <span id="exportCsvBtnText">Export CSV</span>
@@ -1204,6 +1280,11 @@
         <i class="fa fa-trash"></i> Delete Duplicate
       </button>
 
+      <!-- Close / Reopen Bill Button (For Approved Bills) -->
+      <button class="btn btn-sm" id="modalCloseBillBtn" onclick="Dashboard.toggleCloseCurrentBill(this)" style="display:none; margin-right:auto;">
+        <i class="fa fa-lock"></i> Close Bill
+      </button>
+
       <div id="editIndicator" style="display:none;font-size:0.78rem;color:#f59e0b;font-weight:600">
         ⚠️ <span id="editCount">0</span> unsaved changes
       </div>
@@ -1363,7 +1444,7 @@ const Dashboard = {
   },
 
   async init() {
-    Auth.requireRole("Biller");
+    if (!Auth.requireRole("Biller")) return;
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     Dashboard.setupUsers();
@@ -1502,6 +1583,28 @@ const Dashboard = {
     }
   },
 
+  approvedFilterStatus: "OPEN",
+  flowupCloseFilter: "ALL",
+
+  isClosedBill(b) {
+    if (!b) return false;
+    const val = String(b["Close at"] || b["Close_At"] || b["Close At"] || "").trim();
+    return Boolean(val && val !== "—" && val !== "-" && val !== "N/A" && val !== "NA" && val !== "null" && val !== "undefined");
+  },
+
+  getCloseAtDate(b) {
+    if (!b) return "";
+    return String(b["Close at"] || b["Close_At"] || b["Close At"] || "").trim();
+  },
+
+  setFlowupCloseFilter(filterVal, btn) {
+    Dashboard.flowupCloseFilter = filterVal;
+    document.querySelectorAll("#section-flowup .filter-tabs .filter-tab").forEach(b => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    Dashboard.flowupCurrentPage = 1;
+    Dashboard.renderFlowupTable();
+  },
+
   flowupSelectedColumns: [
     "Timestamp",
     "A13. Invoice Number",
@@ -1510,6 +1613,7 @@ const Dashboard = {
     "B8. TDS Amount",
     "D1. Final Payable Amt",
     "Approval Status",
+    "Close at",
     "Current_Stage",
     "Rejection By",
     "Rejection Remark",
@@ -1726,22 +1830,28 @@ const Dashboard = {
     const tbody = document.getElementById("flowupTableBody");
     if (!thead || !tbody) return;
 
-    // Filter queue by selected stages FIRST so we have accurate counts for the master checkbox
+    // Filter queue by selected stages and close filter
     Dashboard.flowupFilteredQueue = Dashboard.queue.filter(b => {
         let stage = b["Current_Stage"] || "New";
         let isRejected = b["Approval Status"] === "Rejected" || (b["Rejection By"] && b["Rejection By"] !== "");
         
-        // If the bill is rejected, it should ONLY appear if 'Rejected' is checked
+        let stageMatch = false;
         if (isRejected) {
-            return Dashboard.flowupSelectedStages.includes("Rejected");
+            stageMatch = Dashboard.flowupSelectedStages.includes("Rejected");
+        } else {
+            stageMatch = Dashboard.flowupSelectedStages.includes(stage) || (stage === "New" && Dashboard.flowupSelectedStages.includes("New"));
         }
-        
-        // Otherwise, match against the normal stages
-        return Dashboard.flowupSelectedStages.includes(stage) || (stage === "New" && Dashboard.flowupSelectedStages.includes("New"));
+        if (!stageMatch) return false;
+
+        const isClosed = Dashboard.isClosedBill(b);
+        if (Dashboard.flowupCloseFilter === "OPEN" && isClosed) return false;
+        if (Dashboard.flowupCloseFilter === "CLOSED" && !isClosed) return false;
+
+        return true;
     });
 
     // Center these columns
-    const centerCols = ["Approval Status", "Current_Stage", "Rejection By"];
+    const centerCols = ["Approval Status", "Current_Stage", "Rejection By", "Close at"];
 
     let thHtml = `<tr style="background-color: var(--gray-50); border-bottom: 2px solid var(--gray-200);">`;
     
@@ -1753,6 +1863,7 @@ const Dashboard = {
         const align = centerCols.includes(c) ? "center" : "left";
         thHtml += `<th style="padding: 16px 20px; font-weight: 600; color: var(--gray-700); white-space: nowrap; text-align: ${align}; font-size: 0.85rem;">${c}</th>`;
     });
+    thHtml += `<th style="padding: 16px 14px; font-weight: 600; color: var(--gray-700); white-space: nowrap; text-align: center; font-size: 0.85rem;">Action</th>`;
     thHtml += `</tr>`;
     thead.innerHTML = thHtml;
 
@@ -1807,9 +1918,35 @@ const Dashboard = {
         if ((c === "Rejection By" || c === "Rejection Remark") && !isEmpty) {
             val = `<span style="color: var(--danger); font-size: ${c === 'Rejection By' ? '0.85rem; font-weight: 600;' : '0.8rem;'}">${val}</span>`;
         }
+
+        if (c === "Close at") {
+            const isClosed = Dashboard.isClosedBill(b);
+            if (isClosed) {
+                val = `<span style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;color:#3c4043;padding:3px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;"><i class="fa fa-lock" style="font-size:0.7rem"></i> ${rawVal}</span>`;
+            } else {
+                val = `<span style="display:inline-flex;align-items:center;gap:4px;color:#137333;font-size:0.75rem;font-weight:600;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block"></span> Open</span>`;
+            }
+        }
         
         trHtml += `<td style="padding: 16px 20px; font-size: 0.85rem; white-space: nowrap; text-align: ${align}; vertical-align: middle;">${val}</td>`;
       });
+
+      // Action buttons column
+      const isAppr = (b["Approval Status"] || "") === "Approved";
+      const isClosedRow = Dashboard.isClosedBill(b);
+      let actBtns = `<div style="display:flex;gap:6px;justify-content:center;align-items:center">
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:0.75rem" title="View details" onclick="Dashboard.openReview(${b.queueRowIndex})">
+          <i class="fa fa-eye"></i>
+        </button>`;
+      if (isAppr) {
+        actBtns += `
+          <button class="btn btn-sm ${isClosedRow ? 'btn-outline' : 'btn-ghost'}" style="padding:4px 8px;font-size:0.75rem;color:${isClosedRow ? '#5f6368' : '#ea4335'};" title="${isClosedRow ? 'Reopen Bill' : 'Close Bill'}" onclick="Dashboard.toggleCloseBill(${b.queueRowIndex}, this)">
+            <i class="fa ${isClosedRow ? 'fa-lock-open' : 'fa-lock'}"></i>
+          </button>`;
+      }
+      actBtns += `</div>`;
+      trHtml += `<td style="padding: 12px 10px; text-align: center; vertical-align: middle; white-space: nowrap;">${actBtns}</td>`;
+
       trHtml += `</tr>`;
     });
     tbody.innerHTML = trHtml;
@@ -1828,6 +1965,44 @@ const Dashboard = {
         `;
     }
     Dashboard.updateExportCount();
+  },
+
+  async bulkCloseFlowup(isClosing) {
+    const selected = (Dashboard.flowupFilteredQueue || []).filter(b => b._exportChecked !== false);
+    if (selected.length === 0) {
+      Toast.warning("Please select at least one bill using the checkboxes.");
+      return;
+    }
+    const rows = selected.map(b => b.queueRowIndex).filter(Boolean);
+    if (rows.length === 0) {
+      Toast.warning("No valid bill rows selected.");
+      return;
+    }
+    const actionText = isClosing ? "close" : "reopen";
+    if (!confirm(`Are you sure you want to ${actionText} ${rows.length} selected bill(s)?`)) {
+      return;
+    }
+    Loader.show(`${isClosing ? "Closing" : "Reopening"} ${rows.length} bills...`);
+    try {
+      const res = await API.biller.bulkClose(rows, isClosing);
+      Loader.hide();
+      if (!res || !res.success) {
+        throw new Error(res?.message || `Failed to ${actionText} bills`);
+      }
+      const newCloseVal = res.data?.closeAt || (isClosing ? new Date().toLocaleString() : "");
+      selected.forEach(b => {
+        b["Close at"] = newCloseVal;
+        b["Close_At"] = newCloseVal;
+        b["Close At"] = newCloseVal;
+      });
+      Toast.success(res.data?.message || `${rows.length} bills updated successfully`);
+      Dashboard.renderFlowupTable();
+      Dashboard.filterApproved(document.getElementById("approvedSearchInput")?.value || "");
+    } catch (err) {
+      Loader.hide();
+      console.error("bulkCloseFlowup error:", err);
+      Toast.error(err.message || `Failed to ${actionText} bills`);
+    }
   },
 
   async loadRecentBills() {
@@ -1912,18 +2087,66 @@ const Dashboard = {
   
   async loadApprovedSection() {
     await Dashboard.ensureQueue();
-    const bills = Dashboard.queue.filter(b => (b["Approval Status"]||"") === "Approved");
+    const searchVal = document.getElementById("approvedSearchInput")?.value || "";
+    Dashboard.filterApproved(searchVal);
+  },
+
+  setApprovedFilter(status, btn) {
+    Dashboard.approvedFilterStatus = status;
+    document.querySelectorAll("#section-approved .filter-tab").forEach(b => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    const searchVal = document.getElementById("approvedSearchInput")?.value || "";
+    Dashboard.filterApproved(searchVal);
+  },
+
+  filterApproved(query) {
+    query = (query || "").trim().toLowerCase();
+    const allApproved = Dashboard.queue.filter(b => (b["Approval Status"]||"") === "Approved");
+    const openApproved = allApproved.filter(b => !Dashboard.isClosedBill(b));
+    const closedApproved = allApproved.filter(b => Dashboard.isClosedBill(b));
+
+    // Update count badges
+    const openCountEl = document.getElementById("appOpenCount");
+    const closedCountEl = document.getElementById("appClosedCount");
+    const allCountEl = document.getElementById("appAllCount");
+    if (openCountEl) openCountEl.textContent = openApproved.length;
+    if (closedCountEl) closedCountEl.textContent = closedApproved.length;
+    if (allCountEl) allCountEl.textContent = allApproved.length;
+
+    let baseList = allApproved;
+    let titleText = "Approved Bills (All)";
+    if (Dashboard.approvedFilterStatus === "OPEN") {
+      baseList = openApproved;
+      titleText = "Approved Bills (Open)";
+    } else if (Dashboard.approvedFilterStatus === "CLOSED") {
+      baseList = closedApproved;
+      titleText = "Approved Bills (Closed)";
+    }
+
+    const titleEl = document.getElementById("approvedSectionTitle");
+    if (titleEl) titleEl.textContent = titleText;
+
+    let bills = baseList;
+    if (query) {
+      bills = bills.filter(b =>
+        String(b["A13. Invoice Number"]||"").toLowerCase().includes(query) ||
+        String(b["A14. Vendor Name"]||"").toLowerCase().includes(query)
+      );
+    }
+
     const count = document.getElementById("approvedCount");
     if (count) count.textContent = `(${bills.length} bills)`;
-    
+
     const el = document.getElementById("approvedList");
     if (!el) return;
-    
+
     if (bills.length === 0) {
-      el.innerHTML = `<div class="empty-state" style="padding:32px">
-        <div class="empty-icon">✅</div>
-        <div class="empty-title">No approved bills</div>
-      </div>`;
+      el.innerHTML = query 
+        ? Dashboard.emptyState("No matching approved bills found")
+        : `<div class="empty-state" style="padding:32px">
+            <div class="empty-icon">${Dashboard.approvedFilterStatus === "CLOSED" ? "🔒" : "✅"}</div>
+            <div class="empty-title">No ${Dashboard.approvedFilterStatus === "CLOSED" ? "closed" : (Dashboard.approvedFilterStatus === "OPEN" ? "open approved" : "approved")} bills</div>
+          </div>`;
       return;
     }
     el.innerHTML = bills.map(b => Dashboard.buildBillCard(b, false)).join("");
@@ -2159,6 +2382,8 @@ const Dashboard = {
     const flags    = b["🚩 Red Flags"] || "";
     const flagCnt  = flags ? flags.split("|").length : 0;
     const rowIndex = b.queueRowIndex;
+    const isClosed = Dashboard.isClosedBill(b);
+    const closeAtDate = Dashboard.getCloseAtDate(b);
 
     const cls = status==="New"      ? "new-bill"      :
                 status==="Reviewed" ? "reviewed-bill" :
@@ -2176,6 +2401,9 @@ const Dashboard = {
             gap:6px;margin-bottom:2px">
             <strong style="font-size:0.84rem">${invNo}</strong>
             ${badge}
+            ${status === "Approved" ? (isClosed 
+              ? `<span style="background:#e8eaed;color:#3c4043;font-size:0.68rem;padding:2px 6px;border-radius:10px;"><i class="fa fa-lock"></i> Closed</span>` 
+              : `<span style="background:#e6f4ea;color:#137333;font-size:0.68rem;padding:2px 6px;border-radius:10px;">🟢 Open</span>`) : ""}
           </div>
           <div style="font-size:0.77rem;color:var(--gray-600)">
             ${Utils.truncate(vendor,22)} •
@@ -2204,6 +2432,9 @@ const Dashboard = {
             gap:8px;margin-bottom:6px;flex-wrap:wrap">
             <strong style="font-size:0.9rem">${invNo}</strong>
             ${badge}
+            ${status === "Approved" ? (isClosed 
+              ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#e8eaed;color:#3c4043;font-size:0.72rem;padding:3px 8px;border-radius:12px;font-weight:600;"><i class="fa fa-lock" style="font-size:0.7rem"></i> Closed: ${closeAtDate}</span>` 
+              : `<span style="display:inline-flex;align-items:center;gap:4px;background:#e6f4ea;color:#137333;font-size:0.72rem;padding:3px 8px;border-radius:12px;font-weight:600;"><span style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block"></span> Open</span>`) : ""}
             ${flagCnt > 0
               ? `<span class="flag-count">🚩 ${flagCnt}</span>` : ""}
           </div>
@@ -2236,7 +2467,15 @@ const Dashboard = {
               </div>`;
           })() : ""}
         </div>
-        <div style="flex-shrink:0">
+        <div style="flex-shrink:0; display:flex; gap:6px; align-items:center">
+          ${status === "Approved" ? `
+            <button class="btn btn-sm ${isClosed ? 'btn-outline' : 'btn-danger'}"
+              style="${isClosed ? 'border-color:#5f6368;color:#5f6368;' : 'background:#ea4335;border-color:#ea4335;color:#fff;'}"
+              title="${isClosed ? 'Reopen Bill' : 'Mark Bill as Closed'}"
+              onclick="event.stopPropagation(); Dashboard.toggleCloseBill(${rowIndex}, this)">
+              <i class="fa ${isClosed ? 'fa-lock-open' : 'fa-lock'}"></i> ${isClosed ? 'Reopen' : 'Close'}
+            </button>
+          ` : ''}
           ${status==="New" || status==="Reviewed"
             ? `<button class="btn btn-primary btn-sm"
                 onclick="event.stopPropagation();
@@ -2264,6 +2503,87 @@ const Dashboard = {
       "Pending" : `<span class="status-pending">⏳ Pending</span>`
     };
     return map[status] || `<span class="status-new">${status}</span>`;
+  },
+
+  async toggleCloseBill(rowIndex, btnEl) {
+    const bill = Dashboard.queue.find(b => b.queueRowIndex === rowIndex);
+    if (!bill) {
+      Toast.error("Bill not found!");
+      return;
+    }
+    const wasClosed = Dashboard.isClosedBill(bill);
+    let origHtml = "";
+    if (btnEl) {
+      origHtml = btnEl.innerHTML;
+      btnEl.disabled = true;
+      btnEl.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
+    }
+    try {
+      const res = await API.biller.toggleClose(rowIndex);
+      if (!res || !res.success) {
+        throw new Error(res?.message || "Failed to update bill close status");
+      }
+      const newCloseVal = res.data?.closeAt || (res.data?.isClosed ? new Date().toLocaleString() : "");
+      bill["Close at"] = newCloseVal;
+      bill["Close_At"] = newCloseVal;
+      bill["Close At"] = newCloseVal;
+
+      Toast.success(res.data?.message || (res.data?.isClosed ? "Bill closed successfully" : "Bill reopened successfully"));
+
+      if (Dashboard.currentBill && Dashboard.currentBill.queueRowIndex === rowIndex) {
+        Dashboard.currentBill["Close at"] = newCloseVal;
+        Dashboard.currentBill["Close_At"] = newCloseVal;
+        Dashboard.currentBill["Close At"] = newCloseVal;
+        Dashboard.updateModalCloseState();
+      }
+
+      // Re-filter views
+      Dashboard.filterApproved(document.getElementById("approvedSearchInput")?.value || "");
+      if (document.getElementById("section-flowup")?.classList.contains("active")) {
+        Dashboard.renderFlowupTable();
+      }
+      if (document.getElementById("section-completed")?.classList.contains("active")) {
+        Dashboard.loadCompletedSection();
+      }
+    } catch (err) {
+      console.error("toggleCloseBill error:", err);
+      Toast.error(err.message || "Failed to update bill close status");
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = origHtml;
+      }
+    }
+  },
+
+  async toggleCloseCurrentBill(btnEl) {
+    if (!Dashboard.currentBill) return;
+    await Dashboard.toggleCloseBill(Dashboard.currentBill.queueRowIndex, btnEl);
+  },
+
+  updateModalCloseState() {
+    const bill = Dashboard.currentBill;
+    const btn = document.getElementById("modalCloseBillBtn");
+    if (!bill || !btn) return;
+    const status = bill["Approval Status"] || "New";
+    if (status !== "Approved") {
+      btn.style.display = "none";
+      return;
+    }
+    const isClosed = Dashboard.isClosedBill(bill);
+    btn.style.display = "inline-flex";
+    if (isClosed) {
+      btn.className = "btn btn-outline btn-sm";
+      btn.style.borderColor = "#5f6368";
+      btn.style.color = "#5f6368";
+      btn.style.background = "transparent";
+      btn.innerHTML = `<i class="fa fa-lock-open"></i> Reopen Bill`;
+    } else {
+      btn.className = "btn btn-danger btn-sm";
+      btn.style.background = "#ea4335";
+      btn.style.borderColor = "#ea4335";
+      btn.style.color = "#fff";
+      btn.innerHTML = `<i class="fa fa-lock"></i> Close Bill`;
+    }
   },
 
   switchTab(btn, tabId) {
@@ -2302,6 +2622,7 @@ const Dashboard = {
             Invoice: ${invNo} •
             Date: ${bill["A12. Invoice Date"]||"N/A"} •
             From: ${Utils.truncate(bill["Email From"]||"",30)}
+            ${Dashboard.isClosedBill(bill) ? ` • <span style="display:inline-flex;align-items:center;gap:3px;background:#fce8e6;color:#c5221f;font-weight:700;padding:2px 8px;border-radius:10px;font-size:0.74rem"><i class="fa fa-lock"></i> Closed at: ${Dashboard.getCloseAtDate(bill)}</span>` : ""}
           </div>
         </div>
         <div style="display:flex;gap:14px;align-items:center">
@@ -2580,6 +2901,10 @@ const Dashboard = {
       if (delBtn) delBtn.style.display = "none";
     }
     // --------------------------------------
+
+    // --- CLOSE / REOPEN BUTTON VISIBILITY LOGIC ---
+    Dashboard.updateModalCloseState();
+    // ----------------------------------------------
 
     document.getElementById("reviewModal").classList.add("active");
   },

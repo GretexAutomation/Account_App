@@ -573,7 +573,7 @@ const Dashboard = {
   },
 
   async init() {
-    Auth.requireRole("CFO");
+    if (!Auth.requireRole("CFO")) return;
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     

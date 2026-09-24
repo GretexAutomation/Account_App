@@ -862,7 +862,7 @@ const Dashboard = {
   },
 
   async init() {
-    Auth.requireRole("Account");
+    if (!Auth.requireRole("Account")) return;
     Header.render("Dashboard");
     Sidebar.init("dashboard");
 
