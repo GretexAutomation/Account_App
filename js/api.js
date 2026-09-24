@@ -6,7 +6,7 @@
 const API = {
 
   // 🔁 Replace with your Web App URL
-  BASE_URL: "https://script.google.com/macros/s/AKfycbxQejChNStPldZSa67nxeWLxha1yuWjzrZ4ULHvvkSWZAWFvdIVD2nfy9lHrMA88TPc/exec",
+  BASE_URL: "https://script.google.com/macros/s/AKfycbzoATDu-JakQpREFjsCh3UbBpgR9o5aS_Ziad276t0LBY-8R_r4Vaigws4Mn0te2n8/exec",
   
 
   // ─────────────────────────────────────────────
@@ -15,6 +15,15 @@ const API = {
   async request(action, params = {}) {
     try {
       const token = Auth.getToken();
+
+      // Guard: do not send unauthenticated requests that guarantee a 401
+      if (!token && action !== "login" && action !== "ping") {
+        console.warn(`[API] No token available for action: ${action}. Redirecting to login.`);
+        Auth.clearSession();
+        window.location.href = "index.html";
+        return null;
+      }
+
       const body  = { action, token: token || "", ...params };
 
       // ✅ CORS Fix: text/plain avoids preflight
@@ -155,9 +164,15 @@ const API = {
 
     async sync() {
       return await API.request("syncBillerQueue");
-    }
+    },
 
-    
+    async toggleClose(queueRowIndex) {
+      return await API.request("toggleCloseBill", { queueRowIndex });
+    },
+
+    async bulkClose(rows, isClosing = true) {
+      return await API.request("bulkCloseBills", { rows, isClosing });
+    }
   },
 
   // ─────────────────────────────────────────────
@@ -354,8 +369,11 @@ const Auth = {
 
   requireRole(...allowedRoles) {
     if (!Auth.requireAuth()) return false;
-    const role = Auth.getRole();
-    if (!allowedRoles.includes(role)) {
+    const rawRole = Auth.getRole() || "";
+    const cleanRole = rawRole.toLowerCase().replace(/[\s_-]/g, "");
+    const cleanAllowed = allowedRoles.map(r => r.toLowerCase().replace(/[\s_-]/g, ""));
+    if (!cleanAllowed.includes(cleanRole)) {
+      console.warn(`[Auth] Role '${rawRole}' is not allowed for this page. Required:`, allowedRoles);
       window.location.href = "index.html";
       return false;
     }
