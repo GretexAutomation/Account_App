@@ -2317,6 +2317,26 @@ const Dashboard = {
       });
     }
 
+    if (tab === "lifecycle") {
+      filename = "Gretex_Report_Lifecycle_TAT_" + new Date().toISOString().slice(0, 10) + ".csv";
+      csvRows.push(["Invoice Number", "Vendor Name", "Payable Amount", "Stage", "Approval Status", "Closed Status", "Submitted Date", "Final Action Date", "Cycle TAT"]);
+      const lc = Dashboard.reportsData?.lifecycle;
+      (lc?.detailedRows || []).forEach(r => {
+        csvRows.push([
+          r.invNo,
+          r.vendor,
+          r.payable,
+          r.stage,
+          r.appStatus || '',
+          r.isClosed ? "Closed" : (r.isApproved ? "Open" : "—"),
+          r.recDate,
+          r.finalDate,
+          r.tatText
+        ]);
+      });
+    }
+
+
     let csvContent = csvRows.map(row => row.map(val => '"' + String(val !== undefined && val !== null ? val : '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
     const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -2971,6 +2991,276 @@ const Dashboard = {
         </div>
       `;
     }
+
+    if (tab === "lifecycle") {
+      titleEl.innerHTML = '<i class="fa fa-user-clock" style="color:var(--primary);"></i> Invoice Lifecycle &amp; User Approval TAT';
+      subEl.textContent = 'End-to-end workflow audit: Total processed, approved (closed vs open), rejections, user-wise pending exposure, and approval turnaround times';
+
+      const lc = Dashboard.reportsData?.lifecycle || {};
+      const userPending = lc.userPending || [];
+      const userTAT = lc.userTAT || [];
+      let detailed = lc.detailedRows || [];
+
+      // Filter
+      if (q) {
+        detailed = detailed.filter(r => 
+          (r.invNo || '').toLowerCase().includes(q) ||
+          (r.vendor || '').toLowerCase().includes(q) ||
+          (r.stage || '').toLowerCase().includes(q) ||
+          (r.appStatus || '').toLowerCase().includes(q)
+        );
+      }
+
+      // Sort
+      if (sort === "value_desc") detailed.sort((a,b) => (b.payable||0) - (a.payable||0));
+      else if (sort === "value_asc") detailed.sort((a,b) => (a.payable||0) - (b.payable||0));
+      else if (sort === "name_asc") detailed.sort((a,b) => String(a.vendor||'').localeCompare(String(b.vendor||'')));
+
+      const totalPendingExp = lc.pendingVal || 1;
+
+      container.innerHTML = `
+        <!-- 5 Funnel KPI Metric Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:16px 20px 8px 20px;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;">
+            <div style="font-size:0.73rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.3px;">Total Invoices Processed</div>
+            <div style="font-size:1.45rem;font-weight:800;color:var(--gray-900);margin-top:4px;">${lc.totalCount || 0} Bills</div>
+            <div style="font-size:0.75rem;color:var(--gray-600);margin-top:2px;">${Utils.formatCurrency(lc.totalAmount || 0)} Total Value</div>
+          </div>
+
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:0.73rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.3px;">Approved &amp; Closed</div>
+              <span class="badge" style="background:#dcfce7;color:#15803d;font-size:0.68rem;padding:2px 6px;">Closed</span>
+            </div>
+            <div style="font-size:1.45rem;font-weight:800;color:#15803d;margin-top:4px;">${lc.approvedClosedCount || 0} Bills</div>
+            <div style="font-size:0.75rem;color:#166534;margin-top:2px;">${Utils.formatCurrency(lc.approvedClosedVal || 0)} (Archived)</div>
+          </div>
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:0.73rem;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.3px;">Approved (Not Closed)</div>
+              <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.68rem;padding:2px 6px;">Open</span>
+            </div>
+            <div style="font-size:1.45rem;font-weight:800;color:#1d4ed8;margin-top:4px;">${lc.approvedOpenCount || 0} Bills</div>
+            <div style="font-size:0.75rem;color:#1e40af;margin-top:2px;">${Utils.formatCurrency(lc.approvedOpenVal || 0)} (Action Pending)</div>
+          </div>
+
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:0.73rem;font-weight:700;color:#b91c1c;text-transform:uppercase;letter-spacing:0.3px;">Total Rejected</div>
+              <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:0.68rem;padding:2px 6px;">Disapproved</span>
+            </div>
+            <div style="font-size:1.45rem;font-weight:800;color:#b91c1c;margin-top:4px;">${lc.rejectedCount || 0} Bills</div>
+            <div style="font-size:0.75rem;color:#991b1b;margin-top:2px;">${Utils.formatCurrency(lc.rejectedVal || 0)} (${lc.totalCount > 0 ? ((lc.rejectedCount / lc.totalCount) * 100).toFixed(1) : 0}% Rate)</div>
+          </div>
+
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:0.73rem;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.3px;">Pending Pipeline</div>
+              <span class="badge" style="background:#fef3c7;color:#92400e;font-size:0.68rem;padding:2px 6px;">In Review</span>
+            </div>
+            <div style="font-size:1.45rem;font-weight:800;color:#b45309;margin-top:4px;">${lc.pendingCount || 0} Bills</div>
+            <div style="font-size:0.75rem;color:#92400e;margin-top:2px;">${Utils.formatCurrency(lc.pendingVal || 0)} Locked Capital</div>
+          </div>
+        </div>
+
+        <!-- Section 1: User Type Pending Breakdown Table -->
+        <div style="padding:16px 20px 8px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:0.92rem;font-weight:700;color:var(--gray-800);display:flex;align-items:center;gap:8px;">
+              <i class="fa fa-users-gear" style="color:var(--primary);"></i> Pending Exposure by User Role &amp; Stage (Kis ke paas kitne pade hain)
+            </div>
+            <span style="font-size:0.75rem;color:var(--gray-500);font-weight:500;">Role-Wise Exposure</span>
+          </div>
+
+          <div class="table-wrapper" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;margin-bottom:20px;">
+            <table class="data-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>User Role / Approval Stage</th>
+                  <th style="text-align:center">Pending Invoices</th>
+                  <th style="text-align:right">Locked Amount (₹)</th>
+                  <th style="width:200px">Share of Pending Capital</th>
+                  <th style="text-align:center">Queue Health</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${userPending.map((u, i) => {
+                  const share = totalPendingExp > 0 ? ((u.val / totalPendingExp) * 100) : 0;
+                  const isBottleneck = u.count > 10 || share > 40;
+                  const healthBadge = u.count === 0 ? '<span class="badge" style="background:#dcfce7;color:#15803d;">Cleared</span>' :
+                                      isBottleneck ? '<span class="badge" style="background:#fee2e2;color:#b91c1c;">⚠️ Bottleneck</span>' :
+                                      '<span class="badge" style="background:#fef3c7;color:#b45309;">Active Flow</span>';
+                  return `
+                    <tr>
+                      <td style="color:var(--gray-400)">${i+1}</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                          <div style="width:32px;height:32px;border-radius:8px;background:${u.bg};color:${u.color};display:flex;align-items:center;justify-content:center;font-size:14px;">
+                            <i class="fa ${u.icon}"></i>
+                          </div>
+                          <div>
+                            <div style="font-weight:700;color:var(--gray-900);">${u.role}</div>
+                            <div style="font-size:0.72rem;color:var(--gray-500);">Stage Key: ${u.key}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="text-align:center">
+                        <span class="badge ${u.count > 0 ? 'badge-warning' : 'badge-pass'}" style="font-size:0.82rem;font-weight:700;padding:4px 10px;">
+                          ${u.count} Bills
+                        </span>
+                      </td>
+                      <td style="text-align:right;font-weight:700;color:${u.count > 0 ? '#b45309' : 'var(--gray-600)'};">
+                        ${Utils.formatCurrency(u.val)}
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                          <div class="rep-stat-bar" style="flex:1;">
+                            <div class="rep-stat-fill" style="width:${Math.min(100, Math.max(2, share))}%;background:${u.color};"></div>
+                          </div>
+                          <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right;">${share.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                      <td style="text-align:center">${healthBadge}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="background:#f8fafc;font-weight:700;">
+                  <td colspan="2">Total Pipeline Liability</td>
+                  <td style="text-align:center">${lc.pendingCount || 0} Bills</td>
+                  <td style="text-align:right;color:#b45309;">${Utils.formatCurrency(lc.pendingVal || 0)}</td>
+                  <td colspan="2">100.0% Pending Exposure</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: User Approval Turnaround Time (TAT) -->
+        <div style="padding:0 20px 8px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:0.92rem;font-weight:700;color:var(--gray-800);display:flex;align-items:center;gap:8px;">
+              <i class="fa fa-stopwatch" style="color:var(--primary);"></i> Average Approval Turnaround Time (TAT) by User Role
+            </div>
+            <span style="font-size:0.75rem;color:var(--gray-500);font-weight:500;">Efficiency Benchmarks</span>
+          </div>
+
+          <div class="table-wrapper" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;margin-bottom:20px;">
+            <table class="data-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>User Role</th>
+                  <th>Workflow Action / Milestone</th>
+                  <th style="text-align:center">Invoices Evaluated</th>
+                  <th style="text-align:center">Avg Turnaround Time (TAT)</th>
+                  <th style="text-align:center">Velocity Rating</th>
+                  <th style="text-align:center">SLA Benchmark</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${userTAT.map((t, i) => {
+                  const hours = t.avgMs / (3600000);
+                  const isEndToEnd = t.role.includes("End-to-End");
+                  const rating = hours === 0 ? "—" :
+                                 hours <= 24 ? "⭐⭐⭐⭐⭐ Excellent" :
+                                 hours <= 48 ? "⭐⭐⭐⭐ Fast" :
+                                 hours <= 96 ? "⭐⭐⭐ Normal" : "⚠️ Needs Review";
+                  const benchmark = isEndToEnd ? "&le; 5 Working Days" : "&le; 24 - 48 Hours";
+                  return `
+                    <tr style="${isEndToEnd ? 'background:#f8fafc;font-weight:700;' : ''}">
+                      <td style="color:var(--gray-400)">${i+1}</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                          <div style="width:28px;height:28px;border-radius:6px;background:#e0f2fe;color:#0369a1;display:flex;align-items:center;justify-content:center;font-size:12px;">
+                            <i class="fa ${t.icon}"></i>
+                          </div>
+                          <strong>${t.role}</strong>
+                        </div>
+                      </td>
+                      <td style="color:var(--gray-600);font-size:0.82rem;">${t.stage}</td>
+                      <td style="text-align:center;font-weight:600;">${t.count} Invoices</td>
+                      <td style="text-align:center">
+                        <span class="badge" style="background:#e0f2fe;color:#0284c7;font-size:0.82rem;font-weight:800;padding:4px 10px;border-radius:20px;">
+                          ${t.avgText}
+                        </span>
+                      </td>
+                      <td style="text-align:center;font-size:0.82rem;">${rating}</td>
+                      <td style="text-align:center;font-size:0.78rem;color:var(--gray-500);">${benchmark}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 3: Detailed Invoices Lifecycle Register -->
+        <div style="padding:0 20px 20px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:0.92rem;font-weight:700;color:var(--gray-800);display:flex;align-items:center;gap:8px;">
+              <i class="fa fa-list-check" style="color:var(--primary);"></i> Invoices Lifecycle Register (${detailed.length} Bills)
+            </div>
+            <div style="font-size:0.75rem;color:var(--gray-500);">Click any row to inspect invoice details &amp; audit tracking</div>
+          </div>
+
+          <div class="table-wrapper" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;">
+            <table class="data-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:35px">#</th>
+                  <th>Invoice No</th>
+                  <th>Vendor Name</th>
+                  <th style="text-align:right">Payable Amt</th>
+                  <th style="text-align:center">Current Stage</th>
+                  <th style="text-align:center">Approval Status</th>
+                  <th style="text-align:center">Closed Status</th>
+                  <th>Submitted Date</th>
+                  <th>Final Action / Close Date</th>
+                  <th style="text-align:center">Cycle TAT</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${detailed.length === 0 ? `
+                  <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--gray-400);">No invoices match the filter criteria</td></tr>
+                ` : detailed.slice(0, 50).map((r, i) => `
+                  <tr onclick="Dashboard.openDetail(${r.rowIndex})" style="cursor:pointer;" title="Click to view full detail & tracking timeline">
+                    <td style="color:var(--gray-400);font-size:0.75rem;">${i+1}</td>
+                    <td><strong>${r.invNo}</strong></td>
+                    <td>${Utils.truncate(r.vendor, 24)}</td>
+                    <td style="text-align:right;font-weight:700;">${Utils.formatCurrency(r.payable)}</td>
+                    <td style="text-align:center">${Utils.statusBadge(r.stage)}</td>
+                    <td style="text-align:center">${Utils.approvalBadge(r.appStatus || r.stage)}</td>
+                    <td style="text-align:center">
+                      ${r.isClosed 
+                        ? '<span class="badge" style="background:#dcfce7;color:#15803d;font-weight:700;">✓ Closed</span>' 
+                        : (r.isApproved 
+                            ? '<span class="badge" style="background:#fff3e0;color:#e65100;font-weight:700;">⚡ Open</span>' 
+                            : '<span style="color:var(--gray-400);font-size:0.75rem;">—</span>')}
+                    </td>
+                    <td style="font-size:0.75rem;color:var(--gray-600);">${Utils.formatDate(r.recDate)}</td>
+                    <td style="font-size:0.75rem;color:var(--gray-600);">${Utils.formatDate(r.finalDate)}</td>
+                    <td style="text-align:center">
+                      <span class="badge" style="background:#f1f5f9;color:var(--gray-700);font-size:0.75rem;">${r.tatText}</span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${detailed.length > 50 ? `
+            <div style="font-size:0.75rem;color:var(--gray-500);text-align:center;margin-top:8px;">
+              Showing top 50 of ${detailed.length} invoices. Use search to filter or export to CSV to view all.
+            </div>
+          ` : ''}
+        </div>
+      `;
+      return;
+    }
+
   },
 
   async loadTDSSummary() {
