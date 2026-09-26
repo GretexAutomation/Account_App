@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
   <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="css/style.css" rel="stylesheet"/>
   <style>
     .section { display: none; }
@@ -99,6 +100,50 @@
       height: 100%;
       border-radius: 3px;
     }
+  
+    /* ── Reports & Analytics Hub Styles (Credit Card Style) ── */
+    .report-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .report-card:hover {
+      transform: translateY(-3px);
+      border-color: #3b82f6;
+      box-shadow: 0 10px 24px rgba(59, 130, 246, 0.12);
+    }
+    .report-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .report-card:hover .report-card-icon {
+      transform: scale(1.08);
+    }
+    .report-card-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
   </style>
 </head>
 <body>
@@ -330,20 +375,40 @@
       <!-- ══════════════════════════════════════════════════════════════ -->
       <!-- FINANCIAL & OPERATIONAL INTELLIGENCE REPORTS ══════════════════ -->
       <!-- ══════════════════════════════════════════════════════════════ -->
-      <div class="section" id="section-reports">
+            <div class="section" id="section-reports">
+        <!-- Executive Page Header (Credit Card Style) -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <div>
+            <h2 style="font-size:1.35rem;font-weight:800;color:var(--gray-900);margin:0 0 4px 0;letter-spacing:-0.3px;">
+              Reports &amp; Analytics Hub
+            </h2>
+            <div style="font-size:0.83rem;color:var(--gray-500);">
+              Generate executive financial analytics, spend intelligence, and compliance audit reports
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="Dashboard.exportAllReportsCSV()" style="border-radius:9px;font-weight:700;padding:8px 16px;background:#e6faf4;color:#059669;border:1.5px solid #a7f3d0;" title="Export all reports into consolidated CSV">
+              <i class="fa fa-file-excel" style="color:#059669;margin-right:6px;"></i> Multi-Sheet Excel Dashboard
+            </button>
+            <button class="btn btn-outline" onclick="Dashboard.loadReports()" style="border-radius:9px;font-weight:600;padding:8px 14px;background:#fff;border:1px solid var(--gray-300);" title="Refresh Analytics Data">
+              <i class="fa fa-rotate-right" style="margin-right:6px;"></i> Refresh Data
+            </button>
+          </div>
+        </div>
+
         <!-- 6 Executive KPI Metric Cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;">
           <div class="card" style="border-left:4px solid var(--primary);box-shadow:0 2px 6px rgba(0,0,0,0.04);">
             <div class="card-body" style="padding:16px 20px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">Total Invoices</div>
                 <div style="width:30px;height:30px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.85rem;"><i class="fa fa-file-invoice"></i></div>
               </div>
-              <div style="font-size:1.8rem;font-weight:800;color:var(--primary);margin-top:6px;" id="repTotalCount">0</div>
+              <div style="font-size:1.7rem;font-weight:800;color:var(--gray-900);margin-top:6px;" id="repTotalCount">0</div>
               <div style="font-size:0.72rem;color:var(--gray-500);margin-top:2px;" id="repTotalSub">All recorded bills</div>
             </div>
           </div>
-          
+
           <div class="card" style="border-left:4px solid #1e293b;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
             <div class="card-body" style="padding:16px 20px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -362,7 +427,7 @@
                 <div style="width:30px;height:30px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;color:#16a34a;font-size:0.85rem;"><i class="fa fa-circle-check"></i></div>
               </div>
               <div style="font-size:1.7rem;font-weight:800;color:#16a34a;margin-top:6px;" id="repApprovedAmount">₹0</div>
-              <div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:2px;" id="repApprovedSub">0% of total spend</div>
+              <div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:2px;" id="repApprovedSub">Cleared spend</div>
             </div>
           </div>
 
@@ -400,89 +465,112 @@
           </div>
         </div>
 
-        <!-- Multi-Report Navigation Bar -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-body" style="padding:12px 16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px;">
-              <span style="font-size:0.82rem;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:0.5px;">
-                <i class="fa fa-chart-simple" style="color:var(--primary);margin-right:4px;"></i> Select Financial Report View
-              </span>
-              <button class="btn btn-outline btn-sm" onclick="Dashboard.loadReports()" style="font-size:0.78rem;">
-                <i class="fa fa-rotate"></i> Refresh Data
-              </button>
+        <!-- 1. REPORTS HUB MENU GRID (DEFAULT VIEW - MATCHING CREDIT CARD APP) -->
+        <div id="report-menu-wrapper">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:0 2px;">
+            <div style="font-size:0.88rem;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:0.5px;">
+              <i class="fa fa-layer-group" style="color:var(--primary);margin-right:6px;"></i> Executive Reports Directory
             </div>
-            
-            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;" id="reportNavTabs">
-              <button class="rep-nav-tab active" data-report="vendor" onclick="Dashboard.switchReportTab('vendor', this)">
-                <i class="fa fa-building"></i> Vendor Analysis
-              </button>
-              <button class="rep-nav-tab" data-report="ledger" onclick="Dashboard.switchReportTab('ledger', this)">
-                <i class="fa fa-book"></i> Ledger / Expense Heads
-              </button>
-              <button class="rep-nav-tab" data-report="entity" onclick="Dashboard.switchReportTab('entity', this)">
-                <i class="fa fa-landmark"></i> Billed-To Entity
-              </button>
-              <button class="rep-nav-tab" data-report="department" onclick="Dashboard.switchReportTab('department', this)">
-                <i class="fa fa-users-gear"></i> Department / HOD
-              </button>
-              <button class="rep-nav-tab" data-report="nature" onclick="Dashboard.switchReportTab('nature', this)">
-                <i class="fa fa-scale-balanced"></i> Capex vs Opex
-              </button>
-              <button class="rep-nav-tab" data-report="tds" onclick="Dashboard.switchReportTab('tds', this)">
-                <i class="fa fa-percent"></i> TDS Section Compliance
-              </button>
-              <button class="rep-nav-tab" data-report="gst" onclick="Dashboard.switchReportTab('gst', this)">
-                <i class="fa fa-receipt"></i> GST & Place of Supply
-              </button>
-              <button class="rep-nav-tab" data-report="flags" onclick="Dashboard.switchReportTab('flags', this)">
-                <i class="fa fa-flag" style="color:#dc2626;"></i> Red Flag Risk Audit
-              </button>
-              <button class="rep-nav-tab" data-report="pipeline" onclick="Dashboard.switchReportTab('pipeline', this)">
-                <i class="fa fa-hourglass-half"></i> Pipeline Bottlenecks
-              </button>
-              <button class="rep-nav-tab" data-report="monthly" onclick="Dashboard.switchReportTab('monthly', this)">
-                <i class="fa fa-calendar-days"></i> Monthly Trends
-              </button>
-            </div>
+            <span style="font-size:0.78rem;color:var(--gray-500);font-weight:500;">Select any report to view deep analytics &amp; charts</span>
+          </div>
+
+          <div class="report-grid" id="report-menu-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));gap:16px;margin-bottom:24px;">
+            <!-- Rendered dynamically by Dashboard.renderReportHubCards() -->
           </div>
         </div>
 
-        <!-- Active Report Content Card -->
-        <div class="card">
-          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 20px;">
-            <div>
-              <div class="card-title" id="activeReportTitle" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
-                <i class="fa fa-building" style="color:var(--primary);"></i> Vendor-wise Expense Analysis
+        <!-- 2. DETAILED REPORT VIEW (ACTIVATED ON CARD CLICK) -->
+        <div id="report-view" style="display:none;">
+          <!-- Top Navigation & Switcher Controls -->
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <button class="btn btn-outline" onclick="Dashboard.backToReportsHub()" style="background:#fff;border:1.5px solid var(--gray-300);font-weight:700;border-radius:9px;padding:8px 16px;display:inline-flex;align-items:center;gap:8px;color:var(--gray-800);box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <i class="fa fa-arrow-left"></i> Back to Reports Hub
+            </button>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.8rem;font-weight:600;color:var(--gray-600);white-space:nowrap;">Switch Report:</span>
+                <select id="quickReportSwitcher" class="form-control form-control-sm" style="height:35px;font-weight:600;min-width:210px;font-size:0.82rem;" onchange="Dashboard.openReportView(this.value)">
+                  <option value="vendor">🏢 Vendor Spend &amp; Performance</option>
+                  <option value="ledger">📁 Ledger / Expense Heads</option>
+                  <option value="entity">🏛️ Billed-To Entity</option>
+                  <option value="department">💼 Department / HOD</option>
+                  <option value="nature">⚖️ Capex vs Opex</option>
+                  <option value="tds">🛡️ TDS Section Compliance</option>
+                  <option value="gst">🧾 GST &amp; Place of Supply</option>
+                  <option value="flags">🚩 Red Flag Risk Audit</option>
+                  <option value="pipeline">⏳ Pipeline Bottlenecks</option>
+                  <option value="monthly">📅 Monthly Inflow &amp; Trends</option>
+                  <option value="lifecycle">📋 Invoice Lifecycle &amp; User Approval TAT</option>
+                </select>
               </div>
-              <div style="font-size:0.78rem;color:var(--gray-500);margin-top:2px;" id="activeReportSubtitle">
-                Detailed breakdown of bill count, approved spend, pending exposure, and spend share
-              </div>
-            </div>
-            
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <div style="position:relative;">
-                <input type="text" class="form-control form-control-sm" id="reportSearchInput"
-                  placeholder="Filter in this report..."
-                  style="width:220px;padding-left:30px;font-size:0.82rem;height:34px;"
-                  oninput="Dashboard.filterActiveReport(this.value)"/>
-                <i class="fa fa-search" style="position:absolute;left:10px;top:10px;color:var(--gray-400);font-size:0.8rem;"></i>
-              </div>
-              <select class="form-control form-control-sm" id="reportSortSelect" style="width:auto;height:34px;font-size:0.82rem;" onchange="Dashboard.sortActiveReport(this.value)">
-                <option value="value_desc">Sort: Amount (High to Low)</option>
-                <option value="value_asc">Sort: Amount (Low to High)</option>
-                <option value="count_desc">Sort: Invoices (High to Low)</option>
-                <option value="name_asc">Sort: Name (A to Z)</option>
-              </select>
-              <button class="btn btn-outline btn-sm" onclick="Dashboard.exportCurrentReportCSV()" style="height:34px;background:#e8f5e9;color:#2e7d32;border-color:#2e7d32;font-weight:600;display:flex;align-items:center;gap:6px;">
-                <i class="fa fa-file-excel"></i> Export CSV
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.exportAllReportsCSV()" style="height:35px;background:#e6faf4;color:#059669;border:1.5px solid #a7f3d0;font-weight:700;border-radius:8px;padding:0 12px;display:flex;align-items:center;gap:6px;">
+                <i class="fa fa-table"></i> Multi-Sheet Excel
+              </button>
+              <button class="btn btn-success btn-sm" onclick="Dashboard.exportCurrentReportCSV()" style="height:35px;background:#16a34a;border:1px solid #16a34a;color:#fff;font-weight:700;border-radius:8px;padding:0 14px;display:flex;align-items:center;gap:6px;">
+                <i class="fa fa-file-excel"></i> Export Current Report
               </button>
             </div>
           </div>
 
-          <div id="activeReportContainer" style="padding:0;min-height:300px;">
-            <div class="text-center" style="padding:48px;color:var(--gray-400)">
-              <i class="fa fa-spinner fa-spin fa-2x"></i>
-              <div style="margin-top:10px;font-size:0.85rem;">Generating report analytics...</div>
+          <!-- Interactive Visual Analytics Chart Card -->
+          <div class="card" style="margin-bottom:16px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);overflow:hidden;">
+            <div class="card-header" style="padding:12px 20px;background:#f8fafc;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:0.88rem;font-weight:700;color:var(--gray-800);display:flex;align-items:center;gap:8px;">
+                <i class="fa fa-chart-column" style="color:var(--primary);"></i> <span id="reportChartTitle">Visual Analytics</span>
+              </div>
+              <span style="font-size:0.75rem;color:var(--gray-500);font-weight:600;background:#edf2f7;padding:3px 8px;border-radius:6px;">Interactive Chart</span>
+            </div>
+            <div class="card-body" style="padding:16px 20px;height:310px;position:relative;">
+              <canvas id="reportAnalyticsCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Detailed Data Table Card -->
+          <div class="card" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);overflow:hidden;">
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 20px;">
+              <div>
+                <div class="card-title" id="activeReportTitle" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                  <i class="fa fa-building" style="color:var(--primary);"></i> Vendor-wise Expense Analysis
+                </div>
+                <div style="font-size:0.78rem;color:var(--gray-500);" id="activeReportSubtitle">
+                  Detailed breakdown of bill count, approved spend, pending exposure, and spend share
+                </div>
+              </div>
+              
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <div style="position:relative;">
+                  <input type="text" class="form-control form-control-sm" id="reportSearchInput"
+                    placeholder="Filter in this report..."
+                    style="width:220px;padding-left:30px;font-size:0.82rem;height:34px;border-radius:7px;"
+                    oninput="Dashboard.filterActiveReport(this.value)"/>
+                  <i class="fa fa-search" style="position:absolute;left:10px;top:10px;color:var(--gray-400);font-size:0.8rem;"></i>
+                </div>
+                <select class="form-control form-control-sm" id="reportSortSelect" style="width:auto;height:34px;font-size:0.82rem;border-radius:7px;" onchange="Dashboard.sortActiveReport(this.value)">
+                  <option value="value_desc">Sort: Amount (High to Low)</option>
+                  <option value="value_asc">Sort: Amount (Low to High)</option>
+                  <option value="count_desc">Sort: Invoices (High to Low)</option>
+                  <option value="name_asc">Sort: Name (A to Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="activeReportContainer" style="padding:0;min-height:300px;">
+              <!-- Table injected dynamically -->
+            </div>
+          </div>
+
+          <!-- Bottom Footer Navigation Bar -->
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;padding:0 2px;">
+            <button class="btn btn-outline" onclick="Dashboard.backToReportsHub()" style="background:#fff;border:1.5px solid var(--gray-300);font-weight:700;border-radius:9px;padding:8px 16px;display:inline-flex;align-items:center;gap:8px;color:var(--gray-800);">
+              <i class="fa fa-arrow-left"></i> Back to Reports Hub
+            </button>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.exportAllReportsCSV()" style="height:35px;border-radius:8px;font-weight:700;background:#e6faf4;color:#059669;border:1.5px solid #a7f3d0;padding:0 12px;">
+                <i class="fa fa-table"></i> Multi-Sheet Excel
+              </button>
+              <button class="btn btn-success btn-sm" onclick="Dashboard.exportCurrentReportCSV()" style="height:35px;border-radius:8px;font-weight:700;padding:0 14px;background:#16a34a;border:1px solid #16a34a;color:#fff;">
+                <i class="fa fa-file-excel"></i> Export Current Report
+              </button>
             </div>
           </div>
         </div>
@@ -1040,17 +1128,731 @@ const Dashboard = {
     Dashboard.renderQueue();
   },
 
-  // 🔥 COMPREHENSIVE FINANCIAL & OPERATIONAL REPORTS SUITE 🔥
+      // 🔥 REPORTS & ANALYTICS HUB (CREDIT CARD STYLE + CHARTS) 🔥
+    parseDateSafe(val) {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) return d;
+    const parts = String(val).match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})(?:,\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?/i);
+    if (parts) {
+      const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+      const m = months[parts[2].toLowerCase()];
+      if (m !== undefined) {
+        let h = parts[4] ? parseInt(parts[4]) : 0;
+        const min = parts[5] ? parseInt(parts[5]) : 0;
+        const ampm = parts[6] ? parts[6].toLowerCase() : '';
+        if (ampm === 'pm' && h < 12) h += 12;
+        if (ampm === 'am' && h === 12) h = 0;
+        return new Date(parseInt(parts[3]), m, parseInt(parts[1]), h, min);
+      }
+    }
+    return null;
+  },
+
+  formatDuration(ms) {
+    if (!ms || ms <= 0) return '—';
+    const hours = ms / (1000 * 60 * 60);
+    if (hours < 1) return Math.max(1, Math.round(ms / (1000 * 60))) + ' mins';
+    if (hours < 24) return hours.toFixed(1) + ' hrs';
+    const days = hours / 24;
+    return days.toFixed(1) + ' days';
+  },
+
   currentReportTab: 'vendor',
   reportFilterQuery: '',
   reportSortBy: 'value_desc',
   reportsData: null,
+  currentChart: null,
 
   async loadReports() {
     if (Dashboard.allInvoicesData.length === 0) await Dashboard.loadDashboardData();
     Dashboard.computeReportsData();
     Dashboard.renderReportKPIs();
+    Dashboard.renderReportHubCards();
+
+    const view = document.getElementById('report-view');
+    const wrapper = document.getElementById('report-menu-wrapper');
+    if (view && view.style.display !== 'none' && Dashboard.currentReportTab) {
+      Dashboard.renderReportChart(Dashboard.currentReportTab);
+      Dashboard.renderActiveReport();
+    } else {
+      if (wrapper) wrapper.style.display = 'block';
+      if (view) view.style.display = 'none';
+    }
+  },
+
+  backToReportsHub() {
+    if (Dashboard.currentChart) {
+      try { Dashboard.currentChart.destroy(); } catch(e){}
+      Dashboard.currentChart = null;
+    }
+    const wrapper = document.getElementById('report-menu-wrapper');
+    const view = document.getElementById('report-view');
+    if (wrapper) wrapper.style.display = 'block';
+    if (view) view.style.display = 'none';
+    Dashboard.renderReportHubCards();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  openReportView(reportId) {
+    if (!reportId) reportId = 'vendor';
+    Dashboard.currentReportTab = reportId;
+    Dashboard.reportFilterQuery = '';
+
+    const wrapper = document.getElementById('report-menu-wrapper');
+    const view = document.getElementById('report-view');
+    if (wrapper) wrapper.style.display = 'none';
+    if (view) view.style.display = 'block';
+
+    const searchInput = document.getElementById('reportSearchInput');
+    if (searchInput) searchInput.value = '';
+
+    const switcher = document.getElementById('quickReportSwitcher');
+    if (switcher) switcher.value = reportId;
+
+    Dashboard.renderReportChart(reportId);
     Dashboard.renderActiveReport();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  switchReportTab(reportId) {
+    Dashboard.openReportView(reportId);
+  },
+
+  renderReportHubCards() {
+    const grid = document.getElementById('report-menu-grid');
+    if (!grid) return;
+    if (!Dashboard.reportsData) Dashboard.computeReportsData();
+    const d = Dashboard.reportsData;
+    if (!d || !d.kpi) return;
+
+    const cards = [
+      {
+        id: 'vendor',
+        title: 'Vendor Spend & Performance',
+        icon: 'fa-building',
+        iconColor: '#2563eb',
+        iconBg: '#eff6ff',
+        desc: 'Comprehensive payout liability, vendor share of wallet, approval rates, and average ticket size.',
+        badge: ((d.vendor || []).length) + ' Vendors',
+        stat: Utils.formatCurrency(d.kpi.totalAmount || 0) + ' Total'
+      },
+      {
+        id: 'ledger',
+        title: 'Ledger / Expense Head Breakdown',
+        icon: 'fa-folder-open',
+        iconColor: '#0d9488',
+        iconBg: '#f0fdfa',
+        desc: 'Deep-dive analysis of operational spends grouped by accounting ledger names and cost heads.',
+        badge: ((d.ledger || []).length) + ' Ledgers',
+        stat: Utils.formatCurrency(d.kpi.totalAmount || 0) + ' Allocated'
+      },
+      {
+        id: 'entity',
+        title: 'Billed-To Entity (Subsidiary) Analysis',
+        icon: 'fa-landmark',
+        iconColor: '#7c3aed',
+        iconBg: '#f5f3ff',
+        desc: 'Subsidiary & legal company level expenditure allocation across all Gretex group corporate entities.',
+        badge: ((d.entity || []).length) + ' Entities',
+        stat: Utils.formatCurrency(d.kpi.totalAmount || 0) + ' Group Spend'
+      },
+      {
+        id: 'department',
+        title: 'Department & HOD Budget Tracking',
+        icon: 'fa-users-gear',
+        iconColor: '#ea580c',
+        iconBg: '#fff7ed',
+        desc: 'Departmental spend allocation, pending pipeline liability, and HOD pre-approval compliance audit.',
+        badge: ((d.department || []).length) + ' HODs',
+        stat: 'HOD Compliance Tracked'
+      },
+      {
+        id: 'nature',
+        title: 'Capex vs Opex & Document Nature',
+        icon: 'fa-scale-balanced',
+        iconColor: '#4f46e5',
+        iconBg: '#eef2ff',
+        desc: 'Dual classification audit: Capital Expenditure vs Operational Revenue, and Tax vs Proforma invoices.',
+        badge: 'Capex / Opex',
+        stat: 'Tax & Proforma Split'
+      },
+      {
+        id: 'tds',
+        title: 'TDS Statutory Compliance Audit',
+        icon: 'fa-shield-halved',
+        iconColor: '#0891b2',
+        iconBg: '#ecfeff',
+        desc: 'Section-wise TDS pool tracking (194C, 194J, 194I, 194H), deduction rates, and vendor PAN availability.',
+        badge: ((d.tds || []).length) + ' Tax Sections',
+        stat: Utils.formatCurrency(d.kpi.totalTdsAmount || 0) + ' Deducted'
+      },
+      {
+        id: 'gst',
+        title: 'GST & Place of Supply Audit',
+        icon: 'fa-receipt',
+        iconColor: '#16a34a',
+        iconBg: '#f0fdf4',
+        desc: 'Inter-State (IGST) vs Intra-State (CGST+SGST) tax allocation, taxpayer type, and returns filing rate.',
+        badge: ((d.gst || []).length) + ' States',
+        stat: 'GST Compliance Audited'
+      },
+      {
+        id: 'flags',
+        title: 'Audit & Red Flag Deep-Dive',
+        icon: 'fa-flag',
+        iconColor: '#dc2626',
+        iconBg: '#fef2f2',
+        desc: 'Comprehensive risk detection breakdown, anomaly triggers, and 1-click modal flagged bill inspection.',
+        badge: ((d.flags?.invoices || []).length) + ' Flagged Bills',
+        stat: Utils.formatCurrency(d.kpi.redFlagAmount || 0) + ' At Risk'
+      },
+      {
+        id: 'pipeline',
+        title: 'Approval Pipeline & Bottlenecks',
+        icon: 'fa-hourglass-half',
+        iconColor: '#d97706',
+        iconBg: '#fffbeb',
+        desc: 'Stage-wise locked capital, bottleneck analysis (Account, CFO, Admin, Super Admin), and queue health.',
+        badge: ((d.pipeline || []).length) + ' Stages',
+        stat: Utils.formatCurrency(d.kpi.pendingAmount || 0) + ' In Pipeline'
+      },
+      {
+        id: 'monthly',
+        title: 'Monthly Trends & Inflow Analysis',
+        icon: 'fa-calendar-days',
+        iconColor: '#9333ea',
+        iconBg: '#faf5ff',
+        desc: 'Month-over-month inflow trajectory, total commitment volume, and clearance efficiency percentage.',
+        badge: ((d.monthly || []).length) + ' Months',
+        stat: 'Inflow & Clearances'
+      },
+      {
+        id: 'lifecycle',
+        title: 'Invoice Lifecycle & User TAT',
+        icon: 'fa-user-clock',
+        iconColor: '#0284c7',
+        iconBg: '#f0f9ff',
+        desc: 'Audit funnel: Total processed, approved (closed vs open), rejected, user-wise pending exposure, and approval TAT.',
+        badge: 'Lifecycle & TAT',
+        stat: (d.lifecycle?.approvedClosedCount || 0) + ' Closed • ' + (d.lifecycle?.pendingCount || 0) + ' Pending'
+      }
+    ];
+
+    grid.innerHTML = cards.map(c => `
+      <div class="report-card" onclick="Dashboard.openReportView('${c.id}')">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div class="report-card-icon" style="background:${c.iconBg};color:${c.iconColor};">
+            <i class="fa ${c.icon}"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;">
+              <h5 style="font-size:0.95rem;font-weight:700;color:var(--gray-900);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.title}</h5>
+              <span class="report-card-pill" style="background:${c.iconBg};color:${c.iconColor};border:1px solid ${c.iconColor}22;white-space:nowrap;">${c.badge}</span>
+            </div>
+            <p style="font-size:0.79rem;color:var(--gray-500);margin:0 0 12px 0;line-height:1.35;height:38px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+              ${c.desc}
+            </p>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--gray-100);font-size:0.75rem;font-weight:600;">
+              <span style="color:var(--gray-600);">${c.stat}</span>
+              <span style="color:${c.iconColor};display:inline-flex;align-items:center;gap:4px;">View Report <i class="fa fa-arrow-right" style="font-size:0.7rem;"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  renderReportChart(reportId) {
+    if (typeof Chart === 'undefined') {
+      console.warn("Chart.js is not loaded.");
+      return;
+    }
+    const canvas = document.getElementById('reportAnalyticsCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    if (Dashboard.currentChart) {
+      try { Dashboard.currentChart.destroy(); } catch(e){}
+      Dashboard.currentChart = null;
+    }
+
+    if (!Dashboard.reportsData) Dashboard.computeReportsData();
+    const d = Dashboard.reportsData;
+    if (!d) return;
+    const chartTitleElem = document.getElementById('reportChartTitle');
+
+    let cfg = null;
+
+    if (reportId === 'vendor') {
+      if (chartTitleElem) chartTitleElem.textContent = "Top 10 Vendors by Spend & Approval Status";
+      const topVendors = (d.vendor || []).slice(0, 10);
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: topVendors.map(v => v.name.length > 22 ? v.name.slice(0, 20) + '...' : v.name),
+          datasets: [
+            {
+              label: 'Approved Spend (₹)',
+              data: topVendors.map(v => v.approvedVal || 0),
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'Pending Spend (₹)',
+              data: topVendors.map(v => v.pendingVal || 0),
+              backgroundColor: '#f59e0b',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) }
+            },
+            y: { stacked: true }
+          }
+        }
+      };
+    } else if (reportId === 'ledger') {
+      if (chartTitleElem) chartTitleElem.textContent = "Expense Distribution Across Ledgers";
+      const topLedgers = (d.ledger || []).slice(0, 7);
+      const otherLedgers = (d.ledger || []).slice(7);
+      const labels = topLedgers.map(l => l.name);
+      const data = topLedgers.map(l => l.payable || 0);
+      if (otherLedgers.length > 0) {
+        labels.push("Other Ledgers");
+        data.push(otherLedgers.reduce((s, l) => s + (l.payable || 0), 0));
+      }
+      cfg = {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#64748b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          }
+        }
+      };
+    } else if (reportId === 'entity') {
+      if (chartTitleElem) chartTitleElem.textContent = "Group Spend Allocation by Billed-To Entity";
+      cfg = {
+        type: 'doughnut',
+        data: {
+          labels: (d.entity || []).map(e => e.name),
+          datasets: [{
+            data: (d.entity || []).map(e => e.payable || 0),
+            backgroundColor: ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          }
+        }
+      };
+    } else if (reportId === 'department') {
+      if (chartTitleElem) chartTitleElem.textContent = "Department Spend: Approved vs Pending Pipeline";
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: (d.department || []).map(dept => dept.name),
+          datasets: [
+            {
+              label: 'Approved Spend (₹)',
+              data: (d.department || []).map(dept => dept.approved || 0),
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'Pending Pipeline (₹)',
+              data: (d.department || []).map(dept => dept.pending || 0),
+              backgroundColor: '#f59e0b',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'nature') {
+      if (chartTitleElem) chartTitleElem.textContent = "Capex vs Opex Expenditure & Invoice Type Split";
+      const capexOpexList = d.nature?.capexOpex || [];
+      const invoiceTypeList = d.nature?.invoiceType || [];
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: ['Capex vs Opex', 'Invoice Nature'],
+          datasets: [
+            {
+              label: 'Revenue / Opex | Tax Invoice',
+              data: [
+                (capexOpexList.find(r => r.name.toLowerCase().includes('rev'))?.payable || 0),
+                (invoiceTypeList.find(r => r.name.toLowerCase().includes('tax'))?.payable || 0)
+              ],
+              backgroundColor: '#3b82f6',
+              borderRadius: 6
+            },
+            {
+              label: 'Capital / Capex | Proforma',
+              data: [
+                (capexOpexList.find(r => r.name.toLowerCase().includes('cap'))?.payable || 0),
+                (invoiceTypeList.find(r => r.name.toLowerCase().includes('proforma'))?.payable || 0)
+              ],
+              backgroundColor: '#8b5cf6',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'tds') {
+      if (chartTitleElem) chartTitleElem.textContent = "Statutory TDS Withheld by Section";
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: (d.tds || []).map(t => 'Sec ' + t.section),
+          datasets: [{
+            label: 'TDS Withheld (₹)',
+            data: (d.tds || []).map(t => t.tds || 0),
+            backgroundColor: '#0891b2',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `TDS Withheld: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'gst') {
+      if (chartTitleElem) chartTitleElem.textContent = "Place of Supply & GST Distribution";
+      const topPos = (d.gst || []).slice(0, 8);
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: topPos.map(g => g.state),
+          datasets: [
+            {
+              label: 'Total Taxable Basic (₹)',
+              data: topPos.map(g => g.basic || 0),
+              backgroundColor: '#16a34a',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `Basic: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'flags') {
+      if (chartTitleElem) chartTitleElem.textContent = "Audit Risk Triggers & Frequency Analysis";
+      const categories = d.flags?.categories || [];
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: categories.map(b => b.flag.length > 28 ? b.flag.slice(0, 26) + '...' : b.flag),
+          datasets: [{
+            label: 'Invoices Flagged',
+            data: categories.map(b => b.count),
+            backgroundColor: '#dc2626',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { precision: 0 } }
+          }
+        }
+      };
+    } else if (reportId === 'pipeline') {
+      if (chartTitleElem) chartTitleElem.textContent = "Approval Pipeline Stage Aging & Locked Capital";
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: (d.pipeline || []).map(p => p.stage),
+          datasets: [{
+            label: 'Locked Capital (₹)',
+            data: (d.pipeline || []).map(p => p.payable || 0),
+            backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#16a34a', '#ef4444'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `Capital: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'monthly') {
+      if (chartTitleElem) chartTitleElem.textContent = "Month-Over-Month Inflow & Spend Clearance Trends";
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: (d.monthly || []).map(m => m.month),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Total Inflow (₹)',
+              data: (d.monthly || []).map(m => m.payable || 0),
+              backgroundColor: 'rgba(59, 130, 246, 0.7)',
+              borderRadius: 6
+            },
+            {
+              type: 'line',
+              label: 'Approved Spend (₹)',
+              data: (d.monthly || []).map(m => m.approved || 0),
+              borderColor: '#10b981',
+              backgroundColor: '#10b981',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ₹${Number(ctx.raw || 0).toLocaleString('en-IN')}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => '₹' + (v >= 100000 ? (v/100000).toFixed(1) + 'L' : v) } }
+          }
+        }
+      };
+    } else if (reportId === 'lifecycle') {
+      if (chartTitleElem) chartTitleElem.textContent = "User Type Pending Bills & Average Approval Time (Hours)";
+      const userList = [
+        { role: 'Account Team', pending: d.lifecycle?.userPending?.find(u => u.key === 'Account')?.count || 0, hours: (((d.lifecycle?.userTAT?.find(u => u.role === 'Account Team')?.avgMs || 0) / 3600000)).toFixed(1) },
+        { role: 'CFO Review', pending: d.lifecycle?.userPending?.find(u => u.key === 'CFO')?.count || 0, hours: (((d.lifecycle?.userTAT?.find(u => u.role === 'CFO')?.avgMs || 0) / 3600000)).toFixed(1) },
+        { role: 'Admin Sign-off', pending: d.lifecycle?.userPending?.find(u => u.key === 'Admin')?.count || 0, hours: (((d.lifecycle?.userTAT?.find(u => u.role === 'Admin')?.avgMs || 0) / 3600000)).toFixed(1) },
+        { role: 'Super Admin', pending: d.lifecycle?.userPending?.find(u => u.key === 'SuperAdmin')?.count || 0, hours: (((d.lifecycle?.userTAT?.find(u => u.role === 'Super Admin')?.avgMs || 0) / 3600000)).toFixed(1) }
+      ];
+
+      cfg = {
+        type: 'bar',
+        data: {
+          labels: userList.map(u => u.role),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Pending Invoices Count',
+              data: userList.map(u => u.pending),
+              backgroundColor: '#f59e0b',
+              borderRadius: 6,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'Avg Approval Time (Hours)',
+              data: userList.map(u => u.hours),
+              borderColor: '#0284c7',
+              backgroundColor: '#0284c7',
+              borderWidth: 2,
+              pointRadius: 5,
+              tension: 0.2,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} ${ctx.dataset.type === 'line' ? 'hrs' : 'bills'}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'Pending Invoices Count' },
+              ticks: { precision: 0 }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Avg Approval Hours' },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      };
+    }
+
+    if (cfg) {
+      Dashboard.currentChart = new Chart(ctx, cfg);
+    }
+  },
+
+  exportAllReportsCSV() {
+    if (!Dashboard.reportsData) Dashboard.computeReportsData();
+    const d = Dashboard.reportsData;
+    if (!d || !d.kpi) return Toast.error("Reports data not ready yet.");
+
+    let csv = "GRETEX INVOICE SYSTEM - EXECUTIVE FINANCIAL & OPERATIONAL REPORT\r\n";
+    csv += "Generated: " + new Date().toLocaleString() + "\r\n\r\n";
+
+    csv += "EXECUTIVE SUMMARY KPIS\r\n";
+    csv += "Total Invoices," + (d.kpi.totalCount || 0) + "\r\n";
+    csv += "Total Payable (Gross)," + (d.kpi.totalAmount || 0).toFixed(2) + "\r\n";
+    csv += "Approved Spend," + (d.kpi.approvedAmount || 0).toFixed(2) + "\r\n";
+    csv += "Pending Pipeline," + (d.kpi.pendingAmount || 0).toFixed(2) + "\r\n";
+    csv += "TDS Withheld," + (d.kpi.totalTdsAmount || 0).toFixed(2) + "\r\n";
+    csv += "At-Risk Flagged Amount," + (d.kpi.redFlagAmount || 0).toFixed(2) + "\r\n\r\n";
+
+    csv += "1. VENDOR SPEND SUMMARY\r\n";
+    csv += "Vendor Name,Total Bills,Approved Bills,Pending Bills,Basic Amount,TDS Amount,Total Payable\r\n";
+    (d.vendor || []).forEach(v => {
+      csv += `"${(v.name || '').replace(/"/g, '""')}",${v.count || 0},${v.approved || 0},${v.pending || 0},${(v.basic || 0).toFixed(2)},${(v.tds || 0).toFixed(2)},${(v.payable || 0).toFixed(2)}\r\n`;
+    });
+    csv += "\r\n";
+
+    csv += "2. LEDGER EXPENSE HEADS\r\n";
+    csv += "Ledger Name,Vendors Count,Total Invoices,Approved Spend,Pending Pipeline,Total Expense\r\n";
+    (d.ledger || []).forEach(l => {
+      csv += `"${(l.name || '').replace(/"/g, '""')}",${l.vendorCount || 0},${l.count || 0},${(l.approved || 0).toFixed(2)},${(l.pending || 0).toFixed(2)},${(l.payable || 0).toFixed(2)}\r\n`;
+    });
+    csv += "\r\n";
+
+    csv += "3. BILLED-TO ENTITIES\r\n";
+    csv += "Entity Name,Invoices,Basic Amount,TDS Amount,Total Payable\r\n";
+    (d.entity || []).forEach(e => {
+      csv += `"${(e.name || '').replace(/"/g, '""')}",${e.count || 0},${(e.basic || 0).toFixed(2)},${(e.tds || 0).toFixed(2)},${(e.payable || 0).toFixed(2)}\r\n`;
+    });
+    csv += "\r\n";
+
+    csv += "4. DEPARTMENT & HOD SPEND\r\n";
+    csv += "HOD Name,Invoices,Approved Spend,Pending Pipeline,Total Dept Spend,HOD Pre-Approvals\r\n";
+    (d.department || []).forEach(dept => {
+      csv += `"${(dept.name || '').replace(/"/g, '""')}",${dept.count || 0},${(dept.approved || 0).toFixed(2)},${(dept.pending || 0).toFixed(2)},${(dept.payable || 0).toFixed(2)},${dept.hodApprovedCount || 0}\r\n`;
+    });
+    csv += "\r\n";
+
+    csv += "5. TDS STATUTORY BREAKDOWN\r\n";
+    csv += "Section,Rate,Invoices,Basic Amount,TDS Amount,PAN Available,PAN Missing\r\n";
+    (d.tds || []).forEach(t => {
+      csv += `"${t.section}",${t.rate},${t.count || 0},${(t.basic || 0).toFixed(2)},${(t.tds || 0).toFixed(2)},${t.panAvail || 0},${t.panMissing || 0}\r\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Gretex_Multi_Report_Executive_Dashboard_" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    Toast.success("Consolidated Multi-Report Export downloaded!");
   },
 
   computeReportsData() {
@@ -1079,6 +1881,29 @@ const Dashboard = {
     const flaggedInvoices = [];
     const stageMap = {};
     const monthlyMap = {};
+
+    let approvedClosedCount = 0, approvedClosedVal = 0;
+    let approvedOpenCount = 0, approvedOpenVal = 0;
+    let rejectedCountLifecycle = 0, rejectedValLifecycle = 0;
+    let pendingCountLifecycle = 0, pendingValLifecycle = 0;
+
+    const userPendingMap = {
+      Biller: { count: 0, val: 0, oldestDate: null },
+      Account: { count: 0, val: 0, oldestDate: null },
+      CFO: { count: 0, val: 0, oldestDate: null },
+      Admin: { count: 0, val: 0, oldestDate: null },
+      SuperAdmin: { count: 0, val: 0, oldestDate: null }
+    };
+
+    const userTATMap = {
+      Account: { count: 0, sumMs: 0 },
+      CFO: { count: 0, sumMs: 0 },
+      Admin: { count: 0, sumMs: 0 },
+      SuperAdmin: { count: 0, sumMs: 0 },
+      EndToEnd: { count: 0, sumMs: 0 }
+    };
+
+    const lifecycleDetailedRows = [];
 
     all.forEach(inv => {
       const basic = Number(inv["A20. Basic Amount"]) || 0;
@@ -1121,14 +1946,20 @@ const Dashboard = {
 
       // 1. Vendor
       const vendor = String(inv["A14. Vendor Name"] || "Unknown Vendor").trim();
-      if (!vendorMap[vendor]) vendorMap[vendor] = { name: vendor, count: 0, approved: 0, pending: 0, rejected: 0, basic: 0, tds: 0, payable: 0 };
+      if (!vendorMap[vendor]) vendorMap[vendor] = { name: vendor, count: 0, approved: 0, pending: 0, rejected: 0, basic: 0, tds: 0, payable: 0, approvedVal: 0, pendingVal: 0 };
       vendorMap[vendor].count++;
       vendorMap[vendor].basic += basic;
       vendorMap[vendor].tds += tds;
       vendorMap[vendor].payable += payable;
-      if (isApproved) vendorMap[vendor].approved++;
-      else if (isRejected) vendorMap[vendor].rejected++;
-      else vendorMap[vendor].pending++;
+      if (isApproved) {
+        vendorMap[vendor].approved++;
+        vendorMap[vendor].approvedVal += payable;
+      } else if (isRejected) {
+        vendorMap[vendor].rejected++;
+      } else {
+        vendorMap[vendor].pending++;
+        vendorMap[vendor].pendingVal += payable;
+      }
 
       // 2. Ledger
       const ledger = String(inv["A19. Ledger Name"] || "General / Uncategorized Expense").trim();
@@ -1222,6 +2053,111 @@ const Dashboard = {
       monthlyMap[monthLabel].payable += payable;
       if (isApproved) monthlyMap[monthLabel].approved += payable;
       else monthlyMap[monthLabel].pending += payable;
+
+      // 11. Lifecycle calculations
+      const closeVal = String(inv["Close at"] || inv["Close_At"] || inv["Close At"] || inv["Mark Close At"] || inv["Mark_Close_At"] || "").trim();
+      const isClosed = Boolean(closeVal && closeVal !== "—" && closeVal !== "-" && closeVal !== "N/A" && closeVal !== "NA" && closeVal !== "null" && closeVal !== "undefined");
+
+      if (isApproved) {
+        if (isClosed) {
+          approvedClosedCount++;
+          approvedClosedVal += payable;
+        } else {
+          approvedOpenCount++;
+          approvedOpenVal += payable;
+        }
+      } else if (isRejected) {
+        rejectedCountLifecycle++;
+        rejectedValLifecycle += payable;
+      } else {
+        pendingCountLifecycle++;
+        pendingValLifecycle += payable;
+
+        const s = stage.toLowerCase();
+        if (s.includes("cfo")) {
+          userPendingMap.CFO.count++;
+          userPendingMap.CFO.val += payable;
+        } else if (s.includes("admin") && !s.includes("super")) {
+          userPendingMap.Admin.count++;
+          userPendingMap.Admin.val += payable;
+        } else if (s.includes("super") || s.includes("sa")) {
+          userPendingMap.SuperAdmin.count++;
+          userPendingMap.SuperAdmin.val += payable;
+        } else if (s.includes("biller")) {
+          userPendingMap.Biller.count++;
+          userPendingMap.Biller.val += payable;
+        } else {
+          userPendingMap.Account.count++;
+          userPendingMap.Account.val += payable;
+        }
+      }
+
+      // Turnaround times
+      const dRec = Dashboard.parseDateSafe(inv["Timestamp"] || inv["A12. Invoice Date"]);
+      const dBill = Dashboard.parseDateSafe(inv["Biller_Send_At"]);
+      const dAcc = Dashboard.parseDateSafe(inv["Account_Send_At"]);
+      const dCfo = Dashboard.parseDateSafe(inv["CFO_Send_At"]);
+      const dAdm = Dashboard.parseDateSafe(inv["Admin_Send_At"]);
+      const dSA = Dashboard.parseDateSafe(inv["SA_Approved_At"]);
+      const dClose = Dashboard.parseDateSafe(closeVal);
+
+      if (dAcc && (dBill || dRec)) {
+        const diff = dAcc - (dBill || dRec);
+        if (diff > 0 && diff < 180 * 86400000) {
+          userTATMap.Account.sumMs += diff;
+          userTATMap.Account.count++;
+        }
+      }
+      if (dCfo && dAcc) {
+        const diff = dCfo - dAcc;
+        if (diff > 0 && diff < 180 * 86400000) {
+          userTATMap.CFO.sumMs += diff;
+          userTATMap.CFO.count++;
+        }
+      }
+      if (dAdm && dCfo) {
+        const diff = dAdm - dCfo;
+        if (diff > 0 && diff < 180 * 86400000) {
+          userTATMap.Admin.sumMs += diff;
+          userTATMap.Admin.count++;
+        }
+      }
+      if (dSA && (dAdm || dCfo)) {
+        const diff = dSA - (dAdm || dCfo);
+        if (diff > 0 && diff < 180 * 86400000) {
+          userTATMap.SuperAdmin.sumMs += diff;
+          userTATMap.SuperAdmin.count++;
+        }
+      }
+
+      let totalTatMs = 0;
+      if ((dSA || dClose) && dRec) {
+        const diff = (dSA || dClose) - dRec;
+        if (diff > 0 && diff < 365 * 86400000) {
+          totalTatMs = diff;
+          userTATMap.EndToEnd.sumMs += diff;
+          userTATMap.EndToEnd.count++;
+        }
+      }
+
+      lifecycleDetailedRows.push({
+        invNo: inv["A13. Invoice Number"] || "—",
+        vendor: inv["A14. Vendor Name"] || "Unknown",
+        payable,
+        basic,
+        stage,
+        appStatus,
+        isApproved,
+        isRejected,
+        isPending,
+        isClosed,
+        closeVal,
+        recDate: inv["Timestamp"] || inv["A12. Invoice Date"] || "—",
+        finalDate: inv["SA_Approved_At"] || closeVal || inv["CFO_Send_At"] || "—",
+        tatText: totalTatMs > 0 ? Dashboard.formatDuration(totalTatMs) : "—",
+        tatMs: totalTatMs,
+        rowIndex: inv.rowIndex
+      });
     });
 
     Dashboard.reportsData = {
@@ -1241,10 +2177,40 @@ const Dashboard = {
         invoices: flaggedInvoices
       },
       pipeline: Object.values(stageMap),
-      monthly: Object.values(monthlyMap)
+      monthly: Object.values(monthlyMap),
+      lifecycle: {
+        totalCount: all.length,
+        totalAmount,
+        approvedClosedCount,
+        approvedClosedVal,
+        approvedOpenCount,
+        approvedOpenVal,
+        approvedTotalCount: approvedClosedCount + approvedOpenCount,
+        approvedTotalVal: approvedClosedVal + approvedOpenVal,
+        rejectedCount: rejectedCountLifecycle,
+        rejectedVal: rejectedValLifecycle,
+        pendingCount: pendingCountLifecycle,
+        pendingVal: pendingValLifecycle,
+        userPending: [
+          { key: "Biller", role: "Biller Team", icon: "fa-user-pen", color: "#7c4dff", bg: "#f3e8ff", count: userPendingMap.Biller.count, val: userPendingMap.Biller.val },
+          { key: "Account", role: "Account Team", icon: "fa-calculator", color: "#1a73e8", bg: "#e8f0fe", count: userPendingMap.Account.count, val: userPendingMap.Account.val },
+          { key: "CFO", role: "CFO Review", icon: "fa-briefcase", color: "#00897b", bg: "#e0f2f1", count: userPendingMap.CFO.count, val: userPendingMap.CFO.val },
+          { key: "Admin", role: "Admin Sign-off", icon: "fa-user-shield", color: "#f57c00", bg: "#fff3e0", count: userPendingMap.Admin.count, val: userPendingMap.Admin.val },
+          { key: "SuperAdmin", role: "Super Admin", icon: "fa-crown", color: "#c62828", bg: "#ffebee", count: userPendingMap.SuperAdmin.count, val: userPendingMap.SuperAdmin.val }
+        ],
+        userTAT: [
+          { role: "Account Team", stage: "Account Scrutiny", icon: "fa-calculator", count: userTATMap.Account.count, avgMs: userTATMap.Account.count > 0 ? userTATMap.Account.sumMs / userTATMap.Account.count : 0, avgText: Dashboard.formatDuration(userTATMap.Account.count > 0 ? userTATMap.Account.sumMs / userTATMap.Account.count : 0) },
+          { role: "CFO", stage: "Financial Clearance", icon: "fa-briefcase", count: userTATMap.CFO.count, avgMs: userTATMap.CFO.count > 0 ? userTATMap.CFO.sumMs / userTATMap.CFO.count : 0, avgText: Dashboard.formatDuration(userTATMap.CFO.count > 0 ? userTATMap.CFO.sumMs / userTATMap.CFO.count : 0) },
+          { role: "Admin", stage: "Admin Sign-off", icon: "fa-user-shield", count: userTATMap.Admin.count, avgMs: userTATMap.Admin.count > 0 ? userTATMap.Admin.sumMs / userTATMap.Admin.count : 0, avgText: Dashboard.formatDuration(userTATMap.Admin.count > 0 ? userTATMap.Admin.sumMs / userTATMap.Admin.count : 0) },
+          { role: "Super Admin", stage: "Final Executive Authorization", icon: "fa-crown", count: userTATMap.SuperAdmin.count, avgMs: userTATMap.SuperAdmin.count > 0 ? userTATMap.SuperAdmin.sumMs / userTATMap.SuperAdmin.count : 0, avgText: Dashboard.formatDuration(userTATMap.SuperAdmin.count > 0 ? userTATMap.SuperAdmin.sumMs / userTATMap.SuperAdmin.count : 0) },
+          { role: "End-to-End Cycle", stage: "Full Workflow (Submission to Completion)", icon: "fa-circle-check", count: userTATMap.EndToEnd.count, avgMs: userTATMap.EndToEnd.count > 0 ? userTATMap.EndToEnd.sumMs / userTATMap.EndToEnd.count : 0, avgText: Dashboard.formatDuration(userTATMap.EndToEnd.count > 0 ? userTATMap.EndToEnd.sumMs / userTATMap.EndToEnd.count : 0) }
+        ],
+        detailedRows: lifecycleDetailedRows
+      }
     };
   },
 
+  
   renderReportKPIs() {
     const kpi = Dashboard.reportsData?.kpi;
     if (!kpi) return;
@@ -1272,16 +2238,7 @@ const Dashboard = {
     if (repFlaggedSub) repFlaggedSub.textContent = kpi.redFlagCount + " Red flagged bills at risk";
   },
 
-  switchReportTab(tabKey, btnEl) {
-    Dashboard.currentReportTab = tabKey;
-    document.querySelectorAll(".rep-nav-tab").forEach(b => b.classList.remove("active"));
-    if (btnEl) btnEl.classList.add("active");
-    Dashboard.reportFilterQuery = '';
-    const sInput = document.getElementById("reportSearchInput");
-    if (sInput) sInput.value = '';
-    Dashboard.renderActiveReport();
-  },
-
+  
   filterActiveReport(query) {
     Dashboard.reportFilterQuery = (query || "").trim().toLowerCase();
     Dashboard.renderActiveReport();
