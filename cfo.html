@@ -51,6 +51,54 @@
     .filter-tab.active, .filter-tab-q.active { background: var(--white); color: var(--primary); font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
     .data-table tbody tr { transition: background-color 0.15s ease; }
     .data-table tbody tr:hover { background-color: #f8faff; }
+
+    /* ── Reports Navigation Tabs & Visuals ── */
+    .rep-nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .rep-nav-tab:hover {
+      background: #f0f7ff;
+      color: var(--primary);
+      border-color: #bad9fb;
+    }
+    .rep-nav-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 3px 8px rgba(26, 115, 232, 0.25);
+    }
+    .rep-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .rep-stat-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: #edf2f7;
+      overflow: hidden;
+      width: 100%;
+      min-width: 60px;
+    }
+    .rep-stat-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
@@ -279,49 +327,163 @@
         </div>
       </div>
 
-      <!-- NEW: REPORTS (GENERAL SUMMARY) -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- FINANCIAL & OPERATIONAL INTELLIGENCE REPORTS ══════════════════ -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
       <div class="section" id="section-reports">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:16px;">
-          <div class="card">
-            <div class="card-body" style="padding:20px;text-align:center;">
-              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Total Invoices</div>
-              <div style="font-size:2rem;font-weight:800;color:var(--primary);margin-top:8px;" id="repTotalCount">0</div>
+        <!-- 6 Executive KPI Metric Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px;">
+          <div class="card" style="border-left:4px solid var(--primary);box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">Total Invoices</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.85rem;"><i class="fa fa-file-invoice"></i></div>
+              </div>
+              <div style="font-size:1.8rem;font-weight:800;color:var(--primary);margin-top:6px;" id="repTotalCount">0</div>
+              <div style="font-size:0.72rem;color:var(--gray-500);margin-top:2px;" id="repTotalSub">All recorded bills</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-body" style="padding:20px;text-align:center;">
-              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Total Amount</div>
-              <div style="font-size:1.8rem;font-weight:800;color:var(--gray-800);margin-top:8px;" id="repTotalAmount">₹0</div>
+          
+          <div class="card" style="border-left:4px solid #1e293b;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">Total Payable</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#1e293b;font-size:0.85rem;"><i class="fa fa-indian-rupee-sign"></i></div>
+              </div>
+              <div style="font-size:1.7rem;font-weight:800;color:#1e293b;margin-top:6px;" id="repTotalAmount">₹0</div>
+              <div style="font-size:0.72rem;color:var(--gray-500);margin-top:2px;">Gross expenditure liability</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-body" style="padding:20px;text-align:center;">
-              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Approved Value</div>
-              <div style="font-size:1.8rem;font-weight:800;color:#34a853;margin-top:8px;" id="repApprovedAmount">₹0</div>
+
+          <div class="card" style="border-left:4px solid #16a34a;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">Approved Spend</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;color:#16a34a;font-size:0.85rem;"><i class="fa fa-circle-check"></i></div>
+              </div>
+              <div style="font-size:1.7rem;font-weight:800;color:#16a34a;margin-top:6px;" id="repApprovedAmount">₹0</div>
+              <div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:2px;" id="repApprovedSub">0% of total spend</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-body" style="padding:20px;text-align:center;">
-              <div style="font-size:0.85rem;color:var(--gray-500);text-transform:uppercase;font-weight:600;">Pending Value</div>
-              <div style="font-size:1.8rem;font-weight:800;color:#f9a825;margin-top:8px;" id="repPendingAmount">₹0</div>
+
+          <div class="card" style="border-left:4px solid #f59e0b;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">In Pipeline</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:0.85rem;"><i class="fa fa-clock"></i></div>
+              </div>
+              <div style="font-size:1.7rem;font-weight:800;color:#f59e0b;margin-top:6px;" id="repPendingAmount">₹0</div>
+              <div style="font-size:0.72rem;color:#f59e0b;font-weight:600;margin-top:2px;" id="repPendingSub">Pending review & approval</div>
+            </div>
+          </div>
+
+          <div class="card" style="border-left:4px solid #6366f1;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">TDS Deductions</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;color:#6366f1;font-size:0.85rem;"><i class="fa fa-percent"></i></div>
+              </div>
+              <div style="font-size:1.7rem;font-weight:800;color:#6366f1;margin-top:6px;" id="repTdsAmount">₹0</div>
+              <div style="font-size:0.72rem;color:var(--gray-500);margin-top:2px;">Statutory TDS withheld</div>
+            </div>
+          </div>
+
+          <div class="card" style="border-left:4px solid #dc2626;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;">At-Risk Value</div>
+                <div style="width:30px;height:30px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;color:#dc2626;font-size:0.85rem;"><i class="fa fa-flag"></i></div>
+              </div>
+              <div style="font-size:1.7rem;font-weight:800;color:#dc2626;margin-top:6px;" id="repFlaggedAmount">₹0</div>
+              <div style="font-size:0.72rem;color:#dc2626;font-weight:600;margin-top:2px;" id="repFlaggedSub">0 Red flagged bills</div>
             </div>
           </div>
         </div>
+
+        <!-- Multi-Report Navigation Bar -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-body" style="padding:12px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px;">
+              <span style="font-size:0.82rem;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:0.5px;">
+                <i class="fa fa-chart-simple" style="color:var(--primary);margin-right:4px;"></i> Select Financial Report View
+              </span>
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.loadReports()" style="font-size:0.78rem;">
+                <i class="fa fa-rotate"></i> Refresh Data
+              </button>
+            </div>
+            
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;" id="reportNavTabs">
+              <button class="rep-nav-tab active" data-report="vendor" onclick="Dashboard.switchReportTab('vendor', this)">
+                <i class="fa fa-building"></i> Vendor Analysis
+              </button>
+              <button class="rep-nav-tab" data-report="ledger" onclick="Dashboard.switchReportTab('ledger', this)">
+                <i class="fa fa-book"></i> Ledger / Expense Heads
+              </button>
+              <button class="rep-nav-tab" data-report="entity" onclick="Dashboard.switchReportTab('entity', this)">
+                <i class="fa fa-landmark"></i> Billed-To Entity
+              </button>
+              <button class="rep-nav-tab" data-report="department" onclick="Dashboard.switchReportTab('department', this)">
+                <i class="fa fa-users-gear"></i> Department / HOD
+              </button>
+              <button class="rep-nav-tab" data-report="nature" onclick="Dashboard.switchReportTab('nature', this)">
+                <i class="fa fa-scale-balanced"></i> Capex vs Opex
+              </button>
+              <button class="rep-nav-tab" data-report="tds" onclick="Dashboard.switchReportTab('tds', this)">
+                <i class="fa fa-percent"></i> TDS Section Compliance
+              </button>
+              <button class="rep-nav-tab" data-report="gst" onclick="Dashboard.switchReportTab('gst', this)">
+                <i class="fa fa-receipt"></i> GST & Place of Supply
+              </button>
+              <button class="rep-nav-tab" data-report="flags" onclick="Dashboard.switchReportTab('flags', this)">
+                <i class="fa fa-flag" style="color:#dc2626;"></i> Red Flag Risk Audit
+              </button>
+              <button class="rep-nav-tab" data-report="pipeline" onclick="Dashboard.switchReportTab('pipeline', this)">
+                <i class="fa fa-hourglass-half"></i> Pipeline Bottlenecks
+              </button>
+              <button class="rep-nav-tab" data-report="monthly" onclick="Dashboard.switchReportTab('monthly', this)">
+                <i class="fa fa-calendar-days"></i> Monthly Trends
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Report Content Card -->
         <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fa fa-chart-pie"></i> Vendor-wise Summary</div></div>
-          <div class="table-wrapper" style="max-height: 50vh; overflow-y: auto;">
-            <table class="data-table">
-              <thead style="position: sticky; top: 0; z-index: 10;">
-                <tr>
-                  <th>Vendor Name</th><th style="text-align:center;">Total Invoices</th>
-                  <th style="text-align:center;">Approved</th><th style="text-align:center;">Pending/Other</th>
-                  <th style="text-align:right;">Total Value</th>
-                </tr>
-              </thead>
-              <tbody id="reportsVendorBody">
-                <tr><td colspan="5" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Generating summary...</td></tr>
-              </tbody>
-            </table>
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 20px;">
+            <div>
+              <div class="card-title" id="activeReportTitle" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+                <i class="fa fa-building" style="color:var(--primary);"></i> Vendor-wise Expense Analysis
+              </div>
+              <div style="font-size:0.78rem;color:var(--gray-500);margin-top:2px;" id="activeReportSubtitle">
+                Detailed breakdown of bill count, approved spend, pending exposure, and spend share
+              </div>
+            </div>
+            
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div style="position:relative;">
+                <input type="text" class="form-control form-control-sm" id="reportSearchInput"
+                  placeholder="Filter in this report..."
+                  style="width:220px;padding-left:30px;font-size:0.82rem;height:34px;"
+                  oninput="Dashboard.filterActiveReport(this.value)"/>
+                <i class="fa fa-search" style="position:absolute;left:10px;top:10px;color:var(--gray-400);font-size:0.8rem;"></i>
+              </div>
+              <select class="form-control form-control-sm" id="reportSortSelect" style="width:auto;height:34px;font-size:0.82rem;" onchange="Dashboard.sortActiveReport(this.value)">
+                <option value="value_desc">Sort: Amount (High to Low)</option>
+                <option value="value_asc">Sort: Amount (Low to High)</option>
+                <option value="count_desc">Sort: Invoices (High to Low)</option>
+                <option value="name_asc">Sort: Name (A to Z)</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="Dashboard.exportCurrentReportCSV()" style="height:34px;background:#e8f5e9;color:#2e7d32;border-color:#2e7d32;font-weight:600;display:flex;align-items:center;gap:6px;">
+                <i class="fa fa-file-excel"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div id="activeReportContainer" style="padding:0;min-height:300px;">
+            <div class="text-center" style="padding:48px;color:var(--gray-400)">
+              <i class="fa fa-spinner fa-spin fa-2x"></i>
+              <div style="margin-top:10px;font-size:0.85rem;">Generating report analytics...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -832,9 +994,9 @@ const Dashboard = {
         <td>${isPending ? '<span style="background:#fff3e0;color:#f9a825;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600">Pending</span>' : status}</td>
         <td onclick="event.stopPropagation()">${isPending ? `<div style="display:flex;gap:6px">
           <button class="btn btn-sm" style="background:#34a853;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600" 
-            onclick="Dashboard.openApproveModal(${rowIdx}, '${StringString(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
+            onclick="Dashboard.openApproveModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">✅ Approve</button>
           <button class="btn btn-sm" style="background:#ea4335;color:#fff;padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600"
-            onclick="Dashboard.openRejectModal(${rowIdx}, '${StringString(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
+            onclick="Dashboard.openRejectModal(${rowIdx}, '${String(item["A13. Invoice Number"]||"").replace(/'/g,"\\'")}')">❌ Reject</button>
         </div>` : ""}</td>
       </tr>`;
     }).join("");
@@ -878,55 +1040,980 @@ const Dashboard = {
     Dashboard.renderQueue();
   },
 
-  // 🔥 REPORTS LOGIC 🔥
+  // 🔥 COMPREHENSIVE FINANCIAL & OPERATIONAL REPORTS SUITE 🔥
+  currentReportTab: 'vendor',
+  reportFilterQuery: '',
+  reportSortBy: 'value_desc',
+  reportsData: null,
+
   async loadReports() {
     if (Dashboard.allInvoicesData.length === 0) await Dashboard.loadDashboardData();
-    const all = Dashboard.allInvoicesData;
-    
-    let totalAmount = 0, approvedAmount = 0, pendingAmount = 0;
-    const vendorStats = {};
+    Dashboard.computeReportsData();
+    Dashboard.renderReportKPIs();
+    Dashboard.renderActiveReport();
+  },
+
+  computeReportsData() {
+    const all = Dashboard.allInvoicesData || [];
+    let totalAmount = 0;
+    let approvedAmount = 0;
+    let pendingAmount = 0;
+    let rejectedAmount = 0;
+    let totalTdsAmount = 0;
+    let redFlagCount = 0;
+    let redFlagAmount = 0;
+
+    const vendorMap = {};
+    const ledgerMap = {};
+    const entityMap = {};
+    const hodMap = {};
+    const natureMap = {
+      Revenue: { name: "Revenue Expenditure (Opex)", count: 0, basic: 0, payable: 0, desc: "Operational expenses deductible in current year" },
+      Capital: { name: "Capital Expenditure (Capex)", count: 0, basic: 0, payable: 0, desc: "Asset purchases capitalized on balance sheet" },
+      Other: { name: "Unclassified / Other", count: 0, basic: 0, payable: 0, desc: "Pending tax review & classification" }
+    };
+    const invTypeMap = {};
+    const tdsSectionMap = {};
+    const posMap = {};
+    const flagsBreakdown = {};
+    const flaggedInvoices = [];
+    const stageMap = {};
+    const monthlyMap = {};
 
     all.forEach(inv => {
-      const amt = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
-      const stage = inv["Current_Stage"] || "";
-      const isApproved = stage === "Completed" && inv["CFO_Status"] !== "Rejected" && inv["Account_Status"] !== "Rejected"; 
-      const isPending = stage !== "Completed" && !inv["CFO_Status"]?.includes("Rejected") && !inv["Account_Status"]?.includes("Rejected");
-      
-      totalAmount += amt;
-      if (isApproved) approvedAmount += amt;
-      else if (isPending) pendingAmount += amt;
-      
-      const vendor = inv["A14. Vendor Name"] || "Unknown Vendor";
-      if (!vendorStats[vendor]) vendorStats[vendor] = { count: 0, approved: 0, pending: 0, value: 0 };
-      
-      vendorStats[vendor].count += 1;
-      vendorStats[vendor].value += amt;
-      if (isApproved) vendorStats[vendor].approved += 1;
-      else vendorStats[vendor].pending += 1;
+      const basic = Number(inv["A20. Basic Amount"]) || 0;
+      const payable = Number(inv["D1. Final Payable Amt"]) || basic || 0;
+      const tds = Number(inv["B8. TDS Amount"]) || 0;
+      const stage = String(inv["Current_Stage"] || "New").trim();
+      const appStatus = String(inv["Approval Status"] || "").trim();
+      const isApproved = stage === "Completed" || appStatus === "Approved";
+      const isRejected = appStatus === "Rejected" || stage === "Rejected";
+      const isPending = !isApproved && !isRejected;
+
+      totalAmount += payable;
+      totalTdsAmount += tds;
+      if (isApproved) approvedAmount += payable;
+      else if (isRejected) rejectedAmount += payable;
+      else pendingAmount += payable;
+
+      // 🚩 Red Flags
+      const flags = String(inv["🚩 Red Flags"] || "").trim();
+      if (flags) {
+        redFlagCount++;
+        redFlagAmount += payable;
+        flaggedInvoices.push({
+          invNo: inv["A13. Invoice Number"] || "—",
+          vendor: inv["A14. Vendor Name"] || "Unknown",
+          date: inv["A12. Invoice Date"] || inv["Timestamp"] || "—",
+          payable,
+          flags,
+          stage,
+          rowIndex: inv.rowIndex
+        });
+        flags.split("|").forEach(f => {
+          const flagName = f.trim();
+          if (!flagName) return;
+          if (!flagsBreakdown[flagName]) flagsBreakdown[flagName] = { flag: flagName, count: 0, totalAtRisk: 0 };
+          flagsBreakdown[flagName].count++;
+          flagsBreakdown[flagName].totalAtRisk += payable;
+        });
+      }
+
+      // 1. Vendor
+      const vendor = String(inv["A14. Vendor Name"] || "Unknown Vendor").trim();
+      if (!vendorMap[vendor]) vendorMap[vendor] = { name: vendor, count: 0, approved: 0, pending: 0, rejected: 0, basic: 0, tds: 0, payable: 0 };
+      vendorMap[vendor].count++;
+      vendorMap[vendor].basic += basic;
+      vendorMap[vendor].tds += tds;
+      vendorMap[vendor].payable += payable;
+      if (isApproved) vendorMap[vendor].approved++;
+      else if (isRejected) vendorMap[vendor].rejected++;
+      else vendorMap[vendor].pending++;
+
+      // 2. Ledger
+      const ledger = String(inv["A19. Ledger Name"] || "General / Uncategorized Expense").trim();
+      if (!ledgerMap[ledger]) ledgerMap[ledger] = { name: ledger, count: 0, payable: 0, approved: 0, pending: 0, vendors: new Set() };
+      ledgerMap[ledger].count++;
+      ledgerMap[ledger].payable += payable;
+      if (isApproved) ledgerMap[ledger].approved += payable;
+      else ledgerMap[ledger].pending += payable;
+      ledgerMap[ledger].vendors.add(vendor);
+
+      // 3. Entity (Billed To)
+      const entity = String(inv["A1. Billed To"] || "Default Group Entity").trim();
+      if (!entityMap[entity]) entityMap[entity] = { name: entity, count: 0, basic: 0, tds: 0, payable: 0, approved: 0, pending: 0 };
+      entityMap[entity].count++;
+      entityMap[entity].basic += basic;
+      entityMap[entity].tds += tds;
+      entityMap[entity].payable += payable;
+      if (isApproved) entityMap[entity].approved++;
+      else entityMap[entity].pending++;
+
+      // 4. Department / HOD
+      const hod = String(inv["D4. HOD Name"] || "Unspecified Department / HOD").trim();
+      if (!hodMap[hod]) hodMap[hod] = { name: hod, count: 0, payable: 0, approved: 0, pending: 0, hodApprovedCount: 0 };
+      hodMap[hod].count++;
+      hodMap[hod].payable += payable;
+      if (isApproved) hodMap[hod].approved += payable;
+      else hodMap[hod].pending += payable;
+      if (String(inv["D5. HOD Approval"] || "").toLowerCase().includes("yes")) hodMap[hod].hodApprovedCount++;
+
+      // 5. Nature & Type
+      const revCap = String(inv["A18. Rev/Capital"] || "Other").trim().toLowerCase();
+      const natureKey = revCap.includes("rev") ? "Revenue" : (revCap.includes("cap") ? "Capital" : "Other");
+      natureMap[natureKey].count++;
+      natureMap[natureKey].basic += basic;
+      natureMap[natureKey].payable += payable;
+
+      const invType = String(inv["A21. Invoice Type"] || "Unspecified Invoice Type").trim();
+      if (!invTypeMap[invType]) invTypeMap[invType] = { name: invType, count: 0, payable: 0 };
+      invTypeMap[invType].count++;
+      invTypeMap[invType].payable += payable;
+
+      // 6. TDS Section
+      const tdsSec = String(inv["B6. TDS Section"] || (tds > 0 ? "General TDS" : "No TDS / NA")).trim();
+      if (!tdsSectionMap[tdsSec]) {
+        let desc = "Standard Withholding";
+        if (tdsSec === "194C") desc = "Contractors & Subcontractors";
+        else if (tdsSec === "194J") desc = "Professional & Technical Fees";
+        else if (tdsSec === "194I") desc = "Rent of Land, Building or Furniture";
+        else if (tdsSec === "194H") desc = "Commission or Brokerage";
+        else if (tdsSec === "194A") desc = "Interest Other than on Securities";
+        tdsSectionMap[tdsSec] = { section: tdsSec, desc, count: 0, basic: 0, tds: 0, rate: inv["B7. TDS Rate"] || "—", panAvail: 0, panMissing: 0 };
+      }
+      tdsSectionMap[tdsSec].count++;
+      tdsSectionMap[tdsSec].basic += basic;
+      tdsSectionMap[tdsSec].tds += tds;
+      if (String(inv["B2. Vendor PAN Avail"] || "").toLowerCase().includes("yes") || String(inv["B3. Vendor PAN"] || "").length >= 5) {
+        tdsSectionMap[tdsSec].panAvail++;
+      } else {
+        tdsSectionMap[tdsSec].panMissing++;
+      }
+
+      // 7. Place of Supply / GST
+      const pos = String(inv["C8. Place of Supply"] || "Unspecified State").trim();
+      if (!posMap[pos]) posMap[pos] = { state: pos, count: 0, basic: 0, gstCharged: 0, regular: 0, comp: 0, filed: 0, correctType: inv["C9. Correct GST Type"] || "—" };
+      posMap[pos].count++;
+      posMap[pos].basic += basic;
+      if (String(inv["C1. GST Charged"] || "").toLowerCase().includes("yes")) posMap[pos].gstCharged++;
+      const taxType = String(inv["C4. Taxpayer Type"] || "").toLowerCase();
+      if (taxType.includes("comp")) posMap[pos].comp++;
+      else posMap[pos].regular++;
+      if (String(inv["C6. GST Returns Filed"] || "").toLowerCase().includes("yes")) posMap[pos].filed++;
+
+      // 9. Pipeline Stages
+      if (!stageMap[stage]) stageMap[stage] = { stage, count: 0, payable: 0, maxBill: 0 };
+      stageMap[stage].count++;
+      stageMap[stage].payable += payable;
+      if (payable > stageMap[stage].maxBill) stageMap[stage].maxBill = payable;
+
+      // 10. Monthly Trends
+      const dStr = inv["A12. Invoice Date"] || inv["Timestamp"] || "";
+      const dObj = new Date(dStr);
+      let monthLabel = "Unspecified Date";
+      let sortKey = 0;
+      if (!isNaN(dObj.getTime())) {
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        monthLabel = months[dObj.getMonth()] + " " + dObj.getFullYear();
+        sortKey = dObj.getFullYear() * 100 + (dObj.getMonth() + 1);
+      }
+      if (!monthlyMap[monthLabel]) monthlyMap[monthLabel] = { month: monthLabel, sortKey, count: 0, payable: 0, approved: 0, pending: 0 };
+      monthlyMap[monthLabel].count++;
+      monthlyMap[monthLabel].payable += payable;
+      if (isApproved) monthlyMap[monthLabel].approved += payable;
+      else monthlyMap[monthLabel].pending += payable;
     });
 
-    document.getElementById("repTotalCount").textContent = all.length;
-    document.getElementById("repTotalAmount").textContent = Utils.formatCurrency(totalAmount);
-    document.getElementById("repApprovedAmount").textContent = Utils.formatCurrency(approvedAmount);
-    document.getElementById("repPendingAmount").textContent = Utils.formatCurrency(pendingAmount);
+    Dashboard.reportsData = {
+      kpi: { totalCount: all.length, totalAmount, approvedAmount, pendingAmount, rejectedAmount, totalTdsAmount, redFlagCount, redFlagAmount },
+      vendor: Object.values(vendorMap),
+      ledger: Object.values(ledgerMap).map(l => ({ ...l, vendorCount: l.vendors.size })),
+      entity: Object.values(entityMap),
+      department: Object.values(hodMap),
+      nature: {
+        capexOpex: Object.values(natureMap),
+        invoiceType: Object.values(invTypeMap)
+      },
+      tds: Object.values(tdsSectionMap),
+      gst: Object.values(posMap),
+      flags: {
+        categories: Object.values(flagsBreakdown),
+        invoices: flaggedInvoices
+      },
+      pipeline: Object.values(stageMap),
+      monthly: Object.values(monthlyMap)
+    };
+  },
 
-    const vendorArr = Object.keys(vendorStats).map(v => ({ name: v, ...vendorStats[v] })).sort((a, b) => b.value - a.value);
-    const tbody = document.getElementById("reportsVendorBody");
-    
-    if (vendorArr.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 32px; color: var(--gray-400);">No data available</td></tr>`;
-      return;
+  renderReportKPIs() {
+    const kpi = Dashboard.reportsData?.kpi;
+    if (!kpi) return;
+    const repTotalCount = document.getElementById("repTotalCount");
+    const repTotalAmount = document.getElementById("repTotalAmount");
+    const repApprovedAmount = document.getElementById("repApprovedAmount");
+    const repPendingAmount = document.getElementById("repPendingAmount");
+    const repTdsAmount = document.getElementById("repTdsAmount");
+    const repFlaggedAmount = document.getElementById("repFlaggedAmount");
+    const repApprovedSub = document.getElementById("repApprovedSub");
+    const repPendingSub = document.getElementById("repPendingSub");
+    const repFlaggedSub = document.getElementById("repFlaggedSub");
+
+    if (repTotalCount) repTotalCount.textContent = kpi.totalCount;
+    if (repTotalAmount) repTotalAmount.textContent = Utils.formatCurrency(kpi.totalAmount);
+    if (repApprovedAmount) repApprovedAmount.textContent = Utils.formatCurrency(kpi.approvedAmount);
+    if (repPendingAmount) repPendingAmount.textContent = Utils.formatCurrency(kpi.pendingAmount);
+    if (repTdsAmount) repTdsAmount.textContent = Utils.formatCurrency(kpi.totalTdsAmount);
+    if (repFlaggedAmount) repFlaggedAmount.textContent = Utils.formatCurrency(kpi.redFlagAmount);
+
+    const appPct = kpi.totalAmount > 0 ? ((kpi.approvedAmount / kpi.totalAmount) * 100).toFixed(1) : "0";
+    const penPct = kpi.totalAmount > 0 ? ((kpi.pendingAmount / kpi.totalAmount) * 100).toFixed(1) : "0";
+    if (repApprovedSub) repApprovedSub.textContent = appPct + "% cleared of total spend";
+    if (repPendingSub) repPendingSub.textContent = penPct + "% locked in approval review";
+    if (repFlaggedSub) repFlaggedSub.textContent = kpi.redFlagCount + " Red flagged bills at risk";
+  },
+
+  switchReportTab(tabKey, btnEl) {
+    Dashboard.currentReportTab = tabKey;
+    document.querySelectorAll(".rep-nav-tab").forEach(b => b.classList.remove("active"));
+    if (btnEl) btnEl.classList.add("active");
+    Dashboard.reportFilterQuery = '';
+    const sInput = document.getElementById("reportSearchInput");
+    if (sInput) sInput.value = '';
+    Dashboard.renderActiveReport();
+  },
+
+  filterActiveReport(query) {
+    Dashboard.reportFilterQuery = (query || "").trim().toLowerCase();
+    Dashboard.renderActiveReport();
+  },
+
+  sortActiveReport(sortVal) {
+    Dashboard.reportSortBy = sortVal;
+    Dashboard.renderActiveReport();
+  },
+
+  exportCurrentReportCSV() {
+    if (!Dashboard.reportsData) return;
+    const tab = Dashboard.currentReportTab;
+    let csvRows = [];
+    let filename = "Gretex_Report_" + tab + "_" + new Date().toISOString().slice(0, 10) + ".csv";
+
+    if (tab === "vendor") {
+      csvRows.push(["Vendor Name", "Total Invoices", "Approved", "Pending", "Rejected", "Basic Amount", "TDS Deducted", "Total Payable", "Avg Ticket Size"]);
+      (Dashboard.reportsData.vendor || []).forEach(v => {
+        csvRows.push([v.name, v.count, v.approved, v.pending, v.rejected, v.basic, v.tds, v.payable, Math.round(v.payable / (v.count || 1))]);
+      });
+    } else if (tab === "ledger") {
+      csvRows.push(["Ledger Head", "Total Invoices", "Approved Amount", "Pending Amount", "Total Payable", "Vendors Count"]);
+      (Dashboard.reportsData.ledger || []).forEach(l => {
+        csvRows.push([l.name, l.count, l.approved, l.pending, l.payable, l.vendorCount]);
+      });
+    } else if (tab === "entity") {
+      csvRows.push(["Billed-To Entity", "Invoices Count", "Basic Amount", "TDS Amount", "Net Payable", "Approved", "Pending"]);
+      (Dashboard.reportsData.entity || []).forEach(e => {
+        csvRows.push([e.name, e.count, e.basic, e.tds, e.payable, e.approved, e.pending]);
+      });
+    } else if (tab === "department") {
+      csvRows.push(["Department / HOD", "Invoices Count", "Approved Spend", "Pending Spend", "Total Commitment", "HOD Pre-Approved"]);
+      (Dashboard.reportsData.department || []).forEach(d => {
+        csvRows.push([d.name, d.count, d.approved, d.pending, d.payable, d.hodApprovedCount]);
+      });
+    } else if (tab === "nature") {
+      csvRows.push(["Classification Category", "Invoices Count", "Basic Amount", "Total Payable"]);
+      (Dashboard.reportsData.nature?.capexOpex || []).forEach(n => {
+        csvRows.push([n.name, n.count, n.basic, n.payable]);
+      });
+      csvRows.push([]);
+      csvRows.push(["Invoice Type", "Invoices Count", "Total Payable"]);
+      (Dashboard.reportsData.nature?.invoiceType || []).forEach(t => {
+        csvRows.push([t.name, t.count, t.payable]);
+      });
+    } else if (tab === "tds") {
+      csvRows.push(["TDS Section", "Description", "Standard Rate", "Invoices Count", "Basic Taxable Amount", "Total TDS Deducted", "PAN Available", "PAN Missing"]);
+      (Dashboard.reportsData.tds || []).forEach(t => {
+        csvRows.push([t.section, t.desc, t.rate, t.count, t.basic, t.tds, t.panAvail, t.panMissing]);
+      });
+    } else if (tab === "gst") {
+      csvRows.push(["Place of Supply (State)", "Invoices Count", "Taxable Basic Amount", "GST Charged Count", "Regular Taxpayers", "Composition Taxpayers", "Returns Filed Count", "GST Nature"]);
+      (Dashboard.reportsData.gst || []).forEach(g => {
+        csvRows.push([g.state, g.count, g.basic, g.gstCharged, g.regular, g.comp, g.filed, g.correctType]);
+      });
+    } else if (tab === "flags") {
+      csvRows.push(["Risk Flag Trigger", "Occurrences", "Total Value at Risk"]);
+      (Dashboard.reportsData.flags?.categories || []).forEach(f => {
+        csvRows.push([f.flag, f.count, f.totalAtRisk]);
+      });
+      csvRows.push([]);
+      csvRows.push(["Invoice No", "Vendor Name", "Date", "Payable Amount", "Specific Red Flags", "Stage"]);
+      (Dashboard.reportsData.flags?.invoices || []).forEach(i => {
+        csvRows.push([i.invNo, i.vendor, i.date, i.payable, i.flags, i.stage]);
+      });
+    } else if (tab === "pipeline") {
+      csvRows.push(["Pipeline Stage", "Invoices Stuck", "Value Locked", "Highest Single Bill"]);
+      (Dashboard.reportsData.pipeline || []).forEach(p => {
+        csvRows.push([p.stage, p.count, p.payable, p.maxBill]);
+      });
+    } else if (tab === "monthly") {
+      csvRows.push(["Month / Period", "Invoices Received", "Total Spend Committed", "Approved Value", "Pending Value", "Average Ticket"]);
+      (Dashboard.reportsData.monthly || []).forEach(m => {
+        csvRows.push([m.month, m.count, m.payable, m.approved, m.pending, Math.round(m.payable / (m.count || 1))]);
+      });
     }
 
-    tbody.innerHTML = vendorArr.map(v => `
-      <tr>
-        <td><strong>${Utils.truncate(v.name, 40)}</strong></td>
-        <td style="text-align:center;">${v.count}</td>
-        <td style="text-align:center; color: var(--secondary); font-weight: 600;">${v.approved}</td>
-        <td style="text-align:center; color: var(--warning);">${v.pending}</td>
-        <td style="text-align:right; font-weight: 600;">${Utils.formatCurrency(v.value)}</td>
-      </tr>
-    `).join("");
+    let csvContent = csvRows.map(row => row.map(val => '"' + String(val !== undefined && val !== null ? val : '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    Toast.success("Exported " + tab + " report successfully!");
+  },
+
+  renderActiveReport() {
+    if (!Dashboard.reportsData) return;
+    const tab = Dashboard.currentReportTab;
+    const q = Dashboard.reportFilterQuery;
+    const sort = Dashboard.reportSortBy;
+    const container = document.getElementById("activeReportContainer");
+    const titleEl = document.getElementById("activeReportTitle");
+    const subEl = document.getElementById("activeReportSubtitle");
+    if (!container) return;
+
+    const totalSpend = Dashboard.reportsData.kpi.totalAmount || 1;
+
+    // Helper sort
+    function applySort(arr, valKey = 'payable', nameKey = 'name') {
+      const copy = [...arr];
+      if (sort === 'value_desc') copy.sort((a,b) => (b[valKey]||0) - (a[valKey]||0));
+      else if (sort === 'value_asc') copy.sort((a,b) => (a[valKey]||0) - (b[valKey]||0));
+      else if (sort === 'count_desc') copy.sort((a,b) => (b.count||0) - (a.count||0));
+      else if (sort === 'name_asc') copy.sort((a,b) => String(a[nameKey]||'').localeCompare(String(b[nameKey]||'')));
+      return copy;
+    }
+
+    if (tab === "vendor") {
+      titleEl.innerHTML = '<i class="fa fa-building" style="color:var(--primary);"></i> Vendor-wise Expense Analysis';
+      subEl.textContent = 'Detailed breakdown of bill count, approved spend, pending exposure, and percentage share';
+      let data = Dashboard.reportsData.vendor || [];
+      if (q) data = data.filter(v => v.name.toLowerCase().includes(q));
+      data = applySort(data, 'payable', 'name');
+
+      let sumCount = 0, sumBasic = 0, sumTds = 0, sumPayable = 0, sumApp = 0, sumPen = 0;
+      data.forEach(v => { sumCount += v.count; sumBasic += v.basic; sumTds += v.tds; sumPayable += v.payable; sumApp += v.approved; sumPen += v.pending; });
+
+      if (data.length === 0) {
+        container.innerHTML = '<div style="padding:48px;text-align:center;color:var(--gray-400);">No vendors match your search.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Vendor Name</th>
+                <th style="text-align:center">Total Bills</th>
+                <th style="text-align:center">Approved</th>
+                <th style="text-align:center">Pending</th>
+                <th style="text-align:right">Basic Amt</th>
+                <th style="text-align:right">TDS Deducted</th>
+                <th style="text-align:right">Total Payable</th>
+                <th style="width:160px">Spend Share</th>
+                <th style="text-align:right">Avg Ticket</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((v, i) => {
+                const pct = totalSpend > 0 ? (v.payable / totalSpend) * 100 : 0;
+                const avg = v.count > 0 ? v.payable / v.count : 0;
+                return `
+                  <tr>
+                    <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                    <td><strong>${Utils.truncate(v.name, 38)}</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${v.count}</span></td>
+                    <td style="text-align:center;color:#16a34a;font-weight:600">${v.approved}</td>
+                    <td style="text-align:center;color:#f59e0b;font-weight:600">${v.pending}</td>
+                    <td style="text-align:right">${Utils.formatCurrency(v.basic)}</td>
+                    <td style="text-align:right;color:#6366f1">${Utils.formatCurrency(v.tds)}</td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(v.payable)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:var(--primary);"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${pct.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                    <td style="text-align:right;color:var(--gray-600);font-size:0.8rem">${Utils.formatCurrency(avg)}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL (${data.length} Vendors)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:center;color:#16a34a">${sumApp}</td>
+                <td style="text-align:center;color:#f59e0b">${sumPen}</td>
+                <td style="text-align:right">${Utils.formatCurrency(sumBasic)}</td>
+                <td style="text-align:right;color:#6366f1">${Utils.formatCurrency(sumTds)}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="font-size:0.8rem">100.0%</td>
+                <td style="text-align:right">${Utils.formatCurrency(sumCount > 0 ? sumPayable / sumCount : 0)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "ledger") {
+      titleEl.innerHTML = '<i class="fa fa-book" style="color:var(--primary);"></i> Ledger & Expense Head Analysis';
+      subEl.textContent = 'Operational expenditure tracked by accounting ledger category';
+      let data = Dashboard.reportsData.ledger || [];
+      if (q) data = data.filter(l => l.name.toLowerCase().includes(q));
+      data = applySort(data, 'payable', 'name');
+
+      let sumCount = 0, sumPayable = 0, sumApp = 0, sumPen = 0;
+      data.forEach(l => { sumCount += l.count; sumPayable += l.payable; sumApp += l.approved; sumPen += l.pending; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Expense Ledger Category</th>
+                <th style="text-align:center">Bills Count</th>
+                <th style="text-align:center">Unique Vendors</th>
+                <th style="text-align:right">Approved Spend</th>
+                <th style="text-align:right">In Pipeline</th>
+                <th style="text-align:right">Total Commitment</th>
+                <th style="width:160px">% Budget Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((l, i) => {
+                const pct = totalSpend > 0 ? (l.payable / totalSpend) * 100 : 0;
+                return `
+                  <tr>
+                    <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                    <td><strong>${l.name}</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${l.count}</span></td>
+                    <td style="text-align:center">${l.vendorCount}</td>
+                    <td style="text-align:right;color:#16a34a">${Utils.formatCurrency(l.approved)}</td>
+                    <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(l.pending)}</td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(l.payable)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#6366f1;"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${pct.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL (${data.length} Categories)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td>—</td>
+                <td style="text-align:right;color:#16a34a">${Utils.formatCurrency(sumApp)}</td>
+                <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(sumPen)}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="font-size:0.8rem">100.0%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "entity") {
+      titleEl.innerHTML = '<i class="fa fa-landmark" style="color:var(--primary);"></i> Billed-To Group Entity Analysis';
+      subEl.textContent = 'Expenditure allocation across company subsidiaries and legal entities';
+      let data = Dashboard.reportsData.entity || [];
+      if (q) data = data.filter(e => e.name.toLowerCase().includes(q));
+      data = applySort(data, 'payable', 'name');
+
+      let sumCount = 0, sumBasic = 0, sumTds = 0, sumPayable = 0;
+      data.forEach(e => { sumCount += e.count; sumBasic += e.basic; sumTds += e.tds; sumPayable += e.payable; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Company / Entity Name</th>
+                <th style="text-align:center">Bills Inflow</th>
+                <th style="text-align:center">Approved</th>
+                <th style="text-align:center">Pending</th>
+                <th style="text-align:right">Basic Taxable</th>
+                <th style="text-align:right">TDS Withheld</th>
+                <th style="text-align:right">Net Group Payable</th>
+                <th style="width:160px">% Group Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((e, i) => {
+                const pct = totalSpend > 0 ? (e.payable / totalSpend) * 100 : 0;
+                return `
+                  <tr>
+                    <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                    <td><strong style="color:var(--primary)">${e.name}</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${e.count}</span></td>
+                    <td style="text-align:center;color:#16a34a">${e.approved}</td>
+                    <td style="text-align:center;color:#f59e0b">${e.pending}</td>
+                    <td style="text-align:right">${Utils.formatCurrency(e.basic)}</td>
+                    <td style="text-align:right;color:#6366f1">${Utils.formatCurrency(e.tds)}</td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(e.payable)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#0ea5e9;"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${pct.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL (${data.length} Entities)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td>—</td>
+                <td>—</td>
+                <td style="text-align:right">${Utils.formatCurrency(sumBasic)}</td>
+                <td style="text-align:right;color:#6366f1">${Utils.formatCurrency(sumTds)}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="font-size:0.8rem">100.0%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "department") {
+      titleEl.innerHTML = '<i class="fa fa-users-gear" style="color:var(--primary);"></i> Departmental & HOD Budget Report';
+      subEl.textContent = 'Commitments and approvals tracked by Department Head (HOD)';
+      let data = Dashboard.reportsData.department || [];
+      if (q) data = data.filter(d => d.name.toLowerCase().includes(q));
+      data = applySort(data, 'payable', 'name');
+
+      let sumCount = 0, sumPayable = 0, sumApp = 0, sumPen = 0, sumHodApp = 0;
+      data.forEach(d => { sumCount += d.count; sumPayable += d.payable; sumApp += d.approved; sumPen += d.pending; sumHodApp += d.hodApprovedCount; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Department / HOD Name</th>
+                <th style="text-align:center">Invoices Submitted</th>
+                <th style="text-align:center">HOD Pre-Approved</th>
+                <th style="text-align:right">Approved Amount</th>
+                <th style="text-align:right">In Pipeline</th>
+                <th style="text-align:right">Total Commitment</th>
+                <th style="width:160px">% Total Budget</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((d, i) => {
+                const pct = totalSpend > 0 ? (d.payable / totalSpend) * 100 : 0;
+                return `
+                  <tr>
+                    <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                    <td><strong>${d.name}</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${d.count}</span></td>
+                    <td style="text-align:center"><span style="color:#16a34a;font-weight:700">✓ ${d.hodApprovedCount}</span></td>
+                    <td style="text-align:right;color:#16a34a">${Utils.formatCurrency(d.approved)}</td>
+                    <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(d.pending)}</td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(d.payable)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#10b981;"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${pct.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL (${data.length} Departments)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:center">${sumHodApp}</td>
+                <td style="text-align:right;color:#16a34a">${Utils.formatCurrency(sumApp)}</td>
+                <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(sumPen)}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="font-size:0.8rem">100.0%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "nature") {
+      titleEl.innerHTML = '<i class="fa fa-scale-balanced" style="color:var(--primary);"></i> Capex vs Opex & Invoice Verification';
+      subEl.textContent = 'Revenue vs Capital expenditure classification and invoice authenticity audit';
+      const capexOpex = Dashboard.reportsData.nature?.capexOpex || [];
+      const invoiceType = Dashboard.reportsData.nature?.invoiceType || [];
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;padding:16px;">
+          <div class="card" style="border:1px solid var(--gray-200);box-shadow:none;">
+            <div class="card-header" style="background:#f8fafc;padding:12px 16px;">
+              <div class="card-title" style="font-size:0.92rem;"><i class="fa fa-layer-group" style="color:var(--primary)"></i> 1. Capex vs Opex Classification</div>
+            </div>
+            <div style="padding:16px;">
+              <table class="data-table" style="font-size:0.85rem">
+                <thead><tr><th>Expense Nature</th><th style="text-align:center">Bills</th><th style="text-align:right">Total Payable</th><th style="width:110px">% Share</th></tr></thead>
+                <tbody>
+                  ${capexOpex.map(n => {
+                    const pct = totalSpend > 0 ? (n.payable / totalSpend) * 100 : 0;
+                    return `<tr>
+                      <td><strong>${n.name}</strong><div style="font-size:0.7rem;color:var(--gray-500)">${n.desc}</div></td>
+                      <td style="text-align:center">${n.count}</td>
+                      <td style="text-align:right;font-weight:700">${Utils.formatCurrency(n.payable)}</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px">
+                          <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#8b5cf6;"></div></div>
+                          <span style="font-size:0.72rem;font-weight:600">${pct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>`;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="border:1px solid var(--gray-200);box-shadow:none;">
+            <div class="card-header" style="background:#f8fafc;padding:12px 16px;">
+              <div class="card-title" style="font-size:0.92rem;"><i class="fa fa-file-invoice" style="color:var(--primary)"></i> 2. Invoice Document Classification</div>
+            </div>
+            <div style="padding:16px;">
+              <table class="data-table" style="font-size:0.85rem">
+                <thead><tr><th>Invoice Type</th><th style="text-align:center">Bills</th><th style="text-align:right">Total Value</th><th style="width:110px">% Share</th></tr></thead>
+                <tbody>
+                  ${invoiceType.map(t => {
+                    const pct = totalSpend > 0 ? (t.payable / totalSpend) * 100 : 0;
+                    const isProforma = t.name.toLowerCase().includes("proforma");
+                    return `<tr>
+                      <td>
+                        <strong>${t.name}</strong>
+                        ${isProforma ? '<span class="badge" style="background:#fee2e2;color:#dc2626;margin-left:6px;font-size:0.68rem">Final Tax Invoice Req.</span>' : '<span class="badge" style="background:#dcfce7;color:#16a34a;margin-left:6px;font-size:0.68rem">ITC Eligible</span>'}
+                      </td>
+                      <td style="text-align:center">${t.count}</td>
+                      <td style="text-align:right;font-weight:700">${Utils.formatCurrency(t.payable)}</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px">
+                          <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#f59e0b;"></div></div>
+                          <span style="font-size:0.72rem;font-weight:600">${pct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>`;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (tab === "tds") {
+      titleEl.innerHTML = '<i class="fa fa-percent" style="color:var(--primary);"></i> TDS Statutory Compliance Section Report';
+      subEl.textContent = 'Section-wise tax deducted at source with PAN availability and rate compliance';
+      let data = Dashboard.reportsData.tds || [];
+      if (q) data = data.filter(t => t.section.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q));
+      data = applySort(data, 'tds', 'section');
+
+      let sumCount = 0, sumBasic = 0, sumTds = 0, sumPanAvail = 0, sumPanMiss = 0;
+      data.forEach(t => { sumCount += t.count; sumBasic += t.basic; sumTds += t.tds; sumPanAvail += t.panAvail; sumPanMiss += t.panMissing; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th>TDS Section</th>
+                <th>Section Nature / Description</th>
+                <th style="text-align:center">TDS Rate</th>
+                <th style="text-align:center">Invoices</th>
+                <th style="text-align:right">Taxable Basic Amount</th>
+                <th style="text-align:right">TDS Deducted</th>
+                <th style="text-align:center">PAN Compliant</th>
+                <th style="text-align:center">PAN Missing</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(t => `
+                <tr>
+                  <td><strong style="color:var(--primary);font-size:0.9rem">${t.section}</strong></td>
+                  <td>${t.desc}</td>
+                  <td style="text-align:center"><span class="badge" style="background:#e0e7ff;color:#4338ca;font-weight:700">${t.rate}</span></td>
+                  <td style="text-align:center">${t.count}</td>
+                  <td style="text-align:right">${Utils.formatCurrency(t.basic)}</td>
+                  <td style="text-align:right;font-weight:700;color:#dc2626">${Utils.formatCurrency(t.tds)}</td>
+                  <td style="text-align:center;color:#16a34a;font-weight:600">${t.panAvail}</td>
+                  <td style="text-align:center;${t.panMissing > 0 ? 'color:#dc2626;font-weight:700' : 'color:var(--gray-400)'}">${t.panMissing}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="3">TOTAL STATUTORY TDS (${data.length} Sections)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:right">${Utils.formatCurrency(sumBasic)}</td>
+                <td style="text-align:right;color:#dc2626;font-size:1rem">${Utils.formatCurrency(sumTds)}</td>
+                <td style="text-align:center;color:#16a34a">${sumPanAvail}</td>
+                <td style="text-align:center;${sumPanMiss > 0 ? 'color:#dc2626' : ''}">${sumPanMiss}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "gst") {
+      titleEl.innerHTML = '<i class="fa fa-receipt" style="color:var(--primary);"></i> GST & Place of Supply (State) Report';
+      subEl.textContent = 'Inter-state vs Intra-state tax allocation and vendor GST compliance status';
+      let data = Dashboard.reportsData.gst || [];
+      if (q) data = data.filter(g => g.state.toLowerCase().includes(q));
+      data = applySort(data, 'basic', 'state');
+
+      let sumCount = 0, sumBasic = 0, sumGst = 0, sumFiled = 0;
+      data.forEach(g => { sumCount += g.count; sumBasic += g.basic; sumGst += g.gstCharged; sumFiled += g.filed; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Place of Supply / State</th>
+                <th style="text-align:center">Invoices</th>
+                <th style="text-align:right">Taxable Basic Value</th>
+                <th style="text-align:center">GST Charged</th>
+                <th style="text-align:center">Regular / Comp</th>
+                <th style="text-align:center">Returns Filed</th>
+                <th style="text-align:center">GST Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((g, i) => `
+                <tr>
+                  <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                  <td><strong style="color:var(--gray-800)">${g.state}</strong></td>
+                  <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${g.count}</span></td>
+                  <td style="text-align:right;font-weight:600">${Utils.formatCurrency(g.basic)}</td>
+                  <td style="text-align:center"><span style="color:#16a34a;font-weight:600">${g.gstCharged}</span></td>
+                  <td style="text-align:center;font-size:0.78rem">${g.regular} Reg / ${g.comp} Comp</td>
+                  <td style="text-align:center"><span style="color:#16a34a">${g.filed} Filed</span></td>
+                  <td style="text-align:center"><span class="badge" style="background:#e0f2fe;color:#0284c7">${g.correctType}</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL (${data.length} States)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:right;color:var(--primary);font-size:1rem">${Utils.formatCurrency(sumBasic)}</td>
+                <td style="text-align:center">${sumGst}</td>
+                <td>—</td>
+                <td style="text-align:center">${sumFiled}</td>
+                <td>—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "flags") {
+      titleEl.innerHTML = '<i class="fa fa-flag" style="color:#dc2626;"></i> Audit Risk & Red Flag Deep-Dive Report';
+      subEl.textContent = 'AI compliance exceptions, missing statutory details, and high-risk invoices';
+      const categories = Dashboard.reportsData.flags?.categories || [];
+      let invoices = Dashboard.reportsData.flags?.invoices || [];
+      if (q) invoices = invoices.filter(inv => inv.invNo.toLowerCase().includes(q) || inv.vendor.toLowerCase().includes(q) || inv.flags.toLowerCase().includes(q));
+
+      container.innerHTML = `
+        <div style="padding:16px;">
+          <div style="margin-bottom:18px;">
+            <div style="font-size:0.9rem;font-weight:700;color:var(--gray-800);margin-bottom:10px;">
+              <i class="fa fa-triangle-exclamation" style="color:#dc2626"></i> 1. Risk Flag Trigger Frequencies & Capital At Risk
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+              ${categories.map(c => `
+                <div style="background:#fff;border:1px solid #fee2e2;border-left:4px solid #dc2626;border-radius:8px;padding:12px 14px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div style="font-weight:700;color:#991b1b;font-size:0.83rem">${c.flag}</div>
+                    <span class="badge" style="background:#fef2f2;color:#dc2626;font-weight:800">${c.count} Bills</span>
+                  </div>
+                  <div style="margin-top:6px;font-size:0.75rem;color:var(--gray-600)">Capital at Risk: <strong style="color:#991b1b">${Utils.formatCurrency(c.totalAtRisk)}</strong></div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--gray-800);margin-bottom:10px;">
+              <i class="fa fa-list-check" style="color:var(--primary)"></i> 2. Flagged Invoices Audit List (${invoices.length} Bills)
+            </div>
+            <div class="table-wrapper" style="max-height: 48vh; overflow-y: auto;">
+              <table class="data-table">
+                <thead style="position: sticky; top: 0; z-index: 10;">
+                  <tr>
+                    <th>Invoice No</th>
+                    <th>Vendor Name</th>
+                    <th>Date</th>
+                    <th style="text-align:right">Payable Amount</th>
+                    <th>Red Flags Detected</th>
+                    <th style="text-align:center">Stage</th>
+                    <th style="text-align:center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${invoices.length === 0 ? '<tr><td colspan="7" class="text-center" style="padding:24px">No red flagged invoices found matching query.</td></tr>' : invoices.map(inv => `
+                    <tr>
+                      <td><strong>${inv.invNo}</strong></td>
+                      <td>${Utils.truncate(inv.vendor, 24)}</td>
+                      <td style="font-size:0.8rem;color:var(--gray-500)">${inv.date}</td>
+                      <td style="text-align:right;font-weight:700;color:#dc2626">${Utils.formatCurrency(inv.payable)}</td>
+                      <td>
+                        ${inv.flags.split("|").map(f => '<span class="badge" style="background:#fee2e2;color:#991b1b;margin:2px 3px 2px 0;font-size:0.7rem">⚠️ ' + f.trim() + '</span>').join("")}
+                      </td>
+                      <td style="text-align:center"><span class="badge" style="background:#e0f2fe;color:#0369a1">${inv.stage}</span></td>
+                      <td style="text-align:center">
+                        <button class="btn btn-ghost btn-sm" onclick="Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> View</button>
+                      </td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (tab === "pipeline") {
+      titleEl.innerHTML = '<i class="fa fa-hourglass-half" style="color:var(--primary);"></i> Approval Pipeline Bottlenecks & Exposure';
+      subEl.textContent = 'Analysis of capital and invoice volume locked at each workflow stage';
+      let data = Dashboard.reportsData.pipeline || [];
+      if (q) data = data.filter(p => p.stage.toLowerCase().includes(q));
+      data = applySort(data, 'payable', 'stage');
+
+      let sumCount = 0, sumPayable = 0;
+      data.forEach(p => { sumCount += p.count; sumPayable += p.payable; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="width:40px;text-align:center">#</th>
+                <th>Workflow Stage</th>
+                <th style="text-align:center">Invoices Locked</th>
+                <th style="text-align:right">Capital Locked</th>
+                <th style="width:180px">% of Pipeline Capital</th>
+                <th style="text-align:right">Highest Bill in Queue</th>
+                <th style="text-align:center">Stage Health</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((p, i) => {
+                const pct = totalSpend > 0 ? (p.payable / totalSpend) * 100 : 0;
+                let health = '<span class="badge" style="background:#dcfce7;color:#16a34a">Smooth</span>';
+                if (p.stage === "Completed") health = '<span class="badge" style="background:#dcfce7;color:#16a34a">Approved & Paid</span>';
+                else if (p.stage === "Rejected") health = '<span class="badge" style="background:#fee2e2;color:#dc2626">Rejected</span>';
+                else if (p.count > 15 || pct > 25) health = '<span class="badge" style="background:#fee2e2;color:#dc2626;font-weight:700">⚠️ Critical Queue</span>';
+                else if (p.count > 5) health = '<span class="badge" style="background:#fef3c7;color:#d97706">Review Needed</span>';
+
+                return `
+                  <tr>
+                    <td style="text-align:center;color:var(--gray-400);font-size:0.75rem">${i + 1}</td>
+                    <td><strong style="font-size:0.9rem;color:var(--primary)">${p.stage} Stage</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:800;font-size:0.85rem">${p.count}</span></td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(p.payable)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, pct))}%;background:#f59e0b;"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${pct.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                    <td style="text-align:right;color:var(--gray-600)">${Utils.formatCurrency(p.maxBill)}</td>
+                    <td style="text-align:center">${health}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td colspan="2">TOTAL WORKFLOW QUEUE</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="font-size:0.8rem">100.0%</td>
+                <td colspan="2">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else if (tab === "monthly") {
+      titleEl.innerHTML = '<i class="fa fa-calendar-days" style="color:var(--primary);"></i> Month-over-Month Inflow & Spend Trends';
+      subEl.textContent = 'Invoice volumes, clearance rates, and expenditure trends over time';
+      let data = Dashboard.reportsData.monthly || [];
+      if (q) data = data.filter(m => m.month.toLowerCase().includes(q));
+
+      let sumCount = 0, sumPayable = 0, sumApp = 0, sumPen = 0;
+      data.forEach(m => { sumCount += m.count; sumPayable += m.payable; sumApp += m.approved; sumPen += m.pending; });
+
+      container.innerHTML = `
+        <div class="table-wrapper" style="max-height: 60vh; overflow-y: auto;">
+          <table class="data-table">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th>Billing Period / Month</th>
+                <th style="text-align:center">Invoices Inflow</th>
+                <th style="text-align:right">Total Commitment</th>
+                <th style="text-align:right">Approved Spend</th>
+                <th style="text-align:right">In Pipeline</th>
+                <th style="text-align:right">Average Bill Size</th>
+                <th style="width:160px">Clearance Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(m => {
+                const clearRate = m.payable > 0 ? (m.approved / m.payable) * 100 : 0;
+                const avg = m.count > 0 ? m.payable / m.count : 0;
+                return `
+                  <tr>
+                    <td><strong style="color:var(--gray-800)"><i class="fa fa-calendar" style="color:var(--primary);margin-right:6px"></i>${m.month}</strong></td>
+                    <td style="text-align:center"><span class="badge" style="background:#f1f5f9;font-weight:700">${m.count}</span></td>
+                    <td style="text-align:right;font-weight:700">${Utils.formatCurrency(m.payable)}</td>
+                    <td style="text-align:right;color:#16a34a;font-weight:600">${Utils.formatCurrency(m.approved)}</td>
+                    <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(m.pending)}</td>
+                    <td style="text-align:right;color:var(--gray-600)">${Utils.formatCurrency(avg)}</td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="rep-stat-bar"><div class="rep-stat-fill" style="width:${Math.min(100, Math.max(3, clearRate))}%;background:#16a34a;"></div></div>
+                        <span style="font-size:0.75rem;font-weight:600;min-width:38px;text-align:right">${clearRate.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+            <tfoot style="background:#f8fafc;font-weight:700;border-top:2px solid var(--gray-300);">
+              <tr>
+                <td>TOTAL (${data.length} Periods)</td>
+                <td style="text-align:center">${sumCount}</td>
+                <td style="text-align:right;font-size:1rem;color:var(--primary)">${Utils.formatCurrency(sumPayable)}</td>
+                <td style="text-align:right;color:#16a34a">${Utils.formatCurrency(sumApp)}</td>
+                <td style="text-align:right;color:#f59e0b">${Utils.formatCurrency(sumPen)}</td>
+                <td style="text-align:right">${Utils.formatCurrency(sumCount > 0 ? sumPayable / sumCount : 0)}</td>
+                <td style="font-size:0.8rem">${sumPayable > 0 ? ((sumApp / sumPayable) * 100).toFixed(1) : 0}%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    }
   },
 
   async loadTDSSummary() {
