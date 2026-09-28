@@ -1071,18 +1071,31 @@
 <div id="processingScreen">
   <div class="processing-box">
     <div id="processingContent">
-      <div class="processing-spinner">
-        <i class="fa fa-spinner fa-spin"></i>
+      <!-- Loading View -->
+      <div id="processingLoadingState">
+        <div class="processing-spinner">
+          <i class="fa fa-spinner fa-spin"></i>
+        </div>
+        <h3 id="processingTitle">Processing your invoice...</h3>
+        <p id="processingText">Please wait...</p>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0% complete</div>
+        <p style="color: var(--gray-400); font-size: 0.75rem; margin-top: 16px;">
+          ⏱️ This usually takes 3-5 seconds
+        </p>
       </div>
-      <h3 id="processingTitle">Processing your invoice...</h3>
-      <p id="processingText">Please wait...</p>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+      <!-- Success View -->
+      <div id="processingSuccessState" style="display: none;">
+        <div class="processing-success">✅</div>
+        <h3 id="processingSuccessTitle">Invoice added successfully!</h3>
+        <p id="processingSuccessText">Your invoice has been added to the queue</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%;"></div>
+        </div>
+        <div class="progress-text">100% complete</div>
       </div>
-      <div class="progress-text" id="progressText">0% complete</div>
-      <p style="color: var(--gray-400); font-size: 0.75rem; margin-top: 16px;">
-        ⏱️ This usually takes 3-5 seconds
-      </p>
     </div>
   </div>
 </div>
@@ -1319,40 +1332,79 @@ function readFileAsBase64(file) {
 
 function showProcessingScreen(message, progress) {
   const screen = document.getElementById('processingScreen');
-  const title = document.getElementById('processingTitle');
+  let title = document.getElementById('processingTitle');
+  let loading = document.getElementById('processingLoadingState');
+  let success = document.getElementById('processingSuccessState');
+  const content = document.getElementById('processingContent');
+
+  // Self-healing: if elements were somehow destroyed, re-render them
+  if (!title && content) {
+    content.innerHTML = `
+      <div id="processingLoadingState">
+        <div class="processing-spinner">
+          <i class="fa fa-spinner fa-spin"></i>
+        </div>
+        <h3 id="processingTitle">Processing your invoice...</h3>
+        <p id="processingText">Please wait...</p>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0% complete</div>
+        <p style="color: var(--gray-400); font-size: 0.75rem; margin-top: 16px;">
+          ⏱️ This usually takes 3-5 seconds
+        </p>
+      </div>
+      <div id="processingSuccessState" style="display: none;">
+        <div class="processing-success">✅</div>
+        <h3 id="processingSuccessTitle">Invoice added successfully!</h3>
+        <p id="processingSuccessText">Your invoice has been added to the queue</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%;"></div>
+        </div>
+        <div class="progress-text">100% complete</div>
+      </div>
+    `;
+    loading = document.getElementById('processingLoadingState');
+    success = document.getElementById('processingSuccessState');
+    title = document.getElementById('processingTitle');
+  }
+
+  if (loading) loading.style.display = 'block';
+  if (success) success.style.display = 'none';
+
   const text = document.getElementById('processingText');
   const fill = document.getElementById('progressFill');
   const progText = document.getElementById('progressText');
 
-  title.textContent = message;
-  text.textContent = 'Please wait...';
-  fill.style.width = progress + '%';
-  progText.textContent = progress + '% complete';
+  if (title) title.textContent = message || 'Processing your invoice...';
+  if (text) text.textContent = 'Please wait...';
+  if (fill) fill.style.width = (progress !== undefined ? progress : 0) + '%';
+  if (progText) progText.textContent = (progress !== undefined ? progress : 0) + '% complete';
 
-  screen.classList.add('active');
+  if (screen) screen.classList.add('active');
 }
 
-function showProcessingSuccess() {
-  const content = document.getElementById('processingContent');
-  const title = document.getElementById('processingTitle');
-  const text = document.getElementById('processingText');
-  const fill = document.getElementById('progressFill');
-  const progText = document.getElementById('progressText');
+function showProcessingSuccess(titleMsg, descMsg) {
+  const loading = document.getElementById('processingLoadingState');
+  const success = document.getElementById('processingSuccessState');
+  const sTitle = document.getElementById('processingSuccessTitle');
+  const sText = document.getElementById('processingSuccessText');
 
-  content.innerHTML = `
-    <div class="processing-success">✅</div>
-    <h3>Invoice added successfully!</h3>
-    <p>Your invoice has been added to the queue</p>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: 100%;"></div>
-    </div>
-    <div class="progress-text">100% complete</div>
-  `;
+  if (loading) loading.style.display = 'none';
+  if (success) success.style.display = 'block';
+
+  if (sTitle && titleMsg) sTitle.textContent = titleMsg;
+  if (sText && descMsg) sText.textContent = descMsg;
 }
 
 function hideProcessingScreen() {
   const screen = document.getElementById('processingScreen');
-  screen.classList.remove('active');
+  if (screen) screen.classList.remove('active');
+
+  const loading = document.getElementById('processingLoadingState');
+  const success = document.getElementById('processingSuccessState');
+  if (loading) loading.style.display = 'block';
+  if (success) success.style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3565,8 +3617,15 @@ async submitForm() {
         redirect: "follow"
       });
 
-      // ✅ FIX: Parse the actual JSON response from backend
-      const result = await response.json();
+      // ✅ FIX: Parse response safely from backend
+      const rawText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (jsonErr) {
+        console.error("Non-JSON response from server:", rawText);
+        throw new Error(rawText && rawText.length < 200 ? rawText : "Invalid response received from server. Please check deployment.");
+      }
 
       if (!result.success) {
         throw new Error(result.message || "Backend processing failed. Please try again.");
