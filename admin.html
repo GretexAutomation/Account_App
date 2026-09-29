@@ -554,11 +554,16 @@ const Dashboard = {
     `).join("");
   },
 
-  async loadApprovalQueue() {
+  async loadApprovalQueue(isSilent = false) {
     const tbody = document.getElementById("queueBody");
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+    if (!isSilent && tbody) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+    }
     const res = await API.admin.getQueue();
-    if (!res?.success) { tbody.innerHTML = `<tr><td colspan="7" class="text-center">Failed to load</td></tr>`; return; }
+    if (!res?.success) {
+      if (!isSilent && tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center">Failed to load</td></tr>`;
+      return;
+    }
     Dashboard.queueData = (res.data.queue || []).map(item => {
       const accStatus   = (item["Account_Status"] || "").toString();
       const cfoStatus   = (item["CFO_Status"] || "").toString();

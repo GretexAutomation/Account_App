@@ -798,8 +798,8 @@ const Dashboard = {
     
     await Dashboard.loadDashboardData();
     
-    const hash = window.location.hash.replace("#","");
-    if (hash) Dashboard.showSection(hash);
+    let hash = window.location.hash.replace("#","");
+    if (hash === "tds-summary") hash = "tds"; if (hash === "gst-summary") hash = "gst"; if (hash) Dashboard.showSection(hash);
 
     document.getElementById("searchInput")?.addEventListener("input", Utils.debounce(() => Dashboard.filterAllInvoices(), 350));
         document.getElementById("masterSearchInput")?.addEventListener("input", Utils.debounce(() => Dashboard.filterMasterInvoices(), 350));
@@ -819,6 +819,24 @@ const Dashboard = {
   },
 
   showSection(id) {
+    if (id === "tds-summary" || id === "tds") {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById("section-reports")?.classList.add("active");
+      Header.setTitle("TDS Statutory Compliance");
+      Sidebar.setActive("tds");
+      Dashboard.loadReports();
+      setTimeout(() => Dashboard.openReportView("tds"), 60);
+      return;
+    }
+    if (id === "gst-summary" || id === "gst") {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById("section-reports")?.classList.add("active");
+      Header.setTitle("GST & Place of Supply Audit");
+      Sidebar.setActive("gst");
+      Dashboard.loadReports();
+      setTimeout(() => Dashboard.openReportView("gst"), 60);
+      return;
+    }
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${id}`)?.classList.add("active");
     const titles = { dashboard: "Super Admin Dashboard", master: "Master Invoices", invoices : "All Invoices", approve : "Approval Queue", redflags: "Red Flags", reports: "Reports", tds: "TDS Summary", gst: "GST Summary", users: "User Management", audit: "Audit Log", settings: "Settings", profile: "My Profile", password: "Change Password" };
@@ -956,11 +974,11 @@ const Dashboard = {
     `).join("");
   },
 
-  async loadApprovalQueue() {
+  async loadApprovalQueue(isSilent = false) {
     const tbody = document.getElementById("queueBody");
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+    if (!isSilent && tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
     const res = await API.admin.getQueue(); // Uses the same role-based API
-    if (!res?.success) { tbody.innerHTML = `<tr><td colspan="7" class="text-center">Failed to load</td></tr>`; return; }
+    if (!res?.success) { if (!isSilent && tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center">Failed to load</td></tr>`; return; }
     Dashboard.queueData = (res.data.queue || []).map(item => {
       const accStatus   = (item["Account_Status"] || "").toString();
       const cfoStatus   = (item["CFO_Status"] || "").toString();

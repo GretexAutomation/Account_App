@@ -1622,9 +1622,9 @@ const Dashboard = {
     }
   },
 
-  async loadQueue() {
+  async loadQueue(isSilent = false) {
     const el = document.getElementById("billsList");
-    if (el) el.innerHTML = `<div class="text-center"
+    if (!isSilent && el) el.innerHTML = `<div class="text-center"
       style="padding:32px;color:var(--gray-400)">
       <i class="fa fa-spinner fa-spin"></i></div>`;
     const res = await API.biller.getQueue();

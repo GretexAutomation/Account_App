@@ -1075,13 +1075,17 @@ const Dashboard = {
       </tr>`).join("");
   },
 
-  async loadApprovalQueue() {
+  async loadApprovalQueue(isSilent = false) {
     const tbody = document.getElementById("queueBody");
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+    if (!isSilent && tbody) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)"><i class="fa fa-spinner fa-spin"></i> Loading queue...</td></tr>`;
+    }
 
     const res = await API.account.getQueue();
     if (!res?.success) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)">Failed to load queue.</td></tr>`;
+      if (!isSilent && tbody) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--gray-400)">Failed to load queue.</td></tr>`;
+      }
       return;
     }
     Dashboard.queueData = (res.data.queue || []).map(item => {
