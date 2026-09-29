@@ -104,12 +104,15 @@ input, button, select, textarea { font-family: inherit; }
 /* ── Sidebar ── */
 .sidebar {
   width         : var(--sidebar-width);
-  min-height    : 100vh;
+  height        : 100vh;
+  height        : 100dvh;
+  max-height    : 100vh;
   background    : #1e2a3a;
   display       : flex;
   flex-direction: column;
   position      : fixed;
   top           : 0;
+  bottom        : 0;
   left          : 0;
   z-index       : 1000;
   transition    : var(--transition);
@@ -167,6 +170,7 @@ input, button, select, textarea { font-family: inherit; }
   gap            : 12px;
   overflow       : hidden;
   white-space    : nowrap;
+  flex-shrink    : 0;
 }
 
 .sidebar-logo .logo-icon {
@@ -196,23 +200,24 @@ input, button, select, textarea { font-family: inherit; }
 
 /* User Info */
 .sidebar-user {
-  padding   : 16px 20px;
+  padding   : 12px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   display   : flex;
   align-items: center;
   gap       : 12px;
   overflow  : hidden;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .sidebar-user .user-avatar {
-  width          : 38px;
-  height         : 38px;
+  width          : 36px;
+  height         : 36px;
   border-radius  : 50%;
   display        : flex;
   align-items    : center;
   justify-content: center;
-  font-size      : 16px;
+  font-size      : 15px;
   font-weight    : 700;
   color          : var(--white);
   flex-shrink    : 0;
@@ -231,8 +236,29 @@ input, button, select, textarea { font-family: inherit; }
   margin-top : 1px;
 }
 
-/* Nav Menu */
-.sidebar-nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+/* Nav Menu — Scrollable & Non-disruptive */
+.sidebar-nav {
+  padding       : 8px 0;
+  flex          : 1 1 0%;
+  min-height    : 0;
+  overflow-y    : auto;
+  overflow-x    : hidden;
+  overscroll-behavior: contain;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
 
 .nav-section-title {
   font-size     : 0.65rem;
@@ -240,7 +266,7 @@ input, button, select, textarea { font-family: inherit; }
   color         : var(--gray-600);
   text-transform: uppercase;
   letter-spacing: 1px;
-  padding       : 12px 20px 6px;
+  padding       : 10px 20px 4px;
   white-space   : nowrap;
   overflow      : hidden;
 }
@@ -249,7 +275,7 @@ input, button, select, textarea { font-family: inherit; }
   display        : flex;
   align-items    : center;
   gap            : 12px;
-  padding        : 10px 20px;
+  padding        : 8px 20px;
   color          : var(--gray-400);
   cursor         : pointer;
   transition     : var(--transition);
@@ -257,7 +283,7 @@ input, button, select, textarea { font-family: inherit; }
   white-space    : nowrap;
   overflow       : hidden;
   position       : relative;
-  font-size      : 0.875rem;
+  font-size      : 0.86rem;
   font-weight    : 400;
 }
 
@@ -304,10 +330,14 @@ input, button, select, textarea { font-family: inherit; }
 
 /* Sidebar Footer */
 .sidebar-footer {
-  padding     : 16px 20px;
+  padding     : 12px 20px;
   border-top  : 1px solid rgba(255,255,255,0.08);
   white-space : nowrap;
   overflow    : hidden;
+  flex-shrink : 0;
+  margin-top  : auto;
+  background  : #1e2a3a;
+  z-index     : 2;
 }
 
 .sidebar-footer .logout-btn {
