@@ -528,6 +528,121 @@ const Loader = {
   }
 };
 
+// ============================================================
+// 🚀 AppLoader — Smart App Initializer & Splash Loader
+// Displays on initial login/dashboard load with animated progress
+// ============================================================
+const AppLoader = {
+  container: null,
+  progressBar: null,
+  statusText: null,
+  percentText: null,
+  stepTimer: null,
+  currentPercent: 15,
+
+  show(options = {}) {
+    const user = Auth.getUser() || { name: "User", role: "Gretex System" };
+    const userName = options.userName || user.name || "User";
+    const userRole = options.userRole || user.role || "Member";
+    const initials = Utils.getInitials(userName);
+    const roleColor = Utils.getRoleColor(userRole);
+
+    if (this.container) {
+      this.container.remove();
+    }
+
+    const overlay = document.createElement("div");
+    overlay.id = "smartAppSplashLoader";
+    overlay.className = "smart-app-loader";
+    overlay.innerHTML = `
+      <div class="smart-loader-card">
+        <div class="smart-loader-brand">
+          <div class="smart-loader-glow"></div>
+          <div class="smart-loader-icon">💼</div>
+        </div>
+        <h3 class="smart-loader-title">Gretex Invoice System</h3>
+        
+        <div class="smart-loader-user">
+          <div class="smart-loader-avatar" style="background:${roleColor}">${initials}</div>
+          <div class="smart-loader-user-info">
+            <div class="smart-loader-greeting">Welcome back, <strong>${userName}</strong></div>
+            <div class="smart-loader-badge" style="color:${roleColor};background:${roleColor}18">${userRole} Workspace</div>
+          </div>
+        </div>
+
+        <div class="smart-loader-progress-box">
+          <div class="smart-loader-track">
+            <div class="smart-loader-fill" id="smartLoaderFill" style="width: 15%;"></div>
+          </div>
+          <div class="smart-loader-status-row">
+            <span class="smart-loader-status" id="smartLoaderStatus"><i class="fa fa-circle-notch fa-spin"></i> Initializing workspace...</span>
+            <span class="smart-loader-percent" id="smartLoaderPercent">15%</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    this.container = overlay;
+    this.progressBar = overlay.querySelector("#smartLoaderFill");
+    this.statusText = overlay.querySelector("#smartLoaderStatus");
+    this.percentText = overlay.querySelector("#smartLoaderPercent");
+    this.currentPercent = 15;
+
+    const steps = [
+      { pct: 35, text: "Authenticating secure session..." },
+      { pct: 60, text: "Synchronizing invoice records..." },
+      { pct: 85, text: "Calculating executive metrics & KPIs..." }
+    ];
+    let stepIndex = 0;
+    this.stepTimer = setInterval(() => {
+      if (stepIndex < steps.length) {
+        this.update(steps[stepIndex].pct, steps[stepIndex].text);
+        stepIndex++;
+      }
+    }, 600);
+
+    // Failsafe timeout after 8s so user is never stuck
+    setTimeout(() => {
+      this.finish();
+    }, 8000);
+  },
+
+  update(pct, text) {
+    if (!this.container) return;
+    this.currentPercent = Math.min(95, Math.max(this.currentPercent, pct));
+    if (this.progressBar) this.progressBar.style.width = this.currentPercent + "%";
+    if (this.percentText) this.percentText.textContent = this.currentPercent + "%";
+    if (this.statusText && text) {
+      this.statusText.innerHTML = `<i class="fa fa-circle-notch fa-spin"></i> ${text}`;
+    }
+  },
+
+  finish(callback) {
+    if (!this.container) return;
+    if (this.stepTimer) clearInterval(this.stepTimer);
+
+    if (this.progressBar) this.progressBar.style.width = "100%";
+    if (this.percentText) this.percentText.textContent = "100%";
+    if (this.statusText) {
+      this.statusText.innerHTML = `<i class="fa fa-circle-check" style="color:#10b981;"></i> Workspace Ready!`;
+    }
+
+    setTimeout(() => {
+      if (this.container) {
+        this.container.classList.add("fade-out");
+        setTimeout(() => {
+          if (this.container) {
+            this.container.remove();
+            this.container = null;
+          }
+          if (typeof callback === "function") callback();
+        }, 450);
+      }
+    }, 350);
+  }
+};
+
 
 // ============================================================
 // Utils
