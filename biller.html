@@ -1496,12 +1496,16 @@ const Dashboard = {
   },
 
   async init() {
-    if (!Auth.requireRole("Biller")) return;
+    if (!Auth.requireRole("Biller")) return; AppLoader.show();
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     Dashboard.setupUsers();
-    await Dashboard.loadStats();
-    await Dashboard.loadRecentBills();
+    try {
+      await Dashboard.loadStats();
+      await Dashboard.loadRecentBills();
+    } finally {
+      AppLoader.finish();
+    }
 
     const hash = window.location.hash.replace("#","");
     if (hash) Dashboard.showSection(hash);

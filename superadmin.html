@@ -792,11 +792,11 @@ const Dashboard = {
   },
 
   async init() {
-    if (!Auth.requireRole("SuperAdmin")) return;
+    if (!Auth.requireRole("SuperAdmin")) return; AppLoader.show();
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     
-    await Dashboard.loadDashboardData();
+    try { await Dashboard.loadDashboardData(); } finally { AppLoader.finish(); }
     
     let hash = window.location.hash.replace("#","");
     if (hash === "tds-summary") hash = "tds"; if (hash === "gst-summary") hash = "gst"; if (hash) Dashboard.showSection(hash);

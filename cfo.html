@@ -1174,11 +1174,11 @@ const Dashboard = {
   },
 
   async init() {
-    if (!Auth.requireRole("CFO")) return;
+    if (!Auth.requireRole("CFO")) return; AppLoader.show();
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     
-    await Dashboard.loadDashboardData();
+    try { await Dashboard.loadDashboardData(); } finally { AppLoader.finish(); }
     
     let hash = window.location.hash.replace("#","");
     if(hash === "tds-summary") hash = "tds";

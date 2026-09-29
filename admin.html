@@ -454,11 +454,11 @@ const Dashboard = {
   },
 
   async init() {
-    if (!Auth.requireRole("Admin", "SuperAdmin")) return;
+    if (!Auth.requireRole("Admin", "SuperAdmin")) return; AppLoader.show();
     Header.render("Dashboard");
     Sidebar.init("dashboard");
     
-    await Dashboard.loadDashboardData();
+    try { await Dashboard.loadDashboardData(); } finally { AppLoader.finish(); }
     
     const hash = window.location.hash.replace("#","");
     if (hash) Dashboard.showSection(hash);

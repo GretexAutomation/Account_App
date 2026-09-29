@@ -862,11 +862,11 @@ const Dashboard = {
   },
 
   async init() {
-    if (!Auth.requireRole("Account")) return;
+    if (!Auth.requireRole("Account")) return; AppLoader.show();
     Header.render("Dashboard");
     Sidebar.init("dashboard");
 
-    await Dashboard.loadDashboardData();
+    try { await Dashboard.loadDashboardData(); } finally { AppLoader.finish(); }
 
     const hash = window.location.hash.replace("#", "");
     if (hash) Dashboard.showSection(hash);
