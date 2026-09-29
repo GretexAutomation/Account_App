@@ -53,11 +53,42 @@ const API = {
           data.data.queue.reverse();
       }
 
+      // ⚡ Write action notification: immediately trigger auto-sync check
+      const writeActions = [
+        "approveBill", "rejectBill", "bypassBill", "sendBillForApproval",
+        "updateBillReview", "updateInvoiceFields", "deleteNewBill",
+        "toggleCloseBill", "bulkCloseBills"
+      ];
+      if (writeActions.includes(action) && typeof SyncEngine !== "undefined") {
+        SyncEngine.notifyLocalWrite();
+      }
+
       return data;
 
     } catch (err) {
       console.error(`API Error [${action}]:`, err.message);
       Toast.error(err.message || "Something went wrong");
+      return null;
+    }
+  },
+
+  // ⚡ Silent request without disruptive toasts (used by SyncEngine)
+  async silentRequest(action, params = {}) {
+    try {
+      const token = Auth.getToken();
+      if (!token && action !== "login" && action !== "ping" && action !== "getSystemVersion") {
+        return null;
+      }
+      const body = { action, token: token || "", ...params };
+      const response = await fetch(API.BASE_URL, {
+        method : "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body   : JSON.stringify(body)
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data;
+    } catch (err) {
       return null;
     }
   },
@@ -314,6 +345,16 @@ const API = {
 
     async update(settings) {
       return await API.request("updateSettings", { settings });
+    }
+  },
+
+  // ─────────────────────────────────────────────
+  // ⚡ SYSTEM & AUTO-SYNC
+  // ─────────────────────────────────────────────
+  system: {
+
+    async getVersion() {
+      return await API.silentRequest("getSystemVersion");
     }
   }
 };
@@ -698,3 +739,183 @@ function generateTrackingTimeline(inv) {
   html += `</div></div>`;
   return html;
 }
+
+// ============================================================
+// ⚡ SyncEngine — Silent Background Real-Time Auto-Sync Engine
+// Detects backend data version changes & refreshes UI seamlessly
+// ============================================================
+const SyncEngine = {
+  currentVersion: null,
+  pollIntervalMs: 30000, // 30 seconds interval
+  timer: null,
+  listeners: [],
+  isChecking: false,
+  isRefreshing: false,
+
+  init() {
+    if (!Auth.isLoggedIn()) return;
+    if (this.timer) clearInterval(this.timer);
+
+    // Initial silent version check after 4 seconds of load
+    setTimeout(() => this.check(), 4000);
+
+    // Periodic heartbeat check
+    this.timer = setInterval(() => this.check(), this.pollIntervalMs);
+
+    // When user switches back to this tab, check immediately
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && Auth.isLoggedIn()) {
+        this.check();
+      }
+    });
+  },
+
+  onUpdate(callback) {
+    if (typeof callback === "function") {
+      this.listeners.push(callback);
+    }
+  },
+
+  notifyLocalWrite() {
+    // When current user performs an action (approve, reject, upload, edit),
+    // mark version dirty so next check/refresh runs immediately
+    this.currentVersion = null;
+    setTimeout(() => this.check(), 1200);
+  },
+
+  async check() {
+    if (!Auth.isLoggedIn() || this.isChecking || this.isRefreshing) return;
+    if (document.hidden) return; // Save resources when tab is hidden
+
+    this.isChecking = true;
+    try {
+      const res = await API.system.getVersion();
+      if (res && res.success && res.data && res.data.version) {
+        const newVer = String(res.data.version);
+        if (this.currentVersion === null) {
+          this.currentVersion = newVer;
+        } else if (this.currentVersion !== newVer) {
+          console.log(`[SyncEngine] Data version updated: ${this.currentVersion} -> ${newVer}. Refreshing silently...`);
+          this.currentVersion = newVer;
+          await this.triggerSync(newVer);
+        }
+      }
+    } catch (err) {
+      console.warn("[SyncEngine] Check skipped:", err.message);
+    } finally {
+      this.isChecking = false;
+    }
+  },
+
+  async triggerSync(newVersion) {
+    if (this.isRefreshing) return;
+
+    // Do NOT interrupt if a modal is open (e.g., user is approving/rejecting)
+    const openModal = document.querySelector(".modal-overlay.active");
+    if (openModal) {
+      console.log("[SyncEngine] Modal is active. Deferring UI refresh.");
+      return;
+    }
+
+    // Do NOT interrupt if user is actively typing in a form or input
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+      console.log("[SyncEngine] User is typing. Deferring UI refresh.");
+      return;
+    }
+
+    this.isRefreshing = true;
+    try {
+      // 1. Run default page refresh for any active Dashboard
+      await this.defaultPageRefresh();
+
+      // 2. Run custom registered page listeners
+      for (const fn of this.listeners) {
+        try { await fn(newVersion); } catch(e) { console.error("[SyncEngine] Listener error:", e); }
+      }
+
+      // 3. Show non-intrusive subtle sync pill
+      this.showSyncPill();
+    } catch (e) {
+      console.error("[SyncEngine] Sync error:", e);
+    } finally {
+      this.isRefreshing = false;
+    }
+  },
+
+  async defaultPageRefresh() {
+    if (typeof Dashboard === "undefined") return;
+
+    // Refresh KPI / Stats
+    if (typeof Dashboard.loadDashboardData === "function") {
+      await Dashboard.loadDashboardData();
+    } else if (typeof Dashboard.loadStats === "function") {
+      await Dashboard.loadStats();
+    }
+
+    // Refresh Recent Bills (Biller)
+    if (typeof Dashboard.loadRecentBills === "function") {
+      await Dashboard.loadRecentBills();
+    }
+
+    // Refresh Queue only if the queue section is active (silent mode = true)
+    const approveSec = document.getElementById("sec-approve") || document.getElementById("sec-approval");
+    if (approveSec && approveSec.style.display !== "none" && typeof Dashboard.loadApprovalQueue === "function") {
+      await Dashboard.loadApprovalQueue(true);
+    }
+
+    const queueSec = document.getElementById("sec-queue");
+    if (queueSec && queueSec.style.display !== "none" && typeof Dashboard.loadQueue === "function") {
+      await Dashboard.loadQueue(true);
+    }
+  },
+
+  showSyncPill() {
+    let pill = document.getElementById("syncNotificationPill");
+    if (!pill) {
+      pill = document.createElement("div");
+      pill.id = "syncNotificationPill";
+      pill.style.cssText = `
+        position: fixed;
+        bottom: 22px;
+        right: 24px;
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 7px 15px;
+        border-radius: 20px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 99999;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        border: 1px solid rgba(255,255,255,0.12);
+      `;
+      pill.innerHTML = `<span style="color:#10b981;font-size:0.9rem;animation:pulse 1.5s infinite">●</span> Data synced in real-time`;
+      document.body.appendChild(pill);
+    }
+
+    setTimeout(() => {
+      pill.style.opacity = "1";
+      pill.style.transform = "translateY(0)";
+    }, 50);
+
+    setTimeout(() => {
+      pill.style.opacity = "0";
+      pill.style.transform = "translateY(12px)";
+    }, 2800);
+  }
+};
+
+// Auto-start SyncEngine when DOM is loaded and user is authenticated
+document.addEventListener("DOMContentLoaded", () => {
+  if (Auth.isLoggedIn()) {
+    SyncEngine.init();
+  }
+});
+
