@@ -144,6 +144,149 @@
       letter-spacing: 0.3px;
     }
 
+    /* ── CFO Executive Dashboard Styles ── */
+    .executive-hero-strip {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-radius: 14px;
+      padding: 20px 24px;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+    }
+    .cfo-quick-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .cfo-quick-chip:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    }
+    .cfo-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+    .cfo-bottom-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1080px) {
+      .cfo-charts-grid { grid-template-columns: 1fr; }
+      .cfo-bottom-grid { grid-template-columns: 1fr; }
+    }
+    .chart-container-box {
+      height: 290px;
+      position: relative;
+      width: 100%;
+    }
+    .metric-sublabel {
+      font-size: 0.72rem;
+      color: var(--gray-500);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* ── Executive 3x2 KPI Card Grid ── */
+    .cfo-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 1100px) {
+      .cfo-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .cfo-kpi-grid { grid-template-columns: 1fr; }
+    }
+    .cfo-kpi-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+    .cfo-kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .cfo-kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .cfo-kpi-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .cfo-kpi-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .cfo-kpi-value {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cfo-kpi-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.73rem;
+      color: #64748b;
+      padding-top: 6px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .cfo-kpi-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
   </style>
 </head>
 <body>
@@ -157,98 +300,306 @@
 
       <!-- DASHBOARD SECTION -->
       <div class="section active" id="section-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card total" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
-            <div class="stat-icon"><i class="fa fa-inbox"></i></div>
-            <div class="stat-info">
-              <div class="stat-value" id="statTotal">--</div>
-              <div class="stat-label">Total Invoices</div>
+        
+        <!-- 1. Executive CFO Hero Action Strip -->
+        <div class="executive-hero-strip">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+              <span style="background:rgba(79,70,229,0.3); border:1px solid rgba(129,140,248,0.4); color:#a5b4fc; padding:2px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">
+                <i class="fa fa-shield-halved"></i> Executive Command Center
+              </span>
+              <span style="color:#94a3b8; font-size:0.75rem;">• Real-Time Financial Intelligence</span>
+            </div>
+            <h2 style="font-size:1.4rem; font-weight:800; color:#fff; margin:0 0 4px 0; letter-spacing:-0.3px;">
+              CFO Financial Overview &amp; Spend Intelligence
+            </h2>
+            <div style="font-size:0.82rem; color:#94a3b8;">
+              Comprehensive group liability, approval pipeline velocity, and statutory tax audits
             </div>
           </div>
-          <div class="stat-card pass" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
-            <div class="stat-icon"><i class="fa fa-circle-check"></i></div>
-            <div class="stat-info">
-              <div class="stat-value" id="statPass">--</div>
-              <div class="stat-label">Passed</div>
+          
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="cfo-quick-chip" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;" onclick="Dashboard.showSection('approve')" title="Jump to CFO Approvals Queue">
+              <i class="fa fa-clock"></i> Pending CFO: <strong id="pillCfoPending" style="margin-left:3px;">0</strong>
+            </div>
+            <div class="cfo-quick-chip" style="background:#e0e7ff; color:#4338ca; border:1px solid #c7d2fe;" onclick="Dashboard.showSection('approve')" title="Invoices eligible for direct Account bypass">
+              <i class="fa fa-bolt"></i> Bypass Ready: <strong id="pillBypassReady" style="margin-left:3px;">0</strong>
+            </div>
+            <div class="cfo-quick-chip" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;" onclick="Dashboard.showSection('redflags')" title="View flagged invoices">
+              <i class="fa fa-flag"></i> Flagged: <strong id="pillFlaggedCount" style="margin-left:3px;">0</strong>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="Dashboard.loadDashboardData()" style="padding:7px 14px; border-radius:8px; font-weight:700; display:flex; align-items:center; gap:6px;">
+              <i class="fa fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Primary KPI Metric Cards (3x2 Balanced Grid) -->
+        <div class="cfo-kpi-grid">
+          
+          <!-- Card 1: Total Expenditure Liability -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #4f46e5;" onclick="Dashboard.showSection('invoices')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">Total Expenditure Liability</span>
+              <div class="cfo-kpi-icon" style="background:#e0e7ff; color:#4338ca;">
+                <i class="fa fa-indian-rupee-sign"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statAmount" style="color:#1e1b4b;" title="Gross committed spend">₹0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#eef2ff; color:#4338ca;">Gross Liability</span>
+              <span>All committed spends</span>
             </div>
           </div>
-          <div class="stat-card review" style="cursor:pointer" onclick="Dashboard.showSection('approve')">
-            <div class="stat-icon"><i class="fa fa-triangle-exclamation"></i></div>
-            <div class="stat-info">
-              <div class="stat-value" id="statReview">--</div>
-              <div class="stat-label">Under Review</div>
+
+          <!-- Card 2: Pending CFO Review -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #f59e0b;" onclick="Dashboard.showSection('approve')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">Pending CFO Review</span>
+              <div class="cfo-kpi-icon" style="background:#fef3c7; color:#b45309;">
+                <i class="fa fa-signature"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statReview" style="color:#b45309;">0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#fffbeb; color:#b45309;">Action Required</span>
+              <span>Needs authorization</span>
             </div>
           </div>
-          <div class="stat-card fail" style="cursor:pointer" onclick="Dashboard.showSection('invoices')">
-            <div class="stat-icon"><i class="fa fa-circle-xmark"></i></div>
-            <div class="stat-info">
-              <div class="stat-value" id="statFail">--</div>
-              <div class="stat-label">Failed</div>
+
+          <!-- Card 3: Approved & Cleared Spends -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #10b981;" onclick="Dashboard.showSection('invoices')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">Approved &amp; Cleared</span>
+              <div class="cfo-kpi-icon" style="background:#d1fae5; color:#065f46;">
+                <i class="fa fa-circle-check"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statApprovedAmount" style="color:#065f46;">₹0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#ecfdf5; color:#047857;" id="statApprovedCount">0 Cleared</span>
+              <span>Cleared for payment</span>
             </div>
           </div>
-          <div class="stat-card amount">
-            <div class="stat-icon"><i class="fa fa-indian-rupee-sign"></i></div>
-            <div class="stat-info">
-              <div class="stat-value" id="statAmount">--</div>
-              <div class="stat-label">Total Amount</div>
+
+          <!-- Card 4: Total Invoices -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #64748b;" onclick="Dashboard.showSection('invoices')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">Total Invoices</span>
+              <div class="cfo-kpi-icon" style="background:#f1f5f9; color:#475569;">
+                <i class="fa fa-inbox"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statTotal" style="color:#1e293b;">0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">All Stages</span>
+              <span>Recorded pipeline</span>
+            </div>
+          </div>
+
+          <!-- Card 5: Statutory TDS Withheld -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #8b5cf6;" onclick="Dashboard.showSection('tds')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">Statutory TDS Withheld</span>
+              <div class="cfo-kpi-icon" style="background:#ede9fe; color:#6d28d9;">
+                <i class="fa fa-percent"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statTdsAmount" style="color:#5b21b6;">₹0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#f5f3ff; color:#6d28d9;">Tax Audit</span>
+              <span>Sec 194C, 194J, etc.</span>
+            </div>
+          </div>
+
+          <!-- Card 6: Audit Red Flags -->
+          <div class="cfo-kpi-card" style="border-left: 4px solid #ef4444;" onclick="Dashboard.showSection('redflags')">
+            <div class="cfo-kpi-header">
+              <span class="cfo-kpi-title">At-Risk Value (Red Flags)</span>
+              <div class="cfo-kpi-icon" style="background:#fee2e2; color:#991b1b;">
+                <i class="fa fa-flag"></i>
+              </div>
+            </div>
+            <div class="cfo-kpi-value" id="statFlaggedAmount" style="color:#991b1b;">₹0</div>
+            <div class="cfo-kpi-footer">
+              <span class="cfo-kpi-badge" style="background:#fef2f2; color:#991b1b;" id="statFlaggedCount">0 Flagged</span>
+              <span>Compliance risk audit</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. Four Executive Visualizations Grid (2x2) -->
+        <div class="cfo-charts-grid">
+          
+          <!-- Chart 1: Monthly Spend & Clearance Trend -->
+          <div class="card" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 18px; border-bottom:1px solid var(--gray-200);">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-chart-line" style="color:var(--primary);"></i> Spend &amp; Liability Trajectory
+              </div>
+              <span style="font-size:0.73rem; color:var(--gray-500); background:#edf2f7; padding:3px 8px; border-radius:6px; font-weight:600;">Monthly Inflow</span>
+            </div>
+            <div class="card-body" style="padding:16px;">
+              <div class="chart-container-box">
+                <canvas id="cfoTrendCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 2: Pipeline Stage Distribution -->
+          <div class="card" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 18px; border-bottom:1px solid var(--gray-200);">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-chart-pie" style="color:#06b6d4;"></i> Approval Pipeline Exposure
+              </div>
+              <span style="font-size:0.73rem; color:var(--gray-500); background:#edf2f7; padding:3px 8px; border-radius:6px; font-weight:600;">Stage Breakdown</span>
+            </div>
+            <div class="card-body" style="padding:16px;">
+              <div class="chart-container-box">
+                <canvas id="cfoPipelineCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 3: Top 7 Vendors by Spend Liability -->
+          <div class="card" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 18px; border-bottom:1px solid var(--gray-200);">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-building" style="color:#6366f1;"></i> Top Vendors by Outflow Liability
+              </div>
+              <span style="font-size:0.73rem; color:var(--gray-500); background:#edf2f7; padding:3px 8px; border-radius:6px; font-weight:600;">Payable (₹)</span>
+            </div>
+            <div class="card-body" style="padding:16px;">
+              <div class="chart-container-box">
+                <canvas id="cfoVendorCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart 4: Capex vs Opex & Tax Structure -->
+          <div class="card" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 18px; border-bottom:1px solid var(--gray-200);">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-scale-balanced" style="color:#0d9488;"></i> Capex vs Opex &amp; Document Classification
+              </div>
+              <span style="font-size:0.73rem; color:var(--gray-500); background:#edf2f7; padding:3px 8px; border-radius:6px; font-weight:600;">Nature Split</span>
+            </div>
+            <div class="card-body" style="padding:16px;">
+              <div class="chart-container-box">
+                <canvas id="cfoNatureCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 4. Interactive Bottom Grid: Recent Activity & Live Red Flags -->
+        <div class="cfo-bottom-grid">
+          
+          <!-- Recent Invoices Table Card -->
+          <div class="card" style="border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); overflow:hidden;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px;">
+              <div class="card-title" style="font-size:0.95rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Invoices &amp; Authorizations
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="Dashboard.showSection('invoices')" style="color:var(--primary); font-weight:600; font-size:0.78rem;">
+                View All Invoices <i class="fa fa-arrow-right" style="font-size:0.7rem; margin-left:3px;"></i>
+              </button>
+            </div>
+            <div class="table-wrapper" style="max-height:360px; overflow-y:auto;">
+              <table class="data-table">
+                <thead style="position:sticky; top:0; z-index:5;">
+                  <tr>
+                    <th>Invoice No</th>
+                    <th>Vendor</th>
+                    <th>Basic Amt</th>
+                    <th>Payable</th>
+                    <th>Stage</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recentBody">
+                  <tr><td colspan="6" class="text-center" style="padding:32px; color:var(--gray-400);"><i class="fa fa-spinner fa-spin"></i> Loading recent invoices...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Red Flags Alert Feed Card -->
+          <div class="card" style="border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); overflow:hidden;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px;">
+              <div class="card-title" style="font-size:0.95rem; font-weight:700; color:var(--danger); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-triangle-exclamation"></i> High Risk Audit Alerts
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="Dashboard.showSection('redflags')" style="color:var(--danger); font-weight:600; font-size:0.78rem;">
+                Full Audit <i class="fa fa-arrow-right" style="font-size:0.7rem; margin-left:3px;"></i>
+              </button>
+            </div>
+            <div class="card-body" style="padding:14px 16px; max-height:360px; overflow-y:auto;" id="redFlagsPanel">
+              <div class="text-center" style="padding:32px; color:var(--gray-400);"><i class="fa fa-spinner fa-spin"></i> Auditing red flags...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 5. Operational Queue Breakdown Cards (Biller & Account) -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:20px;">
+          <div class="card" style="border-radius:12px;">
+            <div class="card-header" style="padding:12px 18px;"><div class="card-title" style="font-size:0.88rem;"><i class="fa fa-user-tie"></i> Biller Queue Status</div></div>
+            <div class="card-body" style="padding:16px;">
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                <div style="text-align:center; padding:12px; background:var(--gray-50); border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:var(--primary);" id="billerTotal">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Total</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#fff3e0; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#f9a825;" id="billerPending">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">In Flow</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#e8f5e9; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#34a853;" id="billerApproved">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Completed</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#ffebee; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#ea4335;" id="billerRejected">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Rejected</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="border-radius:12px;">
+            <div class="card-header" style="padding:12px 18px;"><div class="card-title" style="font-size:0.88rem;"><i class="fa fa-user-check"></i> Account Verification Queue</div></div>
+            <div class="card-body" style="padding:16px;">
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                <div style="text-align:center; padding:12px; background:var(--gray-50); border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:var(--primary);" id="accountTotal">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Total</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#fff3e0; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#f9a825;" id="accountPending">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Pending</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#e8f5e9; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#34a853;" id="accountApproved">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Verified</div>
+                </div>
+                <div style="text-align:center; padding:12px; background:#ffebee; border-radius:8px;">
+                  <div style="font-size:1.5rem; font-weight:800; color:#ea4335;" id="accountRejected">0</div>
+                  <div style="font-size:0.72rem; color:var(--gray-500); margin-top:4px; text-transform:uppercase; font-weight:600;">Rejected</div>
+                </div>
+              </div>
+              <div style="margin-top:14px; padding:10px 14px; background:#eff6ff; border-radius:8px; border-left:4px solid var(--primary); display:flex; align-items:center; gap:8px;">
+                <i class="fa fa-lightbulb" style="color:var(--primary);"></i>
+                <div style="font-size:0.78rem; color:#1e40af; font-weight:600;">
+                  Bypass Feature: As CFO, you can authorize Account queue bills directly!
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px">
-          <div class="card">
-            <div class="card-header"><div class="card-title"><i class="fa fa-user-tie"></i> Biller Queue</div></div>
-            <div class="card-body" style="padding:16px">
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-                <div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:var(--primary)" id="billerTotal">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Total</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#f9a825" id="billerPending">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Pending</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#34a853" id="billerApproved">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Approved</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#ffebee;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#ea4335" id="billerRejected">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Rejected</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div class="card-title"><i class="fa fa-user-check"></i> Account Queue</div></div>
-            <div class="card-body" style="padding:16px">
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-                <div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:var(--primary)" id="accountTotal">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Total</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#fff3e0;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#f9a825" id="accountPending">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Pending</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#34a853" id="accountApproved">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Approved</div>
-                </div>
-                <div style="text-align:center;padding:12px;background:#ffebee;border-radius:8px">
-                  <div style="font-size:1.6rem;font-weight:800;color:#ea4335" id="accountRejected">--</div>
-                  <div style="font-size:0.72rem;color:var(--gray-500);margin-top:4px;text-transform:uppercase;font-weight:600">Rejected</div>
-                </div>
-              </div>
-              <div style="margin-top:14px;padding:12px;background:#e3f2fd;border-radius:8px;border-left:4px solid var(--primary)">
-                <div style="font-size:0.78rem;color:var(--primary);font-weight:600">
-                  💡 TIP: You can bypass Account queue when approving if needed!
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ALL INVOICES SECTION -->
@@ -863,6 +1214,7 @@ const Dashboard = {
     if(id === "gst") sbId = "gst-summary";
     Sidebar.setActive(sbId);
     
+    if (id === "dashboard") Dashboard.renderDashboardCharts();
     if (id === "approve") Dashboard.loadApprovalQueue();
     if (id === "reports") Dashboard.loadReports();
     if (id === "tds")     Dashboard.loadTDSSummary();
@@ -878,30 +1230,18 @@ const Dashboard = {
     if (targetContent) targetContent.classList.add("active");
   },
 
+  dashboardCharts: {
+    trend: null,
+    pipeline: null,
+    vendor: null,
+    nature: null
+  },
+
   async loadDashboardData() {
+    let rawStats = null;
     try {
       const res = await API.dashboard.getStats();
-      if (res?.success) {
-        const d = res.data;
-        document.getElementById("statTotal").textContent = d.invoiceStats?.total  || 0;
-        document.getElementById("statPass").textContent = d.invoiceStats?.pass   || 0;
-        document.getElementById("statReview").textContent = d.invoiceStats?.review || 0;
-        document.getElementById("statFail").textContent = d.invoiceStats?.fail   || 0;
-        document.getElementById("statAmount").textContent = Utils.formatCurrency(d.invoiceStats?.totalAmount || 0);
-
-        if (d.billerQueueStats) {
-          document.getElementById("billerTotal").textContent = d.billerQueueStats.total;
-          document.getElementById("billerPending").textContent = d.billerQueueStats.pending;
-          document.getElementById("billerApproved").textContent = d.billerQueueStats.approved;
-          document.getElementById("billerRejected").textContent = d.billerQueueStats.rejected;
-        }
-        if (d.accountQueueStats) {
-          document.getElementById("accountTotal").textContent = d.accountQueueStats.total;
-          document.getElementById("accountPending").textContent = d.accountQueueStats.pending;
-          document.getElementById("accountApproved").textContent = d.accountQueueStats.approved;
-          document.getElementById("accountRejected").textContent = d.accountQueueStats.rejected;
-        }
-      }
+      if (res?.success) rawStats = res.data;
     } catch(e) {}
 
     try {
@@ -910,30 +1250,134 @@ const Dashboard = {
         Dashboard.allInvoicesData = res.data.invoices || [];
         Dashboard.filterAllInvoices();
 
-        const recent = [...Dashboard.allInvoicesData].reverse().slice(0, 5);
-        document.getElementById("recentBody").innerHTML = recent.length === 0 
-          ? `<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--gray-400)">No invoices yet</td></tr>`
-          : recent.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
-              <td><strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong></td>
-              <td style="font-size:0.82rem">${Utils.truncate(inv["A14. Vendor Name"], 18)}</td>
-              <td style="font-size:0.83rem">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
-              <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i></button></td>
-            </tr>`).join("");
+        const all = Dashboard.allInvoicesData;
 
-        const flagged = Dashboard.allInvoicesData.filter(i => i["🚩 Red Flags"] && i["🚩 Red Flags"].trim() !== "");
-        document.getElementById("redFlagsPanel").innerHTML = flagged.length === 0
-          ? `<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div>`
-          : flagged.slice(0, 8).map(inv => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-                <strong style="font-size:0.83rem">${inv["A13. Invoice Number"]||"—"}</strong>${Utils.statusBadge(inv["Current_Stage"])}
+        // Calculate live metrics across all invoices
+        let totalCount = all.length;
+        let totalPayable = 0;
+        let totalBasic = 0;
+        let totalTds = 0;
+        let totalApprovedVal = 0, approvedCount = 0;
+        let totalPendingVal = 0, pendingCount = 0;
+        let totalRejectedVal = 0, rejectedCount = 0;
+        let redFlagCount = 0, redFlagVal = 0;
+
+        let cfoPendingCount = 0, cfoPendingVal = 0;
+        let accountPendingCount = 0, accountPendingVal = 0;
+        let adminPendingCount = 0, adminPendingVal = 0;
+
+        all.forEach(inv => {
+          const basic = Number(inv["A20. Basic Amount"]) || 0;
+          const payable = Number(inv["D1. Final Payable Amt"]) || basic || 0;
+          const tds = Number(inv["B8. TDS Amount"]) || 0;
+          const stage = String(inv["Current_Stage"] || "").trim();
+          const appStatus = String(inv["Approval Status"] || "").trim();
+
+          totalBasic += basic;
+          totalPayable += payable;
+          totalTds += tds;
+
+          if (stage === "Completed" || appStatus === "Approved") {
+            approvedCount++;
+            totalApprovedVal += payable;
+          } else if (stage.includes("Reject") || appStatus.includes("Reject")) {
+            rejectedCount++;
+            totalRejectedVal += payable;
+          } else {
+            pendingCount++;
+            totalPendingVal += payable;
+          }
+
+          if (stage === "CFO") {
+            cfoPendingCount++;
+            cfoPendingVal += payable;
+          } else if (stage === "Account") {
+            accountPendingCount++;
+            accountPendingVal += payable;
+          } else if (stage === "Admin" || stage === "SuperAdmin") {
+            adminPendingCount++;
+            adminPendingVal += payable;
+          }
+
+          if (inv["🚩 Red Flags"] && String(inv["🚩 Red Flags"]).trim() !== "") {
+            redFlagCount++;
+            redFlagVal += payable;
+          }
+        });
+
+        // Update Top Metric KPI Cards safely
+        const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+        setTxt("statTotal", totalCount + (totalCount === 1 ? " Bill" : " Bills"));
+        setTxt("statPass", approvedCount);
+        setTxt("statReview", cfoPendingCount + (cfoPendingCount === 1 ? " Bill" : " Bills"));
+        setTxt("statFail", redFlagCount + " flagged bills");
+        setTxt("statAmount", Utils.formatCurrency(totalPayable));
+
+        // Update Executive Hero Strip Pills & Subtext
+        setTxt("pillCfoPending", cfoPendingCount);
+        setTxt("pillBypassReady", accountPendingCount);
+        setTxt("pillFlaggedCount", redFlagCount);
+        setTxt("statTdsAmount", Utils.formatCurrency(totalTds));
+        setTxt("statApprovedAmount", Utils.formatCurrency(totalApprovedVal));
+        setTxt("statApprovedCount", approvedCount + (approvedCount === 1 ? " Bill Cleared" : " Bills Cleared"));
+        setTxt("statPendingAmount", Utils.formatCurrency(totalPendingVal));
+        setTxt("statFlaggedAmount", Utils.formatCurrency(redFlagVal));
+        setTxt("statFlaggedCount", redFlagCount + (redFlagCount === 1 ? " Flagged Bill" : " Flagged Bills"));
+
+        // Update Biller & Account Queue Cards with real numbers
+        setTxt("billerTotal", totalCount);
+        setTxt("billerPending", accountPendingCount + cfoPendingCount);
+        setTxt("billerApproved", approvedCount);
+        setTxt("billerRejected", rejectedCount);
+
+        setTxt("accountTotal", totalCount);
+        setTxt("accountPending", accountPendingCount);
+        setTxt("accountApproved", cfoPendingCount + adminPendingCount + approvedCount);
+        setTxt("accountRejected", rejectedCount);
+
+        // Render Recent Activity Table
+        const recentBody = document.getElementById("recentBody");
+        if (recentBody) {
+          const recent = [...all].reverse().slice(0, 6);
+          recentBody.innerHTML = recent.length === 0 
+            ? `<tr><td colspan="6" class="text-center" style="padding:28px;color:var(--gray-400)">No invoices recorded yet</td></tr>`
+            : recent.map(inv => `
+              <tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
+                <td><strong style="font-size:0.83rem; color:var(--primary);">${inv["A13. Invoice Number"]||"—"}</strong></td>
+                <td style="font-size:0.82rem; font-weight:500;">${Utils.truncate(inv["A14. Vendor Name"], 20)}</td>
+                <td style="font-size:0.82rem; color:var(--gray-600);">${Utils.formatCurrency(inv["A20. Basic Amount"])}</td>
+                <td style="font-size:0.83rem; font-weight:700; color:var(--gray-900);">${Utils.formatCurrency(inv["D1. Final Payable Amt"] || inv["A20. Basic Amount"])}</td>
+                <td>${Utils.statusBadge(inv["Current_Stage"])}</td>
+                <td style="text-align:right;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})" title="View Details"><i class="fa fa-eye"></i></button></td>
+              </tr>
+            `).join("");
+        }
+
+        // Render Red Flags Panel
+        const redFlagsPanel = document.getElementById("redFlagsPanel");
+        if (redFlagsPanel) {
+          const flagged = all.filter(i => i["🚩 Red Flags"] && String(i["🚩 Red Flags"]).trim() !== "");
+          redFlagsPanel.innerHTML = flagged.length === 0
+            ? `<div class="empty-state" style="padding:28px 0"><div class="empty-icon">✅</div><div class="empty-title">No red flags detected!</div><div style="font-size:0.75rem; color:var(--gray-400); margin-top:4px;">All invoices meet compliance checks</div></div>`
+            : flagged.slice(0, 6).map(inv => `
+              <div style="padding:10px 12px; margin-bottom:8px; border:1px solid #fee2e2; background:#fff5f5; border-radius:8px; cursor:pointer; transition:transform 0.15s;" onclick="Dashboard.openDetail(${inv.rowIndex})">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="font-size:0.82rem; color:#b91c1c;">${inv["A13. Invoice Number"] || "—"}</strong>
+                  <span style="font-size:0.72rem; font-weight:700; color:#b91c1c;">${Utils.formatCurrency(inv["D1. Final Payable Amt"] || inv["A20. Basic Amount"])}</span>
+                </div>
+                <div style="font-size:0.78rem; color:var(--gray-700); margin-bottom:4px;">${Utils.truncate(inv["A14. Vendor Name"], 24)}</div>
+                <div style="font-size:0.72rem; color:var(--danger); display:flex; align-items:center; gap:4px; font-weight:600;">
+                  <i class="fa fa-triangle-exclamation"></i> ${Utils.truncate(inv["🚩 Red Flags"], 42)}
+                </div>
               </div>
-              <div style="font-size:0.78rem;color:var(--gray-600)">${Utils.truncate(inv["A14. Vendor Name"], 24)}</div>
-              <div style="font-size:0.72rem;color:var(--danger);margin-top:3px">🚩 ${Utils.truncate(inv["🚩 Red Flags"], 48)}</div>
-            </div>`).join("");
-        
+            `).join("");
+        }
+
+        // Populate Red Flags Full Tab Table if present
         const rfBody = document.getElementById("redFlagBody");
-        if(rfBody) {
+        if (rfBody) {
+          const flagged = all.filter(i => i["🚩 Red Flags"] && String(i["🚩 Red Flags"]).trim() !== "");
           rfBody.innerHTML = flagged.length === 0 
             ? `<tr><td colspan="7" class="text-center" style="padding:32px"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No red flags!</div></div></td></tr>`
             : flagged.map(inv => `<tr style="cursor:pointer" onclick="Dashboard.openDetail(${inv.rowIndex})">
@@ -944,8 +1388,293 @@ const Dashboard = {
                 <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); Dashboard.openDetail(${inv.rowIndex})"><i class="fa fa-eye"></i> View</button></td>
               </tr>`).join("");
         }
+
+        // Render all 4 Dashboard Charts!
+        Dashboard.renderDashboardCharts();
       }
-    } catch(e) {}
+    } catch(err) {
+      console.error("Error loading dashboard data:", err);
+    }
+  },
+
+  renderDashboardCharts() {
+    if (typeof Chart === 'undefined') return;
+    const all = Dashboard.allInvoicesData || [];
+    if (all.length === 0) return;
+
+    // Destroy existing instances if any
+    Object.keys(Dashboard.dashboardCharts).forEach(key => {
+      if (Dashboard.dashboardCharts[key]) {
+        try { Dashboard.dashboardCharts[key].destroy(); } catch(e){}
+        Dashboard.dashboardCharts[key] = null;
+      }
+    });
+
+    const fmtLakh = (val) => {
+      const n = Number(val) || 0;
+      if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2) + ' Cr';
+      if (n >= 100000) return '₹' + (n / 100000).toFixed(1) + ' L';
+      if (n >= 1000) return '₹' + (n / 1000).toFixed(0) + ' k';
+      return '₹' + n;
+    };
+
+    // 1. MONTHLY SPEND & CLEARANCE TRAJECTORY
+    const trendCanvas = document.getElementById("cfoTrendCanvas");
+    if (trendCanvas) {
+      const monthMap = {};
+      all.forEach(inv => {
+        const rawDate = inv["A12. Invoice Date"] || inv["Timestamp"] || "";
+        let mKey = "Current";
+        if (rawDate) {
+          const d = new Date(rawDate);
+          if (!isNaN(d.getTime())) {
+            mKey = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+          } else {
+            const parts = String(rawDate).match(/([A-Za-z]{3})\s+(\d{4})/);
+            if (parts) mKey = parts[1] + " " + parts[2].slice(-2);
+          }
+        }
+        if (!monthMap[mKey]) monthMap[mKey] = { basic: 0, payable: 0, tds: 0, count: 0 };
+        monthMap[mKey].basic += Number(inv["A20. Basic Amount"]) || 0;
+        monthMap[mKey].payable += Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+        monthMap[mKey].tds += Number(inv["B8. TDS Amount"]) || 0;
+        monthMap[mKey].count++;
+      });
+
+      const mLabels = Object.keys(monthMap);
+      const mBasic = mLabels.map(k => monthMap[k].basic);
+      const mPayable = mLabels.map(k => monthMap[k].payable);
+      const mTds = mLabels.map(k => monthMap[k].tds);
+
+      Dashboard.dashboardCharts.trend = new Chart(trendCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: mLabels,
+          datasets: [
+            {
+              label: 'Total Liability (Payable)',
+              data: mPayable,
+              borderColor: '#4f46e5',
+              backgroundColor: 'rgba(79, 70, 229, 0.10)',
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Basic Invoice Value',
+              data: mBasic,
+              borderColor: '#06b6d4',
+              backgroundColor: 'transparent',
+              borderDash: [5, 4],
+              tension: 0.35,
+              borderWidth: 2,
+              pointRadius: 3
+            },
+            {
+              label: 'TDS Withheld',
+              data: mTds,
+              borderColor: '#f59e0b',
+              backgroundColor: 'transparent',
+              tension: 0.35,
+              borderWidth: 1.8,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11, family: 'Inter' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${Utils.formatCurrency(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => fmtLakh(v), font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // 2. PIPELINE STAGE EXPOSURE DISTRIBUTION
+    const pipeCanvas = document.getElementById("cfoPipelineCanvas");
+    if (pipeCanvas) {
+      let stageStats = {
+        "Account Stage": { count: 0, val: 0, color: '#f59e0b' },
+        "Pending CFO Review": { count: 0, val: 0, color: '#3b82f6' },
+        "Pending Admin Approval": { count: 0, val: 0, color: '#8b5cf6' },
+        "Completed / Cleared": { count: 0, val: 0, color: '#10b981' },
+        "Rejected": { count: 0, val: 0, color: '#ef4444' }
+      };
+
+      all.forEach(inv => {
+        const stage = String(inv["Current_Stage"] || "").trim();
+        const appStatus = String(inv["Approval Status"] || "").trim();
+        const val = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+
+        if (stage === "Completed" || appStatus === "Approved") {
+          stageStats["Completed / Cleared"].count++;
+          stageStats["Completed / Cleared"].val += val;
+        } else if (appStatus.includes("Reject") || stage.includes("Reject")) {
+          stageStats["Rejected"].count++;
+          stageStats["Rejected"].val += val;
+        } else if (stage === "CFO") {
+          stageStats["Pending CFO Review"].count++;
+          stageStats["Pending CFO Review"].val += val;
+        } else if (stage === "Admin" || stage === "SuperAdmin") {
+          stageStats["Pending Admin Approval"].count++;
+          stageStats["Pending Admin Approval"].val += val;
+        } else {
+          stageStats["Account Stage"].count++;
+          stageStats["Account Stage"].val += val;
+        }
+      });
+
+      const pLabels = Object.keys(stageStats);
+      const pVals = pLabels.map(k => stageStats[k].val);
+      const pCounts = pLabels.map(k => stageStats[k].count);
+      const pColors = pLabels.map(k => stageStats[k].color);
+
+      Dashboard.dashboardCharts.pipeline = new Chart(pipeCanvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: pLabels,
+          datasets: [{
+            data: pVals,
+            backgroundColor: pColors,
+            hoverOffset: 6,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '66%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11, family: 'Inter' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const idx = ctx.dataIndex;
+                  return ` ${pLabels[idx]}: ${Utils.formatCurrency(ctx.raw)} (${pCounts[idx]} bills)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. TOP VENDOR EXPOSURE (HORIZONTAL BAR)
+    const vendorCanvas = document.getElementById("cfoVendorCanvas");
+    if (vendorCanvas) {
+      const vMap = {};
+      all.forEach(inv => {
+        const vName = String(inv["A14. Vendor Name"] || "Unknown Vendor").trim();
+        const amt = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+        if (!vMap[vName]) vMap[vName] = { name: vName, amount: 0, count: 0 };
+        vMap[vName].amount += amt;
+        vMap[vName].count++;
+      });
+
+      const topVendors = Object.values(vMap).sort((a,b) => b.amount - a.amount).slice(0, 7);
+      const vLabels = topVendors.map(v => v.name.length > 20 ? v.name.slice(0, 18) + '...' : v.name);
+      const vVals = topVendors.map(v => v.amount);
+
+      Dashboard.dashboardCharts.vendor = new Chart(vendorCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: vLabels,
+          datasets: [{
+            label: 'Total Payable Liability',
+            data: vVals,
+            backgroundColor: '#6366f1',
+            borderRadius: 6,
+            barThickness: 16
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `Liability: ${Utils.formatCurrency(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { callback: v => fmtLakh(v), font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            y: { grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' } } }
+          }
+        }
+      });
+    }
+
+    // 4. CAPEX VS OPEX & DOCUMENT NATURE
+    const natureCanvas = document.getElementById("cfoNatureCanvas");
+    if (natureCanvas) {
+      let revAmt = 0, capAmt = 0, taxAmt = 0, proformaAmt = 0;
+      all.forEach(inv => {
+        const val = Number(inv["D1. Final Payable Amt"]) || Number(inv["A20. Basic Amount"]) || 0;
+        const revCap = String(inv["A18. Rev/Capital"] || "").toLowerCase();
+        const invType = String(inv["A21. Invoice Type"] || "").toLowerCase();
+
+        if (revCap.includes("rev")) revAmt += val;
+        else if (revCap.includes("cap")) capAmt += val;
+        else revAmt += val;
+
+        if (invType.includes("tax")) taxAmt += val;
+        else if (invType.includes("proforma")) proformaAmt += val;
+        else taxAmt += val;
+      });
+
+      Dashboard.dashboardCharts.nature = new Chart(natureCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: ['Capex vs Opex', 'Invoice Classification'],
+          datasets: [
+            {
+              label: 'Revenue / Opex | Tax Invoice',
+              data: [revAmt, taxAmt],
+              backgroundColor: '#0d9488',
+              borderRadius: 6
+            },
+            {
+              label: 'Capital / Capex | Proforma',
+              data: [capAmt, proformaAmt],
+              backgroundColor: '#8b5cf6',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11, family: 'Inter' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${Utils.formatCurrency(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            y: { ticks: { callback: v => fmtLakh(v), font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
   },
 
   filterAllInvoices() {
